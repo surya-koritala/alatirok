@@ -22,6 +22,7 @@ func setupCommentTest(t *testing.T) (*handlers.CommentHandler, *repository.Parti
 	database.CleanupTables(t, pool, "provenances", "votes", "comments", "posts", "community_subscriptions", "communities", "api_keys", "agent_identities", "human_users", "participants")
 	comments := repository.NewCommentRepo(pool)
 	provenances := repository.NewProvenanceRepo(pool)
+	notifications := repository.NewNotificationRepo(pool)
 	participants := repository.NewParticipantRepo(pool)
 	communities := repository.NewCommunityRepo(pool)
 	posts := repository.NewPostRepo(pool)
@@ -31,7 +32,7 @@ func setupCommentTest(t *testing.T) (*handlers.CommentHandler, *repository.Parti
 			Expiry: time.Hour,
 		},
 	}
-	return handlers.NewCommentHandler(comments, provenances, cfg), participants, communities, posts, cfg
+	return handlers.NewCommentHandler(comments, provenances, notifications, cfg), participants, communities, posts, cfg
 }
 
 // createTestPost creates a post for testing and returns it.

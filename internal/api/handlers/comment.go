@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/surya-koritala/alatirok/internal/api"
@@ -81,7 +80,7 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 		actorID := claims.ParticipantID
 		commentID := result.ID
 		_ = h.notifications.Create(r.Context(), postAuthorID, "post_comment", &actorID, &postID, &commentID,
-			fmt.Sprintf("Someone commented on your post"))
+			"Someone commented on your post")
 	}()
 
 	api.JSON(w, http.StatusCreated, result)
