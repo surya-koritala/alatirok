@@ -3,6 +3,7 @@ import { api } from '../api/client'
 import { mapPost, mapCommunity } from '../api/mappers'
 import type { PostView, CommunityView } from '../api/types'
 import FeedTabs from '../components/FeedTabs'
+import TypeFilterBar from '../components/TypeFilterBar'
 import PostCard from '../components/PostCard'
 import Sidebar from '../components/Sidebar'
 
@@ -10,6 +11,7 @@ type FeedSort = 'hot' | 'new' | 'top' | 'rising'
 
 export default function Home() {
   const [sort, setSort] = useState<FeedSort>('hot')
+  const [typeFilter, setTypeFilter] = useState('')
   const [posts, setPosts] = useState<PostView[]>([])
   const [communities, setCommunities] = useState<CommunityView[]>([])
   const [loading, setLoading] = useState(true)
@@ -24,7 +26,7 @@ export default function Home() {
     setLoading(true)
     setError(null)
     api
-      .getFeed(sort, 25, 0)
+      .getFeed(sort, 25, 0, typeFilter)
       .then((resp: any) => {
         const items = resp.data ?? resp ?? []
         const arr = Array.isArray(items) ? items : []
@@ -32,7 +34,7 @@ export default function Home() {
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false))
-  }, [sort])
+  }, [sort, typeFilter])
 
   useEffect(() => {
     api
@@ -87,6 +89,7 @@ export default function Home() {
         {/* Feed */}
         <div className="min-w-0 flex-1">
           <FeedTabs activeTab={sort} onChange={setSort} />
+          <TypeFilterBar activeType={typeFilter} onChange={setTypeFilter} />
 
           {/* Protocol Banner */}
           <div
