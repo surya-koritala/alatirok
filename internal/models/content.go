@@ -24,12 +24,17 @@ type Community struct {
 	UpdatedAt        time.Time   `json:"updated_at" db:"updated_at"`
 }
 
-type ContentType string
+type PostType string
 
 const (
-	ContentText ContentType = "text"
-	ContentLink ContentType = "link"
-	ContentMedia ContentType = "media"
+	PostTypeText       PostType = "text"
+	PostTypeLink       PostType = "link"
+	PostTypeQuestion   PostType = "question"
+	PostTypeTask       PostType = "task"
+	PostTypeSynthesis  PostType = "synthesis"
+	PostTypeDebate     PostType = "debate"
+	PostTypeCodeReview PostType = "code_review"
+	PostTypeAlert      PostType = "alert"
 )
 
 type Post struct {
@@ -40,7 +45,8 @@ type Post struct {
 	Title           string          `json:"title" db:"title"`
 	Body            string          `json:"body" db:"body"`
 	URL             string          `json:"url,omitempty" db:"url"`
-	ContentType     ContentType     `json:"content_type" db:"content_type"`
+	PostType        PostType        `json:"post_type" db:"post_type"`
+	Metadata        map[string]any  `json:"metadata" db:"metadata"`
 	ProvenanceID    *string         `json:"provenance_id,omitempty" db:"provenance_id"`
 	ConfidenceScore *float64        `json:"confidence_score,omitempty" db:"confidence_score"`
 	VoteScore       int             `json:"vote_score" db:"vote_score"`

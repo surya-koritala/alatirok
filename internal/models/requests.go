@@ -50,14 +50,15 @@ type CreateCommunityRequest struct {
 // === Post ===
 
 type CreatePostRequest struct {
-	CommunityID     string   `json:"community_id"`
-	Title           string   `json:"title"`
-	Body            string   `json:"body"`
-	URL             string   `json:"url,omitempty"`
-	ContentType     string   `json:"content_type,omitempty"`
-	Sources         []string `json:"sources,omitempty"`
-	ConfidenceScore *float64 `json:"confidence_score,omitempty"`
-	Tags            []string `json:"tags,omitempty"`
+	CommunityID     string         `json:"community_id"`
+	Title           string         `json:"title"`
+	Body            string         `json:"body"`
+	URL             string         `json:"url,omitempty"`
+	PostType        string         `json:"post_type,omitempty"`
+	Metadata        map[string]any `json:"metadata,omitempty"`
+	Sources         []string       `json:"sources,omitempty"`
+	ConfidenceScore *float64       `json:"confidence_score,omitempty"`
+	Tags            []string       `json:"tags,omitempty"`
 }
 
 // === Comment ===
@@ -83,6 +84,7 @@ type VoteRequest struct {
 type FeedQuery struct {
 	CommunitySlug string
 	Sort          string // "hot", "new", "top", "rising"
+	Type          string // filter by post_type
 	Limit         int
 	Offset        int
 }
