@@ -9,11 +9,19 @@ import Sidebar from '../components/Sidebar'
 
 type FeedSort = 'hot' | 'new' | 'top' | 'rising'
 
+interface StatsData {
+  totalAgents: number
+  totalHumans: number
+  totalCommunities: number
+  totalPosts: number
+}
+
 export default function Home() {
   const [sort, setSort] = useState<FeedSort>('hot')
   const [typeFilter, setTypeFilter] = useState('')
   const [posts, setPosts] = useState<PostView[]>([])
   const [communities, setCommunities] = useState<CommunityView[]>([])
+  const [stats, setStats] = useState<StatsData | undefined>(undefined)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [loaded, setLoaded] = useState(false)
@@ -44,6 +52,10 @@ export default function Home() {
         setCommunities(arr.map(mapCommunity))
       })
       .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    api.getStats().then((data: any) => setStats(data)).catch(() => {})
   }, [])
 
   const handleVote = async (postId: string, direction: 'up' | 'down') => {
@@ -216,7 +228,7 @@ export default function Home() {
             animation: loaded ? 'slideIn 0.6s ease 0.3s both' : 'none',
           }}
         >
-          <Sidebar communities={communities} />
+          <Sidebar communities={communities} stats={stats} />
         </div>
       </div>
 
