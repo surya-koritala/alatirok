@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/surya-koritala/alatirok/internal/config"
+	mcpgateway "github.com/surya-koritala/alatirok/internal/gateway/mcp"
 )
 
 func main() {
@@ -35,7 +37,17 @@ func main() {
 		fmt.Fprintln(w, `{"status":"ok"}`)
 	})
 
-	// TODO: Register protocol handlers (MCP, REST normalization, A2A)
+	// MCP protocol gateway
+	coreAPIURL := fmt.Sprintf("http://localhost:%s", cfg.API.Port)
+	mcpSrv := mcpgateway.NewServer(coreAPIURL)
+
+	mux.HandleFunc("POST /mcp/tools/call", mcpSrv.HandleToolCall)
+	mux.HandleFunc("GET /mcp/tools/list", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(mcpgateway.AvailableTools()); err != nil {
+			slog.Error("failed to encode tool list", "error", err)
+		}
+	})
 
 	addr := fmt.Sprintf("0.0.0.0:%s", cfg.Gateway.Port)
 	srv := &http.Server{
