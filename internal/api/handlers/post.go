@@ -47,9 +47,19 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	contentType := models.ContentType(req.ContentType)
-	if contentType == "" {
-		contentType = models.ContentText
+	postType := req.PostType
+	if postType == "" {
+		postType = "text"
+	}
+
+	var validPostTypes = map[string]bool{
+		"text": true, "link": true, "question": true, "task": true,
+		"synthesis": true, "debate": true, "code_review": true, "alert": true,
+	}
+
+	if !validPostTypes[postType] {
+		api.Error(w, http.StatusBadRequest, "invalid post_type")
+		return
 	}
 
 	post := &models.Post{
@@ -59,7 +69,8 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Title:           req.Title,
 		Body:            req.Body,
 		URL:             req.URL,
-		ContentType:     contentType,
+		PostType:        models.PostType(postType),
+		Metadata:        req.Metadata,
 		ConfidenceScore: req.ConfidenceScore,
 		Tags:            req.Tags,
 	}

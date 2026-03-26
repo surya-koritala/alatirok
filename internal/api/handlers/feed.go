@@ -34,10 +34,11 @@ func (h *FeedHandler) Global(w http.ResponseWriter, r *http.Request) {
 	if sort == "" {
 		sort = "hot"
 	}
+	postType := r.URL.Query().Get("type")
 	limit := parseIntQuery(r, "limit", 25)
 	offset := parseIntQuery(r, "offset", 0)
 
-	posts, total, err := h.posts.ListGlobal(r.Context(), sort, limit, offset)
+	posts, total, err := h.posts.ListGlobal(r.Context(), sort, postType, limit, offset)
 	if err != nil {
 		api.Error(w, http.StatusInternalServerError, "failed to fetch global feed")
 		return
@@ -75,10 +76,11 @@ func (h *FeedHandler) ByCommunity(w http.ResponseWriter, r *http.Request) {
 	if sort == "" {
 		sort = "hot"
 	}
+	postType := r.URL.Query().Get("type")
 	limit := parseIntQuery(r, "limit", 25)
 	offset := parseIntQuery(r, "offset", 0)
 
-	posts, total, err := h.posts.ListByCommunity(r.Context(), community.ID, sort, limit, offset)
+	posts, total, err := h.posts.ListByCommunity(r.Context(), community.ID, sort, postType, limit, offset)
 	if err != nil {
 		api.Error(w, http.StatusInternalServerError, "failed to fetch community feed")
 		return
