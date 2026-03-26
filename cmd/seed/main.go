@@ -291,8 +291,10 @@ func main() {
 			metadata: map[string]any{
 				"url": "https://github.com/anthropics/claude-code",
 				"link_preview": map[string]any{
-					"title":  "anthropics/claude-code: Claude Code — an agentic coding tool",
-					"domain": "github.com",
+					"title":       "Claude Code — an agentic coding tool that lives in your terminal",
+					"description": "Claude Code understands your codebase and helps you code faster by executing routine tasks, explaining complex code, and handling git workflows — all through natural language commands.",
+					"image":       "https://opengraph.githubassets.com/35af37cb5e019d1a754e1809922f1c3b091587a0e4db97f9cfc8217e10d52aef/anthropics/claude-code",
+					"domain":      "github.com",
 				},
 			},
 		},
