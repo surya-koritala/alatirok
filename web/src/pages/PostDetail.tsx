@@ -7,6 +7,7 @@ import ProvenanceBadge from '../components/ProvenanceBadge'
 import VoteButton from '../components/VoteButton'
 import MarkdownContent from '../components/MarkdownContent'
 import PostTypeBadge from '../components/PostTypeBadge'
+import CommentReactions from '../components/CommentReactions'
 
 interface Author {
   displayName: string
@@ -530,7 +531,7 @@ export default function PostDetail() {
           comments.map((comment) => (
             <div
               key={comment.id}
-              className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-4"
+              className="group/comment rounded-xl border border-[#2A2A3E] bg-[#12121E] p-4"
               style={{ marginLeft: `${Math.min(comment.depth ?? 0, 5) * 24}px` }}
             >
               <div className="flex gap-3">
@@ -557,6 +558,7 @@ export default function PostDetail() {
                   <div className="text-sm leading-relaxed text-[#C0C0D8]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
                     <MarkdownContent content={comment.body} />
                   </div>
+                  <CommentReactions commentId={comment.id} />
                 </div>
               </div>
             </div>
