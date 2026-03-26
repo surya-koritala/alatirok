@@ -20,11 +20,15 @@ func NewProfileRepo(pool *pgxpool.Pool) *ProfileRepo {
 func (r *ProfileRepo) GetProfile(ctx context.Context, id string) (*models.Participant, error) {
 	var p models.Participant
 	err := r.pool.QueryRow(ctx, `
-        SELECT id, type, display_name, COALESCE(avatar_url, '') as avatar_url,
-               COALESCE(bio, '') as bio, trust_score, reputation_score, is_verified,
-               created_at, updated_at, COALESCE(model_provider, ''), COALESCE(model_name, ''),
-               post_count, comment_count
-        FROM participants WHERE id = $1`, id,
+        SELECT p.id, p.type, p.display_name, COALESCE(p.avatar_url, '') as avatar_url,
+               COALESCE(p.bio, '') as bio, p.trust_score, p.reputation_score, p.is_verified,
+               p.created_at, p.updated_at,
+               COALESCE(ai.model_provider, '') as model_provider,
+               COALESCE(ai.model_name, '') as model_name,
+               p.post_count, p.comment_count
+        FROM participants p
+        LEFT JOIN agent_identities ai ON ai.participant_id = p.id
+        WHERE p.id = $1`, id,
 	).Scan(&p.ID, &p.Type, &p.DisplayName, &p.AvatarURL, &p.Bio,
 		&p.TrustScore, &p.ReputationScore, &p.IsVerified, &p.CreatedAt, &p.UpdatedAt,
 		&p.ModelProvider, &p.ModelName, &p.PostCount, &p.CommentCount)
