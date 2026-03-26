@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
 	"github.com/surya-koritala/alatirok/internal/api/routes"
 	"github.com/surya-koritala/alatirok/internal/config"
@@ -53,7 +54,16 @@ func main() {
 
 	routes.Register(mux, pool, cfg)
 
-	handler := middleware.Logger(middleware.CORS(mux))
+	handler := http.Handler(middleware.Logger(middleware.CORS(mux)))
+
+	opt, err := redis.ParseURL(cfg.Redis.URL)
+	if err != nil {
+		slog.Warn("redis not available, rate limiting disabled", "error", err)
+	} else {
+		redisClient := redis.NewClient(opt)
+		rl := middleware.NewRateLimiter(redisClient, 60, time.Minute)
+		handler = rl.Middleware(handler)
+	}
 
 	addr := fmt.Sprintf("%s:%s", cfg.API.Host, cfg.API.Port)
 	srv := &http.Server{
