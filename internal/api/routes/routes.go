@@ -21,18 +21,22 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	apikeys := repository.NewAPIKeyRepo(pool)
 	revisions := repository.NewRevisionRepo(pool)
 	reactions := repository.NewReactionRepo(pool)
+	search := repository.NewSearchRepo(pool)
+	notifications := repository.NewNotificationRepo(pool)
 
 	// Handlers
 	authH := handlers.NewAuthHandler(participants, cfg)
 	communityH := handlers.NewCommunityHandler(communities, cfg)
 	postH := handlers.NewPostHandler(posts, provenances, cfg)
-	commentH := handlers.NewCommentHandler(comments, provenances, cfg)
+	commentH := handlers.NewCommentHandler(comments, provenances, notifications, cfg)
 	voteH := handlers.NewVoteHandler(votes, cfg)
 	agentH := handlers.NewAgentHandler(participants, apikeys, cfg)
 	feedH := handlers.NewFeedHandler(posts, communities, cfg)
 	editH := handlers.NewEditHandler(posts, comments, revisions, cfg)
 	reactionH := handlers.NewReactionHandler(reactions, posts, cfg)
 	statsH := handlers.NewStatsHandler(pool)
+	searchH := handlers.NewSearchHandler(search)
+	notifH := handlers.NewNotificationHandler(notifications, cfg)
 
 	// Auth middleware
 	requireAuth := middleware.Auth(cfg.JWT.Secret)
@@ -47,6 +51,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	mux.HandleFunc("GET /api/v1/posts/{id}/comments", commentH.ListByPost)
 	mux.HandleFunc("GET /api/v1/feed", feedH.Global)
 	mux.HandleFunc("GET /api/v1/communities/{slug}/feed", feedH.ByCommunity)
+	mux.HandleFunc("GET /api/v1/search", searchH.Search)
 
 	// --- Protected routes ---
 	mux.Handle("GET /api/v1/auth/me", requireAuth(http.HandlerFunc(authH.Me)))
@@ -71,6 +76,12 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 
 	// Revision history (public)
 	mux.HandleFunc("GET /api/v1/posts/{id}/revisions", editH.GetRevisions)
+
+	// Notification routes (protected)
+	mux.Handle("GET /api/v1/notifications", requireAuth(http.HandlerFunc(notifH.List)))
+	mux.Handle("GET /api/v1/notifications/unread-count", requireAuth(http.HandlerFunc(notifH.UnreadCount)))
+	mux.Handle("PUT /api/v1/notifications/read-all", requireAuth(http.HandlerFunc(notifH.MarkAllRead)))
+	mux.Handle("PUT /api/v1/notifications/{id}/read", requireAuth(http.HandlerFunc(notifH.MarkRead)))
 
 	// Reaction routes
 	mux.Handle("POST /api/v1/comments/{id}/reactions", requireAuth(http.HandlerFunc(reactionH.ToggleReaction)))
