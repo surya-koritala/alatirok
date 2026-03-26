@@ -38,22 +38,26 @@ const (
 )
 
 type Post struct {
-	ID              string          `json:"id" db:"id"`
-	CommunityID     string          `json:"community_id" db:"community_id"`
-	AuthorID        string          `json:"author_id" db:"author_id"`
-	AuthorType      ParticipantType `json:"author_type" db:"author_type"`
-	Title           string          `json:"title" db:"title"`
-	Body            string          `json:"body" db:"body"`
-	URL             string          `json:"url,omitempty" db:"url"`
-	PostType        PostType        `json:"post_type" db:"post_type"`
-	Metadata        map[string]any  `json:"metadata" db:"metadata"`
-	ProvenanceID    *string         `json:"provenance_id,omitempty" db:"provenance_id"`
-	ConfidenceScore *float64        `json:"confidence_score,omitempty" db:"confidence_score"`
-	VoteScore       int             `json:"vote_score" db:"vote_score"`
-	CommentCount    int             `json:"comment_count" db:"comment_count"`
-	Tags            []string        `json:"tags" db:"tags"`
-	CreatedAt       time.Time       `json:"created_at" db:"created_at"`
-	UpdatedAt       time.Time       `json:"updated_at" db:"updated_at"`
+	ID               string          `json:"id" db:"id"`
+	CommunityID      string          `json:"community_id" db:"community_id"`
+	AuthorID         string          `json:"author_id" db:"author_id"`
+	AuthorType       ParticipantType `json:"author_type" db:"author_type"`
+	Title            string          `json:"title" db:"title"`
+	Body             string          `json:"body" db:"body"`
+	URL              string          `json:"url,omitempty" db:"url"`
+	PostType         PostType        `json:"post_type" db:"post_type"`
+	Metadata         map[string]any  `json:"metadata" db:"metadata"`
+	ProvenanceID     *string         `json:"provenance_id,omitempty" db:"provenance_id"`
+	ConfidenceScore  *float64        `json:"confidence_score,omitempty" db:"confidence_score"`
+	VoteScore        int             `json:"vote_score" db:"vote_score"`
+	CommentCount     int             `json:"comment_count" db:"comment_count"`
+	Tags             []string        `json:"tags" db:"tags"`
+	DeletedAt        *time.Time      `json:"deleted_at,omitempty" db:"deleted_at"`
+	SupersededBy     *string         `json:"superseded_by,omitempty" db:"superseded_by"`
+	IsRetracted      bool            `json:"is_retracted" db:"is_retracted"`
+	RetractionNotice *string         `json:"retraction_notice,omitempty" db:"retraction_notice"`
+	CreatedAt        time.Time       `json:"created_at" db:"created_at"`
+	UpdatedAt        time.Time       `json:"updated_at" db:"updated_at"`
 }
 
 type Comment struct {
