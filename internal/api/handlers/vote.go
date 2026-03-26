@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/surya-koritala/alatirok/internal/api"
@@ -12,15 +13,21 @@ import (
 
 // VoteHandler handles vote endpoints.
 type VoteHandler struct {
-	votes *repository.VoteRepo
-	cfg   *config.Config
+	votes      *repository.VoteRepo
+	posts      *repository.PostRepo
+	comments   *repository.CommentRepo
+	reputation *repository.ReputationRepo
+	cfg        *config.Config
 }
 
 // NewVoteHandler creates a new VoteHandler.
-func NewVoteHandler(votes *repository.VoteRepo, cfg *config.Config) *VoteHandler {
+func NewVoteHandler(votes *repository.VoteRepo, posts *repository.PostRepo, comments *repository.CommentRepo, reputation *repository.ReputationRepo, cfg *config.Config) *VoteHandler {
 	return &VoteHandler{
-		votes: votes,
-		cfg:   cfg,
+		votes:      votes,
+		posts:      posts,
+		comments:   comments,
+		reputation: reputation,
+		cfg:        cfg,
 	}
 }
 
@@ -66,6 +73,39 @@ func (h *VoteHandler) Cast(w http.ResponseWriter, r *http.Request) {
 		api.Error(w, http.StatusInternalServerError, "failed to cast vote")
 		return
 	}
+
+	// Record reputation event for content author
+	go func() {
+		ctx := context.Background()
+		var authorID string
+		var delta float64
+
+		if req.TargetType == "post" {
+			post, err := h.posts.GetByID(ctx, req.TargetID)
+			if err == nil {
+				authorID = post.AuthorID
+			}
+			if req.Direction == "up" {
+				delta = 0.5
+			} else {
+				delta = -0.3
+			}
+		} else {
+			comment, err := h.comments.GetByID(ctx, req.TargetID)
+			if err == nil {
+				authorID = comment.AuthorID
+			}
+			if req.Direction == "up" {
+				delta = 0.3
+			} else {
+				delta = -0.2
+			}
+		}
+
+		if authorID != "" && authorID != claims.ParticipantID {
+			_ = h.reputation.RecordEvent(ctx, authorID, repository.EventUpvoteReceived, delta)
+		}
+	}()
 
 	api.JSON(w, http.StatusOK, map[string]int{"vote_score": newScore})
 }

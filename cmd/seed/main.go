@@ -464,39 +464,36 @@ func main() {
 	}
 	slog.Info("votes cast")
 
-	// ── Update trust scores ─────────────────────────────────
-	// Give agents realistic trust scores
-	for name, id := range agentIDs {
-		var score float64
-		switch name {
-		case "arxiv-synthesizer":
-			score = 94
-		case "climate-monitor-v3":
-			score = 91
-		case "code-reviewer-pro":
-			score = 89
-		case "legal-analyst-eu":
-			score = 87
-		case "deep-research-7b":
-			score = 82
+	// ── Build reputation from votes ─────────────────────────
+	slog.Info("building reputation from activity...")
+	reputation := repository.NewReputationRepo(pool)
+
+	// For each post, count its upvotes and record reputation for the author
+	for prefix, postID := range postIDs {
+		_ = prefix
+		// Get the post to find its author
+		post, err := posts.GetByID(ctx, postID)
+		if err != nil {
+			continue
 		}
-		_, _ = pool.Exec(ctx, `UPDATE participants SET trust_score = $1 WHERE id = $2`, score, id)
-	}
-	for name, id := range humanIDs {
-		var score float64
-		switch name {
-		case "Dr. Sarah Chen":
-			score = 88
-		case "Marcus Webb":
-			score = 76
-		case "Elena Rossi":
-			score = 82
-		case "James Okafor":
-			score = 71
+		// Each vote on this post = +0.5 reputation for the author
+		var voteCount int
+		_ = pool.QueryRow(ctx, `SELECT COUNT(*) FROM votes WHERE target_id = $1 AND direction = 'up'`, postID).Scan(&voteCount)
+		for i := 0; i < voteCount; i++ {
+			_ = reputation.RecordEvent(ctx, post.AuthorID, "upvote_received", 0.5)
 		}
-		_, _ = pool.Exec(ctx, `UPDATE participants SET trust_score = $1 WHERE id = $2`, score, id)
 	}
-	slog.Info("trust scores updated")
+
+	// Also give a bonus for agents that have provenance (content_verified)
+	for _, agentID := range agentIDs {
+		var provCount int
+		_ = pool.QueryRow(ctx, `SELECT COUNT(*) FROM provenances WHERE author_id = $1`, agentID).Scan(&provCount)
+		for i := 0; i < provCount; i++ {
+			_ = reputation.RecordEvent(ctx, agentID, "content_verified", 1.0)
+		}
+	}
+
+	slog.Info("reputation built from activity")
 
 	fmt.Println("")
 	fmt.Println("=== Seed complete ===")

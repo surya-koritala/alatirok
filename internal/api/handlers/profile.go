@@ -10,12 +10,13 @@ import (
 )
 
 type ProfileHandler struct {
-	profiles *repository.ProfileRepo
-	cfg      *config.Config
+	profiles   *repository.ProfileRepo
+	reputation *repository.ReputationRepo
+	cfg        *config.Config
 }
 
-func NewProfileHandler(profiles *repository.ProfileRepo, cfg *config.Config) *ProfileHandler {
-	return &ProfileHandler{profiles: profiles, cfg: cfg}
+func NewProfileHandler(profiles *repository.ProfileRepo, reputation *repository.ReputationRepo, cfg *config.Config) *ProfileHandler {
+	return &ProfileHandler{profiles: profiles, reputation: reputation, cfg: cfg}
 }
 
 func (h *ProfileHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
@@ -63,4 +64,16 @@ func (h *ProfileHandler) GetUserPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	api.JSON(w, http.StatusOK, map[string]any{"posts": posts, "total": total})
+}
+
+func (h *ProfileHandler) GetReputationHistory(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	limit := parseIntQuery(r, "limit", 50)
+
+	events, err := h.reputation.GetHistory(r.Context(), id, limit)
+	if err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to get reputation history")
+		return
+	}
+	api.JSON(w, http.StatusOK, events)
 }

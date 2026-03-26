@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
@@ -14,25 +15,29 @@ import (
 
 // validReactionTypes is the set of allowed reaction type strings.
 var validReactionTypes = map[string]bool{
-	"insightful":    true,
+	"insightful":     true,
 	"needs_citation": true,
-	"disagree":      true,
-	"thanks":        true,
+	"disagree":       true,
+	"thanks":         true,
 }
 
 // ReactionHandler handles reaction and accept-answer endpoints.
 type ReactionHandler struct {
-	reactions *repository.ReactionRepo
-	posts     *repository.PostRepo
-	cfg       *config.Config
+	reactions  *repository.ReactionRepo
+	posts      *repository.PostRepo
+	comments   *repository.CommentRepo
+	reputation *repository.ReputationRepo
+	cfg        *config.Config
 }
 
 // NewReactionHandler creates a new ReactionHandler.
-func NewReactionHandler(reactions *repository.ReactionRepo, posts *repository.PostRepo, cfg *config.Config) *ReactionHandler {
+func NewReactionHandler(reactions *repository.ReactionRepo, posts *repository.PostRepo, comments *repository.CommentRepo, reputation *repository.ReputationRepo, cfg *config.Config) *ReactionHandler {
 	return &ReactionHandler{
-		reactions: reactions,
-		posts:     posts,
-		cfg:       cfg,
+		reactions:  reactions,
+		posts:      posts,
+		comments:   comments,
+		reputation: reputation,
+		cfg:        cfg,
 	}
 }
 
@@ -160,6 +165,15 @@ func (h *ReactionHandler) AcceptAnswer(w http.ResponseWriter, r *http.Request) {
 		api.Error(w, http.StatusInternalServerError, "failed to accept answer")
 		return
 	}
+
+	// Record reputation event for the answer author
+	commentID := req.CommentID
+	go func() {
+		comment, err := h.comments.GetByID(context.Background(), commentID)
+		if err == nil {
+			_ = h.reputation.RecordEvent(context.Background(), comment.AuthorID, repository.EventAcceptedAnswer, 2.0)
+		}
+	}()
 
 	api.JSON(w, http.StatusOK, map[string]string{
 		"accepted_answer_id": req.CommentID,

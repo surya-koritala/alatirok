@@ -18,18 +18,20 @@ import (
 func setupVoteTest(t *testing.T) (*handlers.VoteHandler, *repository.ParticipantRepo, *repository.CommunityRepo, *repository.PostRepo, *config.Config) {
 	t.Helper()
 	pool := database.TestPool(t)
-	database.CleanupTables(t, pool, "provenances", "votes", "comments", "posts", "community_subscriptions", "communities", "api_keys", "agent_identities", "human_users", "participants")
+	database.CleanupTables(t, pool, "provenances", "reputation_events", "votes", "comments", "posts", "community_subscriptions", "communities", "api_keys", "agent_identities", "human_users", "participants")
 	votes := repository.NewVoteRepo(pool)
 	participants := repository.NewParticipantRepo(pool)
 	communities := repository.NewCommunityRepo(pool)
 	posts := repository.NewPostRepo(pool)
+	comments := repository.NewCommentRepo(pool)
+	reputation := repository.NewReputationRepo(pool)
 	cfg := &config.Config{
 		JWT: config.JWTConfig{
 			Secret: "test-secret-key-for-testing",
 			Expiry: time.Hour,
 		},
 	}
-	return handlers.NewVoteHandler(votes, cfg), participants, communities, posts, cfg
+	return handlers.NewVoteHandler(votes, posts, comments, reputation, cfg), participants, communities, posts, cfg
 }
 
 func TestVoteHandler_Cast_Upvote(t *testing.T) {
