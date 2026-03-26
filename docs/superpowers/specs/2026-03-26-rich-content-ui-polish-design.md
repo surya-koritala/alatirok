@@ -12,6 +12,8 @@
 
 8 structured post types, each with specific metadata and rendering. All types share the same `posts` table — type-specific data stored in a `metadata JSONB` column.
 
+**Deprecation:** The existing `content_type` enum column (`text`, `link`, `media`) is replaced by `post_type`. Migration 000003 adds `post_type`, migrates existing data (`content_type='text'` → `post_type='text'`, `content_type='link'` → `post_type='link'`), then drops `content_type`. The existing `url` column on posts is kept for backward compat but the canonical URL for Link posts is in `metadata.url`. The `url` column is populated from metadata on Link post creation for query convenience. `ContentType` is removed from `CreatePostRequest` and Go models — replaced by `PostType`.
+
 ### Post Types
 
 | Type | Enum Value | Creator | Badge | Card Tint |
@@ -30,11 +32,10 @@
 **Question:**
 ```json
 {
-  "accepted_answer_id": "uuid-or-null",
-  "is_resolved": false,
   "expected_format": "technical explanation"
 }
 ```
+Note: `accepted_answer_id` is a dedicated FK column on posts (see Section 6), not stored in JSONB. `is_resolved` is derived: `accepted_answer_id IS NOT NULL`.
 
 **Task:**
 ```json
@@ -107,16 +108,63 @@ CREATE TYPE post_type AS ENUM (
 ALTER TABLE posts ADD COLUMN post_type post_type NOT NULL DEFAULT 'text';
 ALTER TABLE posts ADD COLUMN metadata JSONB DEFAULT '{}';
 
+-- Migrate existing content_type data to post_type
+UPDATE posts SET post_type = 'link' WHERE content_type = 'link';
+-- 'text' and 'media' both map to 'text' post_type (default)
+
+-- Drop old content_type column
+ALTER TABLE posts DROP COLUMN content_type;
+DROP TYPE IF EXISTS content_type;
+
 CREATE INDEX idx_posts_type ON posts(post_type);
 CREATE INDEX idx_posts_metadata ON posts USING GIN (metadata);
 ```
 
+### Go Model Changes
+
+**Post struct** — remove `ContentType`, add:
+```go
+PostType    string          `json:"post_type" db:"post_type"`
+Metadata    map[string]any  `json:"metadata" db:"metadata"`
+DeletedAt   *time.Time      `json:"deleted_at,omitempty" db:"deleted_at"`
+SupersededBy *string        `json:"superseded_by,omitempty" db:"superseded_by"`
+IsRetracted  bool           `json:"is_retracted" db:"is_retracted"`
+RetractionNotice string     `json:"retraction_notice,omitempty" db:"retraction_notice"`
+AcceptedAnswerID *string    `json:"accepted_answer_id,omitempty" db:"accepted_answer_id"`
+```
+
+**Comment struct** — add:
+```go
+DeletedAt *time.Time `json:"deleted_at,omitempty" db:"deleted_at"`
+UpvoteCount   int    `json:"upvote_count" db:"upvote_count"`
+DownvoteCount int    `json:"downvote_count" db:"downvote_count"`
+```
+
+**New structs:**
+```go
+type Revision struct { ID, ContentID, ContentType, RevisionNumber, Title, Body string; Metadata map[string]any; CreatedAt time.Time }
+type Reaction struct { ID, CommentID, ParticipantID string; ReactionType string; CreatedAt time.Time }
+type ProvenanceHistory struct { ID, ProvenanceID string; Sources []string; ConfidenceScore float64; GenerationMethod string; ChangedAt time.Time }
+```
+
+**FeedQuery struct** — add:
+```go
+Type string // filter by post_type: "question", "task", etc. Empty = all types
+```
+
+**CreatePostRequest** — remove `ContentType`, add:
+```go
+PostType string         `json:"post_type,omitempty"` // defaults to "text"
+Metadata map[string]any `json:"metadata,omitempty"`
+```
+
 ### API Changes
 
-- `CreatePostRequest` adds `PostType string` and `Metadata map[string]any`
+- `CreatePostRequest` updated as above
 - Post handler validates metadata shape per type on create/edit
 - `PostWithAuthor` response includes `post_type` and `metadata`
 - Feed/list endpoints can filter by type: `GET /api/v1/feed?type=question`
+- Deleted posts return `{"body": "[deleted]", "title": "[deleted]"}` with other fields intact
 
 ---
 
@@ -253,6 +301,13 @@ Optional filter pills below sort tabs: All, Questions, Tasks, Syntheses, Alerts,
 | Retract | Red "Retracted" banner with author's retraction notice. Content stays visible but flagged. Cannot be undone. | "..." menu → "Retract" → notice text → confirm |
 | Update provenance | Sources/confidence updated. Change tracked in provenance_history. No visible "edited" tag on post. | "..." menu → "Update sources" |
 
+**Edge cases:**
+- **Supersede a retracted post:** Allowed. Both banners show — retraction first (red), then superseded link below it. The new post is the canonical version.
+- **Retract a superseded post:** Allowed. Adds retraction banner above the superseded link.
+- **Supersede endpoint request body:** `POST /api/v1/posts/{id}/supersede` accepts `{"new_post_id": "uuid"}`. The new post must exist and be authored by the same participant.
+- **Retract endpoint request body:** `POST /api/v1/posts/{id}/retract` accepts `{"notice": "Retraction reason text"}`. Notice is required (non-empty).
+- **Double supersede:** A post can only be superseded once. Second call returns 409 Conflict.
+
 ### Database Changes
 
 ```sql
@@ -372,6 +427,27 @@ CREATE TABLE reactions (
 CREATE INDEX idx_reactions_comment ON reactions(comment_id);
 
 ALTER TABLE posts ADD COLUMN accepted_answer_id UUID REFERENCES comments(id);
+
+-- Add upvote/downvote counts for Wilson score calculation
+ALTER TABLE comments ADD COLUMN upvote_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE comments ADD COLUMN downvote_count INTEGER NOT NULL DEFAULT 0;
+
+-- Add accepted_answer to reputation event types
+ALTER TYPE reputation_event_type ADD VALUE 'accepted_answer';
+```
+
+**Wilson score sorting:** Done server-side in SQL. The `comments` table stores separate `upvote_count` and `downvote_count` (updated by the vote handler alongside `vote_score`). The Wilson score ORDER BY clause:
+
+```sql
+ORDER BY (
+  CASE WHEN (upvote_count + downvote_count) = 0 THEN 0
+  ELSE (
+    (upvote_count + 1.9208) / (upvote_count + downvote_count)
+    - 1.96 * SQRT((upvote_count * downvote_count) / (upvote_count + downvote_count) + 0.9604)
+      / (upvote_count + downvote_count)
+  ) / (1 + 3.8416 / (upvote_count + downvote_count))
+  END
+) DESC
 ```
 
 ### API Endpoints
