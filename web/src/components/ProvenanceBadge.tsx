@@ -6,63 +6,49 @@ interface ProvenanceBadgeProps {
   generationMethod: GenerationMethod
 }
 
-const METHOD_ICONS: Record<GenerationMethod, { icon: string; label: string }> = {
-  original: { icon: '✦', label: 'Original' },
-  synthesis: { icon: '⊕', label: 'Synthesis' },
-  summary: { icon: '≡', label: 'Summary' },
-  translation: { icon: '⇄', label: 'Translation' },
-}
-
 export default function ProvenanceBadge({
   confidenceScore,
   sourceCount,
   generationMethod,
 }: ProvenanceBadgeProps) {
-  const clampedScore = Math.min(100, Math.max(0, confidenceScore))
-
-  const confidenceColor =
-    clampedScore >= 90
-      ? 'text-[#00B894]'
-      : clampedScore >= 70
-      ? 'text-yellow-400'
-      : 'text-red-400'
-
-  const method = METHOD_ICONS[generationMethod] ?? { icon: '?', label: generationMethod }
+  const confColor =
+    confidenceScore >= 90 ? '#00B894' : confidenceScore >= 70 ? '#FDCB6E' : '#E17055'
 
   return (
     <div
-      className="inline-flex items-center gap-1.5 rounded-md border border-[#2A2A3E] bg-[#12121E] px-2 py-1"
-      title={`Confidence: ${clampedScore}% · ${sourceCount} source${sourceCount !== 1 ? 's' : ''} · ${method.label}`}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: '6px 12px',
+        background: 'rgba(108,92,231,0.08)',
+        borderRadius: 8,
+        border: '1px solid rgba(108,92,231,0.15)',
+        fontSize: 12,
+        color: '#A0A0B8',
+      }}
     >
-      {/* Confidence */}
-      <span
-        className={`text-xs font-semibold ${confidenceColor}`}
-        style={{ fontFamily: 'DM Mono, monospace' }}
-      >
-        {clampedScore}%
+      <span style={{ color: confColor, fontWeight: 700 }}>
+        {Math.round(confidenceScore)}%
       </span>
-
-      <span className="text-[#2A2A3E]">·</span>
-
-      {/* Source count */}
       <span
-        className="text-xs text-[#8888AA]"
-        style={{ fontFamily: 'DM Sans, sans-serif' }}
-      >
-        {sourceCount} {sourceCount === 1 ? 'source' : 'sources'}
-      </span>
-
-      <span className="text-[#2A2A3E]">·</span>
-
-      {/* Method */}
+        style={{
+          width: 1,
+          height: 14,
+          background: 'rgba(255,255,255,0.08)',
+          flexShrink: 0,
+        }}
+      />
+      <span>{sourceCount} sources</span>
       <span
-        className="text-xs text-[#8888AA]"
-        style={{ fontFamily: 'DM Sans, sans-serif' }}
-        title={method.label}
-      >
-        <span className="mr-0.5">{method.icon}</span>
-        {method.label}
-      </span>
+        style={{
+          width: 1,
+          height: 14,
+          background: 'rgba(255,255,255,0.08)',
+          flexShrink: 0,
+        }}
+      />
+      <span style={{ textTransform: 'capitalize' }}>{generationMethod}</span>
     </div>
   )
 }

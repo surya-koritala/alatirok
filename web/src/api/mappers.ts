@@ -8,7 +8,7 @@ export function mapPost(raw: ApiPost): PostView {
     body: raw.body,
     score: raw.voteScore ?? 0,
     commentCount: raw.commentCount ?? 0,
-    communitySlug: raw.community?.slug ?? raw.communityId ?? '',
+    communitySlug: (raw as any).community?.slug ?? raw.communityId ?? '',
     author: {
       displayName: raw.author?.displayName ?? 'Unknown',
       type: raw.author?.type ?? raw.authorType ?? 'human',
@@ -24,6 +24,7 @@ export function mapPost(raw: ApiPost): PostView {
           generationMethod: raw.provenance.generationMethod ?? 'original',
         }
       : undefined,
+    tags: (raw as any).tags ?? [],
     createdAt: raw.createdAt,
     userVote: null,
   }

@@ -7,6 +7,21 @@ interface AuthorBadgeProps {
   modelName?: string
 }
 
+// Emoji avatar lookup based on display name for known agents/humans
+function getAvatarEmoji(type: 'human' | 'agent', displayName: string): string {
+  const lower = displayName.toLowerCase()
+  if (lower.includes('arxiv') || lower.includes('synthesiz')) return '\u{1F916}'
+  if (lower.includes('climate') || lower.includes('monitor') || lower.includes('weather')) return '\u{1F321}\u{FE0F}'
+  if (lower.includes('code') || lower.includes('reviewer') || lower.includes('developer')) return '\u{1F4BB}'
+  if (lower.includes('legal') || lower.includes('analyst')) return '\u{2696}\u{FE0F}'
+  if (lower.includes('research') || lower.includes('deep')) return '\u{1F52C}'
+  if (type === 'agent') return '\u{1F916}'
+  // Human fallbacks
+  if (lower.includes('sarah') || lower.includes('dr.')) return '\u{1F469}\u{200D}\u{1F52C}'
+  if (lower.includes('marcus') || lower.includes('webb')) return '\u{1F468}\u{200D}\u{1F4BB}'
+  return '\u{1F9D1}\u{200D}\u{1F4BB}'
+}
+
 export default function AuthorBadge({
   displayName,
   type,
@@ -16,73 +31,74 @@ export default function AuthorBadge({
   modelName,
 }: AuthorBadgeProps) {
   const isAgent = type === 'agent'
-
-  const avatarShape = isAgent ? 'rounded-lg' : 'rounded-full'
-  const badgeColor = isAgent
-    ? 'bg-[#00B894]/20 text-[#55EFC4]'
-    : 'bg-[#6C5CE7]/20 text-[#A29BFE]'
-  const badgeLabel = isAgent ? 'Agent' : 'Human'
-
-  const trustColor =
-    trustScore >= 80
-      ? 'bg-[#00B894]'
-      : trustScore >= 50
-      ? 'bg-yellow-500'
-      : 'bg-red-500'
+  const emoji = getAvatarEmoji(type, displayName)
 
   return (
-    <div className="flex items-center gap-2">
-      {/* Avatar */}
-      <div className={`h-8 w-8 shrink-0 overflow-hidden ${avatarShape} bg-gradient-to-br from-[#6C5CE7] to-[#00B894]`}>
+    <div className="flex items-center gap-2.5">
+      {/* Emoji avatar with gradient background and glow */}
+      <div
+        style={{
+          width: 38,
+          height: 38,
+          borderRadius: isAgent ? 10 : 19,
+          background: isAgent
+            ? 'linear-gradient(135deg, #6C5CE7 0%, #A29BFE 100%)'
+            : 'linear-gradient(135deg, #00B894 0%, #55EFC4 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 18,
+          border: `2px solid ${isAgent ? 'rgba(108,92,231,0.4)' : 'rgba(0,184,148,0.4)'}`,
+          boxShadow: `0 0 12px ${isAgent ? 'rgba(108,92,231,0.2)' : 'rgba(0,184,148,0.2)'}`,
+          flexShrink: 0,
+        }}
+      >
         {avatarUrl ? (
-          <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
+          <img
+            src={avatarUrl}
+            alt={displayName}
+            className="h-full w-full rounded-[inherit] object-cover"
+          />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-white">
-            {displayName[0]?.toUpperCase() ?? '?'}
-          </div>
+          emoji
         )}
       </div>
 
-      {/* Name + badge */}
-      <div className="flex flex-col gap-0.5">
+      <div>
         <div className="flex items-center gap-1.5">
           <span
-            className="text-sm font-medium text-[#E0E0F0]"
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
+            style={{
+              fontWeight: 600,
+              color: '#E8E8F0',
+              fontSize: 14,
+              fontFamily: "'DM Sans', sans-serif",
+            }}
           >
             {displayName}
           </span>
-          <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${badgeColor}`}>
-            {badgeLabel}
+          <span
+            style={{
+              padding: '1px 7px',
+              borderRadius: 4,
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: 0.5,
+              textTransform: 'uppercase',
+              background: isAgent ? 'rgba(108,92,231,0.15)' : 'rgba(0,184,148,0.15)',
+              color: isAgent ? '#A29BFE' : '#55EFC4',
+              border: `1px solid ${isAgent ? 'rgba(108,92,231,0.25)' : 'rgba(0,184,148,0.25)'}`,
+            }}
+          >
+            {isAgent ? 'Agent' : 'Human'}
+          </span>
+          <span style={{ fontSize: 11, color: '#6B6B80' }}>
+            &#x2605; {trustScore}
           </span>
         </div>
-
-        <div className="flex items-center gap-2">
-          {/* Trust score bar */}
-          <div className="flex items-center gap-1">
-            <div className="h-1.5 w-14 overflow-hidden rounded-full bg-[#2A2A3E]">
-              <div
-                className={`h-full rounded-full ${trustColor} transition-all`}
-                style={{ width: `${Math.min(100, Math.max(0, trustScore))}%` }}
-              />
-            </div>
-            <span
-              className="text-xs text-[#8888AA]"
-              style={{ fontFamily: 'DM Mono, monospace' }}
-            >
-              {trustScore}
-            </span>
-          </div>
-
-          {/* Model info for agents */}
-          {isAgent && (modelProvider || modelName) && (
-            <span
-              className="text-xs text-[#8888AA]"
-              style={{ fontFamily: 'DM Sans, sans-serif' }}
-            >
-              {[modelProvider, modelName].filter(Boolean).join(' · ')}
-            </span>
-          )}
+        <div style={{ fontSize: 11, color: '#6B6B80', marginTop: 2 }}>
+          {isAgent
+            ? [modelName, modelProvider].filter(Boolean).join(' \u00B7 ') || 'AI Agent'
+            : 'Verified researcher'}
         </div>
       </div>
     </div>

@@ -6,194 +6,226 @@ interface Community {
   memberCount: number
 }
 
-interface Agent {
-  id: string
-  displayName: string
-  modelProvider?: string
-  reputation: number
-  avatarUrl?: string
-}
-
-interface PlatformStats {
-  totalPosts: number
-  totalAgents: number
-  totalCommunities: number
-}
-
 interface SidebarProps {
   communities?: Community[]
-  trendingAgents?: Agent[]
-  stats?: PlatformStats
 }
 
-function StatNumber({ value }: { value: number }) {
-  return (
-    <span style={{ fontFamily: 'DM Mono, monospace' }}>
-      {value.toLocaleString()}
-    </span>
-  )
+// Community metadata for icons and colors (concept-matching)
+const COMMUNITY_META: Record<string, { icon: string; color: string }> = {
+  quantum: { icon: '\u269B\uFE0F', color: '#6C5CE7' },
+  climate: { icon: '\uD83C\uDF0D', color: '#00B894' },
+  osai: { icon: '\uD83E\uDDE0', color: '#E17055' },
+  crypto: { icon: '\uD83D\uDD10', color: '#FDCB6E' },
+  space: { icon: '\uD83D\uDE80', color: '#74B9FF' },
+  biotech: { icon: '\uD83E\uDDEC', color: '#A29BFE' },
 }
 
-export default function Sidebar({ communities = [], trendingAgents = [], stats }: SidebarProps) {
+const DEFAULT_META = { icon: '\uD83D\uDCAC', color: '#A0A0B8' }
+
+// Hardcoded trending agents (not yet from API)
+const TRENDING_AGENTS = [
+  { name: 'arxiv-synthesizer', model: 'Claude Opus 4', trust: 94, avatar: '\uD83E\uDD16' },
+  { name: 'climate-monitor-v3', model: 'Gemini 2.5', trust: 91, avatar: '\uD83C\uDF21\uFE0F' },
+  { name: 'code-reviewer-pro', model: 'GPT-5', trust: 89, avatar: '\uD83D\uDCBB' },
+  { name: 'legal-analyst-eu', model: 'Claude Sonnet 4.6', trust: 87, avatar: '\u2696\uFE0F' },
+]
+
+// Hardcoded platform stats (not yet from API)
+const PLATFORM_STATS = [
+  { label: 'Agents', value: '24.8k', color: '#A29BFE' },
+  { label: 'Humans', value: '18.2k', color: '#55EFC4' },
+  { label: 'Communities', value: '1,240', color: '#FDCB6E' },
+  { label: 'Posts/day', value: '12.4k', color: '#74B9FF' },
+]
+
+function formatNum(n: number): string {
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k'
+  return String(n)
+}
+
+// Estimate agent count as ~30% of members for display
+function estimateAgents(memberCount: number): number {
+  return Math.round(memberCount * 0.3)
+}
+
+export default function Sidebar({ communities = [] }: SidebarProps) {
   return (
-    <aside className="flex w-72 shrink-0 flex-col gap-4">
+    <aside className="w-[280px] shrink-0">
       {/* Communities */}
-      <div className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-4">
+      <div
+        style={{
+          background: 'rgba(255,255,255,0.02)',
+          borderRadius: 14,
+          padding: 16,
+          border: '1px solid rgba(255,255,255,0.05)',
+          marginBottom: 16,
+        }}
+      >
         <h3
-          className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#8888AA]"
-          style={{ fontFamily: 'Outfit, sans-serif' }}
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            color: '#A0A0B8',
+            textTransform: 'uppercase',
+            letterSpacing: 1,
+            marginBottom: 12,
+            fontFamily: "'DM Sans', sans-serif",
+          }}
         >
-          Top Communities
+          Communities
         </h3>
-
-        <ul className="flex flex-col gap-1">
-          {communities.length === 0 && (
-            <li className="text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-              No communities yet
-            </li>
-          )}
-          {communities.map((c) => (
-            <li key={c.slug}>
-              <Link
-                to={`/a/${c.slug}`}
-                className="flex items-center justify-between rounded-lg px-2 py-1.5 transition hover:bg-[#1A1A2E]"
+        {communities.length === 0 && (
+          <div
+            className="text-sm"
+            style={{ color: '#6B6B80', fontFamily: "'DM Sans', sans-serif" }}
+          >
+            No communities yet
+          </div>
+        )}
+        {communities.map((c) => {
+          const meta = COMMUNITY_META[c.slug] ?? DEFAULT_META
+          const agentCount = estimateAgents(c.memberCount)
+          return (
+            <Link
+              key={c.slug}
+              to={`/a/${c.slug}`}
+              className="no-underline"
+              style={{ textDecoration: 'none' }}
+            >
+              <div
+                className="flex cursor-pointer items-center gap-2.5"
+                style={{
+                  padding: '8px 0',
+                  borderBottom: '1px solid rgba(255,255,255,0.03)',
+                }}
               >
-                <span
-                  className="text-sm font-medium text-[#A29BFE]"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
-                >
-                  a/{c.slug}
-                </span>
-                <span
-                  className="text-xs text-[#8888AA]"
-                  style={{ fontFamily: 'DM Mono, monospace' }}
-                >
-                  {c.memberCount.toLocaleString()}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        <Link
-          to="/create-community"
-          className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#6C5CE7] px-4 py-2 text-sm font-medium text-[#A29BFE] transition hover:bg-[#6C5CE7]/10"
-          style={{ fontFamily: 'DM Sans, sans-serif' }}
-        >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Create Community
-        </Link>
+                <span style={{ fontSize: 20 }}>{meta.icon}</span>
+                <div className="flex-1">
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: '#E0E0F0',
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    a/{c.slug}
+                  </div>
+                  <div style={{ fontSize: 11, color: '#6B6B80' }}>
+                    {formatNum(c.memberCount)} members &middot; {formatNum(agentCount)} agents
+                  </div>
+                </div>
+              </div>
+            </Link>
+          )
+        })}
       </div>
 
       {/* Trending Agents */}
-      <div className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-4">
+      <div
+        style={{
+          background: 'rgba(255,255,255,0.02)',
+          borderRadius: 14,
+          padding: 16,
+          border: '1px solid rgba(255,255,255,0.05)',
+          marginBottom: 16,
+        }}
+      >
         <h3
-          className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#8888AA]"
-          style={{ fontFamily: 'Outfit, sans-serif' }}
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            color: '#A0A0B8',
+            textTransform: 'uppercase',
+            letterSpacing: 1,
+            marginBottom: 12,
+            fontFamily: "'DM Sans', sans-serif",
+          }}
         >
           Trending Agents
         </h3>
-
-        <ul className="flex flex-col gap-2">
-          {trendingAgents.length === 0 && (
-            <li className="text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-              No agents yet
-            </li>
-          )}
-          {trendingAgents.slice(0, 5).map((agent, idx) => (
-            <li key={agent.id} className="flex items-center gap-2.5">
-              {/* Rank */}
-              <span
-                className="w-4 shrink-0 text-xs text-[#8888AA]"
-                style={{ fontFamily: 'DM Mono, monospace' }}
+        {TRENDING_AGENTS.map((a, i) => (
+          <div
+            key={a.name}
+            className="flex items-center gap-2.5"
+            style={{
+              padding: '8px 0',
+              borderBottom: '1px solid rgba(255,255,255,0.03)',
+            }}
+          >
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: '#6C5CE7',
+                width: 20,
+                textAlign: 'center',
+                fontFamily: "'DM Mono', monospace",
+              }}
+            >
+              #{i + 1}
+            </span>
+            <span style={{ fontSize: 16 }}>{a.avatar}</span>
+            <div className="flex-1">
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: '#E0E0F0',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
               >
-                {idx + 1}
-              </span>
-
-              {/* Avatar */}
-              <div className="h-7 w-7 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-[#6C5CE7] to-[#00B894]">
-                {agent.avatarUrl ? (
-                  <img
-                    src={agent.avatarUrl}
-                    alt={agent.displayName}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-white">
-                    {agent.displayName[0]?.toUpperCase() ?? 'A'}
-                  </div>
-                )}
+                {a.name}
               </div>
-
-              {/* Info */}
-              <div className="flex min-w-0 flex-1 flex-col">
-                <span
-                  className="truncate text-sm font-medium text-[#E0E0F0]"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
-                >
-                  {agent.displayName}
-                </span>
-                {agent.modelProvider && (
-                  <span
-                    className="text-xs text-[#8888AA]"
-                    style={{ fontFamily: 'DM Sans, sans-serif' }}
-                  >
-                    {agent.modelProvider}
-                  </span>
-                )}
+              <div style={{ fontSize: 11, color: '#6B6B80' }}>
+                {a.model} &middot; &#x2605;{a.trust}
               </div>
-
-              {/* Reputation */}
-              <span
-                className="shrink-0 text-xs font-medium text-[#55EFC4]"
-                style={{ fontFamily: 'DM Mono, monospace' }}
-              >
-                {agent.reputation.toLocaleString()}
-              </span>
-            </li>
-          ))}
-        </ul>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Platform Stats */}
-      {stats && (
-        <div className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-4">
-          <h3
-            className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#8888AA]"
-            style={{ fontFamily: 'Outfit, sans-serif' }}
-          >
-            Platform Stats
-          </h3>
-          <dl className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <dt className="text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-                Total Posts
-              </dt>
-              <dd className="text-sm font-medium text-[#E0E0F0]">
-                <StatNumber value={stats.totalPosts} />
-              </dd>
+      <div
+        style={{
+          background:
+            'linear-gradient(135deg, rgba(108,92,231,0.08) 0%, rgba(0,184,148,0.05) 100%)',
+          borderRadius: 14,
+          padding: 16,
+          border: '1px solid rgba(108,92,231,0.12)',
+        }}
+      >
+        <h3
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            color: '#A0A0B8',
+            textTransform: 'uppercase',
+            letterSpacing: 1,
+            marginBottom: 14,
+            fontFamily: "'DM Sans', sans-serif",
+          }}
+        >
+          Platform Stats
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          {PLATFORM_STATS.map((s) => (
+            <div key={s.label}>
+              <div
+                style={{
+                  fontSize: 20,
+                  fontWeight: 700,
+                  color: s.color,
+                  fontFamily: "'DM Mono', monospace",
+                }}
+              >
+                {s.value}
+              </div>
+              <div style={{ fontSize: 11, color: '#6B6B80' }}>{s.label}</div>
             </div>
-            <div className="flex items-center justify-between">
-              <dt className="text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-                Agents
-              </dt>
-              <dd className="text-sm font-medium text-[#E0E0F0]">
-                <StatNumber value={stats.totalAgents} />
-              </dd>
-            </div>
-            <div className="flex items-center justify-between">
-              <dt className="text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-                Communities
-              </dt>
-              <dd className="text-sm font-medium text-[#E0E0F0]">
-                <StatNumber value={stats.totalCommunities} />
-              </dd>
-            </div>
-          </dl>
+          ))}
         </div>
-      )}
+      </div>
     </aside>
   )
 }
