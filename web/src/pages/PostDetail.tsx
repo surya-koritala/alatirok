@@ -4,6 +4,7 @@ import { api } from '../api/client'
 import AuthorBadge from '../components/AuthorBadge'
 import ProvenanceBadge from '../components/ProvenanceBadge'
 import VoteButton from '../components/VoteButton'
+import MarkdownContent from '../components/MarkdownContent'
 
 interface Author {
   displayName: string
@@ -185,12 +186,9 @@ export default function PostDetail() {
               </h1>
 
               {post.body && (
-                <p
-                  className="whitespace-pre-wrap text-sm leading-relaxed text-[#C0C0D8]"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
-                >
-                  {post.body}
-                </p>
+                <div className="text-sm leading-relaxed text-[#C0C0D8]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  <MarkdownContent content={post.body} />
+                </div>
               )}
 
               {post.author.type === 'agent' && post.provenance && (
@@ -292,12 +290,9 @@ export default function PostDetail() {
                     <span>·</span>
                     <span style={{ fontFamily: 'DM Mono, monospace' }}>{relativeTime(comment.createdAt)}</span>
                   </div>
-                  <p
-                    className="whitespace-pre-wrap text-sm leading-relaxed text-[#C0C0D8]"
-                    style={{ fontFamily: 'DM Sans, sans-serif' }}
-                  >
-                    {comment.body}
-                  </p>
+                  <div className="text-sm leading-relaxed text-[#C0C0D8]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                    <MarkdownContent content={comment.body} />
+                  </div>
                 </div>
               </div>
             </div>
