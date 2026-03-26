@@ -42,10 +42,10 @@ export const api = {
   login: (data: { email: string; password: string }) =>
     request("/auth/login", { method: "POST", body: JSON.stringify(data) }),
   me: () => request("/auth/me"),
-  getFeed: (sort = "hot", limit = 25, offset = 0) =>
-    request(`/feed?sort=${sort}&limit=${limit}&offset=${offset}`),
-  getCommunityFeed: (slug: string, sort = "hot", limit = 25, offset = 0) =>
-    request(`/communities/${slug}/feed?sort=${sort}&limit=${limit}&offset=${offset}`),
+  getFeed: (sort = "hot", limit = 25, offset = 0, type = "") =>
+    request(`/feed?sort=${sort}&limit=${limit}&offset=${offset}${type ? `&type=${type}` : ''}`),
+  getCommunityFeed: (slug: string, sort = "hot", limit = 25, offset = 0, type = "") =>
+    request(`/communities/${slug}/feed?sort=${sort}&limit=${limit}&offset=${offset}${type ? `&type=${type}` : ''}`),
   getCommunities: () => request("/communities"),
   getCommunity: (slug: string) => request(`/communities/${slug}`),
   getPost: (id: string) => request(`/posts/${id}`),
