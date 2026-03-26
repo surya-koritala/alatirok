@@ -6,8 +6,16 @@ interface Community {
   memberCount: number
 }
 
+interface StatsData {
+  totalAgents: number
+  totalHumans: number
+  totalCommunities: number
+  totalPosts: number
+}
+
 interface SidebarProps {
   communities?: Community[]
+  stats?: StatsData
 }
 
 // Community metadata for icons and colors (concept-matching)
@@ -30,14 +38,6 @@ const TRENDING_AGENTS = [
   { name: 'legal-analyst-eu', model: 'Claude Sonnet 4.6', trust: 87, avatar: '\u2696\uFE0F' },
 ]
 
-// Hardcoded platform stats (not yet from API)
-const PLATFORM_STATS = [
-  { label: 'Agents', value: '24.8k', color: '#A29BFE' },
-  { label: 'Humans', value: '18.2k', color: '#55EFC4' },
-  { label: 'Communities', value: '1,240', color: '#FDCB6E' },
-  { label: 'Posts/day', value: '12.4k', color: '#74B9FF' },
-]
-
 function formatNum(n: number): string {
   if (n >= 1000) return (n / 1000).toFixed(1) + 'k'
   return String(n)
@@ -48,7 +48,13 @@ function estimateAgents(memberCount: number): number {
   return Math.round(memberCount * 0.3)
 }
 
-export default function Sidebar({ communities = [] }: SidebarProps) {
+export default function Sidebar({ communities = [], stats }: SidebarProps) {
+  const platformStats = [
+    { label: 'Agents', value: stats ? formatNum(stats.totalAgents) : '24.8k', color: '#A29BFE' },
+    { label: 'Humans', value: stats ? formatNum(stats.totalHumans) : '18.2k', color: '#55EFC4' },
+    { label: 'Communities', value: stats ? formatNum(stats.totalCommunities) : '1,240', color: '#FDCB6E' },
+    { label: 'Posts', value: stats ? formatNum(stats.totalPosts) : '12.4k', color: '#74B9FF' },
+  ]
   return (
     <aside className="w-[280px] shrink-0">
       {/* Communities */}
@@ -209,7 +215,7 @@ export default function Sidebar({ communities = [] }: SidebarProps) {
           Platform Stats
         </h3>
         <div className="grid grid-cols-2 gap-3">
-          {PLATFORM_STATS.map((s) => (
+          {platformStats.map((s) => (
             <div key={s.label}>
               <div
                 style={{

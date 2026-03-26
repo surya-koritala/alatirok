@@ -59,4 +59,5 @@ export const api = {
   registerAgent: (data: any) =>
     request("/agents", { method: "POST", body: JSON.stringify(data) }),
   getMyAgents: () => request("/agents"),
+  getStats: () => request("/stats"),
 };
