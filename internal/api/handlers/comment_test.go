@@ -43,7 +43,7 @@ func createTestPost(t *testing.T, posts *repository.PostRepo, communityID, autho
 		AuthorType:  models.ParticipantHuman,
 		Title:       "Test Post",
 		Body:        "Test post body",
-		ContentType: models.ContentText,
+		PostType: models.PostTypeText,
 	})
 	if err != nil {
 		t.Fatalf("creating test post: %v", err)

@@ -60,7 +60,7 @@ func TestPostRepo_CreateAndGetByID(t *testing.T) {
 		Title:       "Hello World",
 		Body:        "This is the post body",
 		URL:         "https://example.com",
-		ContentType: models.ContentLink,
+		PostType: models.PostTypeLink,
 	}
 
 	created, err := postRepo.Create(ctx, post)
@@ -74,8 +74,8 @@ func TestPostRepo_CreateAndGetByID(t *testing.T) {
 	if created.Title != "Hello World" {
 		t.Errorf("expected title 'Hello World', got %q", created.Title)
 	}
-	if created.ContentType != models.ContentLink {
-		t.Errorf("expected content_type 'link', got %q", created.ContentType)
+	if created.PostType != models.PostTypeLink {
+		t.Errorf("expected post_type 'link', got %q", created.PostType)
 	}
 	if created.URL != "https://example.com" {
 		t.Errorf("expected url 'https://example.com', got %q", created.URL)
@@ -102,7 +102,7 @@ func TestPostRepo_CreateAndGetByID(t *testing.T) {
 	}
 }
 
-func TestPostRepo_Create_DefaultContentType(t *testing.T) {
+func TestPostRepo_Create_DefaultPostType(t *testing.T) {
 	pool := database.TestPool(t)
 	database.CleanupTables(t, pool, "posts", "communities", "participants")
 
@@ -118,17 +118,17 @@ func TestPostRepo_Create_DefaultContentType(t *testing.T) {
 		CommunityID: community.ID,
 		AuthorID:    owner.ID,
 		AuthorType:  models.ParticipantHuman,
-		Title:       "Default Content Type",
-		Body:        "No content_type set",
-		// ContentType intentionally empty
+		Title:       "Default Post Type",
+		Body:        "No post_type set",
+		// PostType intentionally empty
 	}
 
 	created, err := postRepo.Create(ctx, post)
 	if err != nil {
 		t.Fatalf("Create: %v", err)
 	}
-	if created.ContentType != models.ContentText {
-		t.Errorf("expected default content_type 'text', got %q", created.ContentType)
+	if created.PostType != models.PostTypeText {
+		t.Errorf("expected default post_type 'text', got %q", created.PostType)
 	}
 }
 
@@ -150,7 +150,7 @@ func TestPostRepo_ListByCommunity_SortNew(t *testing.T) {
 		createTestPost(t, postRepo, ctx, community.ID, owner.ID, title)
 	}
 
-	posts, total, err := postRepo.ListByCommunity(ctx, community.ID, "new", 10, 0)
+	posts, total, err := postRepo.ListByCommunity(ctx, community.ID, "new", "", 10, 0)
 	if err != nil {
 		t.Fatalf("ListByCommunity (new): %v", err)
 	}
@@ -186,7 +186,7 @@ func TestPostRepo_ListByCommunity_SortTop(t *testing.T) {
 		createTestPost(t, postRepo, ctx, community.ID, owner.ID, title)
 	}
 
-	posts, total, err := postRepo.ListByCommunity(ctx, community.ID, "top", 10, 0)
+	posts, total, err := postRepo.ListByCommunity(ctx, community.ID, "top", "", 10, 0)
 	if err != nil {
 		t.Fatalf("ListByCommunity (top): %v", err)
 	}
@@ -221,7 +221,7 @@ func TestPostRepo_ListGlobal(t *testing.T) {
 	createTestPost(t, postRepo, ctx, commA.ID, owner.ID, "Another Post in A")
 	createTestPost(t, postRepo, ctx, commB.ID, owner.ID, "Post in B")
 
-	posts, total, err := postRepo.ListGlobal(ctx, "new", 10, 0)
+	posts, total, err := postRepo.ListGlobal(ctx, "new", "", 10, 0)
 	if err != nil {
 		t.Fatalf("ListGlobal: %v", err)
 	}
@@ -245,5 +245,47 @@ func TestPostRepo_ListGlobal(t *testing.T) {
 	}
 	if !communityIDs[commB.ID] {
 		t.Error("expected posts from community B in global list")
+	}
+}
+
+func TestPostRepo_CreateWithMetadata(t *testing.T) {
+	pool := database.TestPool(t)
+	database.CleanupTables(t, pool, "posts", "communities", "participants")
+
+	pRepo := repository.NewParticipantRepo(pool)
+	cRepo := repository.NewCommunityRepo(pool)
+	postRepo := repository.NewPostRepo(pool)
+	ctx := context.Background()
+
+	owner := createTestOwner(t, pRepo, ctx, "metadata-owner-1")
+	community := createTestCommunity(t, cRepo, ctx, owner.ID, "metadata-comm-1")
+
+	post, err := postRepo.Create(ctx, &models.Post{
+		CommunityID: community.ID,
+		AuthorID:    owner.ID,
+		AuthorType:  models.ParticipantHuman,
+		Title:       "How does quantum error correction work?",
+		Body:        "Looking for a technical explanation",
+		PostType:    models.PostTypeQuestion,
+		Metadata:    map[string]any{"expected_format": "technical"},
+	})
+	if err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	if post.PostType != models.PostTypeQuestion {
+		t.Errorf("expected post_type question, got %s", post.PostType)
+	}
+	// Verify metadata round-trip via GetByID
+	got, err := postRepo.GetByID(ctx, post.ID)
+	if err != nil {
+		t.Fatalf("GetByID: %v", err)
+	}
+	if got.PostType != models.PostTypeQuestion {
+		t.Errorf("GetByID: expected post_type question, got %s", got.PostType)
+	}
+	if got.Metadata == nil {
+		t.Error("expected non-nil metadata from GetByID")
+	} else if got.Metadata["expected_format"] != "technical" {
+		t.Errorf("expected metadata[expected_format]=technical, got %v", got.Metadata["expected_format"])
 	}
 }

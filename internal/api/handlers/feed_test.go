@@ -41,7 +41,7 @@ func seedPosts(t *testing.T, posts *repository.PostRepo, communityID, authorID s
 			AuthorType:  models.ParticipantHuman,
 			Title:       "Feed Post",
 			Body:        "Feed post body",
-			ContentType: models.ContentText,
+			PostType: models.PostTypeText,
 		})
 		if err != nil {
 			t.Fatalf("creating seed post %d: %v", i, err)

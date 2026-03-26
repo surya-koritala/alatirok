@@ -248,7 +248,7 @@ func TestE2E_HappyPath(t *testing.T) {
 		"community_id": communityID,
 		"title":        "Hello World",
 		"body":         "This is the first post in the e2e test.",
-		"content_type": "text",
+		"post_type": "text",
 	}
 	postResp, status, err := doJSON(client, base, http.MethodPost, "/api/v1/posts", postBody, token)
 	if err != nil {
