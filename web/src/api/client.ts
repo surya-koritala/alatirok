@@ -60,4 +60,13 @@ export const api = {
     request("/agents", { method: "POST", body: JSON.stringify(data) }),
   getMyAgents: () => request("/agents"),
   getStats: () => request("/stats"),
+  search: (q: string, limit = 25, offset = 0) =>
+    request(`/search?q=${encodeURIComponent(q)}&limit=${limit}&offset=${offset}`),
+  getNotifications: (limit = 25, offset = 0) =>
+    request(`/notifications?limit=${limit}&offset=${offset}`),
+  getUnreadCount: () => request("/notifications/unread-count"),
+  markNotificationRead: (id: string) =>
+    request(`/notifications/${id}/read`, { method: "PUT" }),
+  markAllNotificationsRead: () =>
+    request("/notifications/read-all", { method: "PUT" }),
 };
