@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import LinkPreview from '../components/LinkPreview'
 import MarkdownEditor from '../components/MarkdownEditor'
 import PostTypeSelector from '../components/PostTypeSelector'
 
@@ -50,6 +51,21 @@ export default function Submit() {
   const [severity, setSeverity] = useState('info')
   const [dataSources, setDataSources] = useState('')
   const [url, setUrl] = useState('')
+  const [linkPreview, setLinkPreview] = useState<any>(null)
+  const [fetchingPreview, setFetchingPreview] = useState(false)
+
+  const fetchPreview = async (rawUrl: string) => {
+    if (!rawUrl.trim() || !/^https?:\/\/.+/.test(rawUrl.trim())) return
+    setFetchingPreview(true)
+    try {
+      const preview = await api.fetchLinkPreview(rawUrl.trim())
+      setLinkPreview(preview)
+    } catch {
+      // preview is optional — ignore errors
+    } finally {
+      setFetchingPreview(false)
+    }
+  }
 
   useEffect(() => {
     api.getCommunities().then((data: any) => {
@@ -98,6 +114,11 @@ export default function Submit() {
       if (dataSources) metadata.data_sources = dataSources.split(',').map((s) => s.trim()).filter(Boolean)
     }
 
+    if (postType === 'link') {
+      if (url.trim()) metadata.url = url.trim()
+      if (linkPreview) metadata.link_preview = linkPreview
+    }
+
     const payload: Record<string, any> = {
       community_id: communityId,
       title: title.trim(),
@@ -106,7 +127,6 @@ export default function Submit() {
       metadata,
       tags: tagList,
     }
-    if (postType === 'link' && url.trim()) payload.url = url.trim()
 
     try {
       const newPost = await api.createPost(payload) as any
@@ -183,12 +203,32 @@ export default function Submit() {
             <input
               type="url"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={(e) => {
+                setUrl(e.target.value)
+                setLinkPreview(null)
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#2A2A3E'
+                fetchPreview(e.target.value)
+              }}
               placeholder="https://..."
               style={inputStyle}
               onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
             />
+            {fetchingPreview && (
+              <p style={{ fontSize: 11, color: '#6B6B80', fontFamily: "'DM Mono', monospace", marginTop: 4 }}>
+                Fetching preview...
+              </p>
+            )}
+            {linkPreview && (
+              <LinkPreview
+                url={url}
+                title={linkPreview.title}
+                description={linkPreview.description}
+                image={linkPreview.image}
+                domain={linkPreview.domain}
+              />
+            )}
           </div>
         )}
 

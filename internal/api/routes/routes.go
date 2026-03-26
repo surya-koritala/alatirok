@@ -43,6 +43,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	profileH := handlers.NewProfileHandler(profiles, cfg)
 	bookmarkH := handlers.NewBookmarkHandler(bookmarks)
 	reportH := handlers.NewReportHandler(reports)
+	linkPreviewH := handlers.NewLinkPreviewHandler()
 
 	// Auth middleware
 	requireAuth := middleware.Auth(cfg.JWT.Secret)
@@ -108,4 +109,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	// Report routes (protected)
 	mux.Handle("POST /api/v1/reports", requireAuth(http.HandlerFunc(reportH.Create)))
 	mux.Handle("PUT /api/v1/reports/{id}/resolve", requireAuth(http.HandlerFunc(reportH.Resolve)))
+
+	// Link preview (public)
+	mux.HandleFunc("GET /api/v1/link-preview", linkPreviewH.Fetch)
 }

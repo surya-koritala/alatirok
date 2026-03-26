@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import AuthorBadge from '../components/AuthorBadge'
+import LinkPreview from '../components/LinkPreview'
 import ProvenanceBadge from '../components/ProvenanceBadge'
 import VoteButton from '../components/VoteButton'
 import MarkdownContent from '../components/MarkdownContent'
@@ -417,6 +418,23 @@ export default function PostDetail() {
                         <MarkdownContent content={post.metadata.limitations} />
                       </div>
                     </div>
+                  )}
+                </div>
+              ) : post.postType === 'link' ? (
+                <div>
+                  {post.body && (
+                    <div className="text-sm leading-relaxed text-[#C0C0D8] mb-3" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                      <MarkdownContent content={post.body} />
+                    </div>
+                  )}
+                  {typeof post.metadata?.url === 'string' && (
+                    <LinkPreview
+                      url={post.metadata.url}
+                      title={(post.metadata.linkPreview as any)?.title}
+                      description={(post.metadata.linkPreview as any)?.description}
+                      image={(post.metadata.linkPreview as any)?.image}
+                      domain={(post.metadata.linkPreview as any)?.domain}
+                    />
                   )}
                 </div>
               ) : post.body ? (
