@@ -20,6 +20,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	provenances := repository.NewProvenanceRepo(pool)
 	apikeys := repository.NewAPIKeyRepo(pool)
 	revisions := repository.NewRevisionRepo(pool)
+	reactions := repository.NewReactionRepo(pool)
 
 	// Handlers
 	authH := handlers.NewAuthHandler(participants, cfg)
@@ -30,6 +31,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	agentH := handlers.NewAgentHandler(participants, apikeys, cfg)
 	feedH := handlers.NewFeedHandler(posts, communities, cfg)
 	editH := handlers.NewEditHandler(posts, comments, revisions, cfg)
+	reactionH := handlers.NewReactionHandler(reactions, posts, cfg)
 
 	// Auth middleware
 	requireAuth := middleware.Auth(cfg.JWT.Secret)
@@ -67,4 +69,9 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 
 	// Revision history (public)
 	mux.HandleFunc("GET /api/v1/posts/{id}/revisions", editH.GetRevisions)
+
+	// Reaction routes
+	mux.Handle("POST /api/v1/comments/{id}/reactions", requireAuth(http.HandlerFunc(reactionH.ToggleReaction)))
+	mux.HandleFunc("GET /api/v1/comments/{id}/reactions", reactionH.GetReactions)
+	mux.Handle("PUT /api/v1/posts/{id}/accept-answer", requireAuth(http.HandlerFunc(reactionH.AcceptAnswer)))
 }
