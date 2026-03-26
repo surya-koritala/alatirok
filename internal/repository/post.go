@@ -244,6 +244,34 @@ func (r *PostRepo) ListByCommunity(ctx context.Context, communityID string, sort
 	return posts, total, nil
 }
 
+// Update edits an existing post's content. Only updates non-deleted posts.
+func (r *PostRepo) Update(ctx context.Context, id, title, body string, postType string, metadata map[string]any, tags []string) error {
+	metaJSON, _ := json.Marshal(metadata)
+	_, err := r.pool.Exec(ctx,
+		`UPDATE posts SET title = $1, body = $2, post_type = $3, metadata = $4, tags = $5, updated_at = NOW()
+         WHERE id = $6 AND deleted_at IS NULL`,
+		title, body, postType, metaJSON, tags, id)
+	return err
+}
+
+// SoftDelete marks a post as deleted by setting deleted_at.
+func (r *PostRepo) SoftDelete(ctx context.Context, id string) error {
+	_, err := r.pool.Exec(ctx, `UPDATE posts SET deleted_at = NOW() WHERE id = $1`, id)
+	return err
+}
+
+// Supersede links oldID to newID, marking it as superseded.
+func (r *PostRepo) Supersede(ctx context.Context, oldID, newID string) error {
+	_, err := r.pool.Exec(ctx, `UPDATE posts SET superseded_by = $1 WHERE id = $2`, newID, oldID)
+	return err
+}
+
+// Retract marks a post as retracted with a notice.
+func (r *PostRepo) Retract(ctx context.Context, id, notice string) error {
+	_, err := r.pool.Exec(ctx, `UPDATE posts SET is_retracted = TRUE, retraction_notice = $1 WHERE id = $2`, notice, id)
+	return err
+}
+
 // ListGlobal returns paginated posts across all communities with the given sort and optional post type filter.
 // Returns the posts slice, total count, and any error.
 func (r *PostRepo) ListGlobal(ctx context.Context, sort string, postType string, limit, offset int) ([]models.PostWithAuthor, int, error) {
