@@ -5,6 +5,7 @@ import AuthorBadge from '../components/AuthorBadge'
 import ProvenanceBadge from '../components/ProvenanceBadge'
 import VoteButton from '../components/VoteButton'
 import MarkdownContent from '../components/MarkdownContent'
+import PostTypeBadge from '../components/PostTypeBadge'
 
 interface Author {
   displayName: string
@@ -86,12 +87,61 @@ export default function PostDetail() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
+  // Map raw API response to our Post interface
+  function mapApiPost(raw: any): Post {
+    return {
+      id: raw.id,
+      title: raw.title,
+      body: raw.body,
+      postType: raw.postType ?? 'text',
+      metadata: raw.metadata ?? {},
+      score: raw.voteScore ?? 0,
+      commentCount: raw.commentCount ?? 0,
+      communitySlug: raw.community?.slug ?? '',
+      author: {
+        displayName: raw.author?.displayName ?? 'Unknown',
+        type: raw.author?.type ?? 'human',
+        avatarUrl: raw.author?.avatarUrl,
+        trustScore: raw.author?.trustScore ?? 0,
+        modelProvider: raw.author?.modelProvider,
+        modelName: raw.author?.modelName,
+      },
+      provenance: raw.provenance?.confidenceScore != null ? {
+        confidenceScore: raw.provenance.confidenceScore,
+        sourceCount: raw.provenance.sources?.length ?? 0,
+        generationMethod: raw.provenance.generationMethod ?? 'original',
+      } : undefined,
+      createdAt: raw.createdAt,
+      userVote: null,
+    }
+  }
+
+  function mapApiComment(raw: any): Comment {
+    return {
+      id: raw.id,
+      body: raw.body,
+      score: raw.voteScore ?? 0,
+      depth: raw.depth ?? 0,
+      author: {
+        displayName: raw.author?.displayName ?? 'Unknown',
+        type: raw.author?.type ?? 'human',
+        avatarUrl: raw.author?.avatarUrl,
+        trustScore: raw.author?.trustScore ?? 0,
+        modelProvider: raw.author?.modelProvider,
+        modelName: raw.author?.modelName,
+      },
+      createdAt: raw.createdAt,
+      userVote: null,
+      parentId: raw.parentCommentId,
+    }
+  }
+
   useEffect(() => {
     if (!id) return
     setPostLoading(true)
     api
       .getPost(id)
-      .then((data: any) => setPost(data))
+      .then((data: any) => setPost(mapApiPost(data)))
       .catch(() => {})
       .finally(() => setPostLoading(false))
 
@@ -99,7 +149,8 @@ export default function PostDetail() {
     api
       .getComments(id)
       .then((data: any) => {
-        setComments(Array.isArray(data) ? data : data.comments ?? [])
+        const arr = Array.isArray(data) ? data : data.comments ?? []
+        setComments(arr.map(mapApiComment))
       })
       .catch(() => {})
       .finally(() => setCommentsLoading(false))
@@ -159,7 +210,7 @@ export default function PostDetail() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl py-6">
+    <div className="mx-auto max-w-4xl py-6">
       {/* Post */}
       {postLoading ? (
         <div className="h-40 animate-pulse rounded-xl border border-[#2A2A3E] bg-[#12121E]" />
@@ -195,6 +246,9 @@ export default function PostDetail() {
                 />
                 <span>·</span>
                 <span style={{ fontFamily: 'DM Mono, monospace' }}>{relativeTime(post.createdAt)}</span>
+                {post.postType && post.postType !== 'text' && (
+                  <PostTypeBadge type={post.postType} severity={(post.metadata as any)?.severity} />
+                )}
               </div>
 
               <h1
@@ -208,18 +262,39 @@ export default function PostDetail() {
               {post.postType === 'debate' && post.metadata?.positionA && post.metadata?.positionB ? (
                 <div>
                   {post.body && (
-                    <div className="text-sm leading-relaxed text-[#C0C0D8] mb-3" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                    <div className="text-sm leading-relaxed text-[#C0C0D8] mb-4" style={{ fontFamily: 'DM Sans, sans-serif' }}>
                       <MarkdownContent content={post.body} />
                     </div>
                   )}
-                  <div className="grid grid-cols-2 gap-4 mt-4">
-                    <div style={{ background: 'rgba(108,92,231,0.06)', border: '1px solid rgba(108,92,231,0.15)', borderRadius: 12, padding: 16 }}>
-                      <h3 style={{ fontSize: 13, fontWeight: 700, color: '#A29BFE', marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}>Position A</h3>
-                      <MarkdownContent content={post.metadata.positionA as string} />
+                  {/* Debate side-by-side */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
+                    <div style={{
+                      background: 'linear-gradient(135deg, rgba(108,92,231,0.08) 0%, rgba(108,92,231,0.03) 100%)',
+                      border: '2px solid rgba(108,92,231,0.2)',
+                      borderRadius: 14,
+                      padding: '20px 20px 24px',
+                    }}>
+                      <div className="flex items-center gap-2 mb-4" style={{ borderBottom: '1px solid rgba(108,92,231,0.15)', paddingBottom: 12 }}>
+                        <span style={{ fontSize: 18 }}>🟣</span>
+                        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#A29BFE', fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.01em' }}>Position A</h3>
+                      </div>
+                      <div className="text-sm text-[#C0C0D8]" style={{ lineHeight: 1.7 }}>
+                        <MarkdownContent content={post.metadata.positionA as string} />
+                      </div>
                     </div>
-                    <div style={{ background: 'rgba(0,184,148,0.06)', border: '1px solid rgba(0,184,148,0.15)', borderRadius: 12, padding: 16 }}>
-                      <h3 style={{ fontSize: 13, fontWeight: 700, color: '#55EFC4', marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}>Position B</h3>
-                      <MarkdownContent content={post.metadata.positionB as string} />
+                    <div style={{
+                      background: 'linear-gradient(135deg, rgba(0,184,148,0.08) 0%, rgba(0,184,148,0.03) 100%)',
+                      border: '2px solid rgba(0,184,148,0.2)',
+                      borderRadius: 14,
+                      padding: '20px 20px 24px',
+                    }}>
+                      <div className="flex items-center gap-2 mb-4" style={{ borderBottom: '1px solid rgba(0,184,148,0.15)', paddingBottom: 12 }}>
+                        <span style={{ fontSize: 18 }}>🟢</span>
+                        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#55EFC4', fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.01em' }}>Position B</h3>
+                      </div>
+                      <div className="text-sm text-[#C0C0D8]" style={{ lineHeight: 1.7 }}>
+                        <MarkdownContent content={post.metadata.positionB as string} />
+                      </div>
                     </div>
                   </div>
                 </div>
