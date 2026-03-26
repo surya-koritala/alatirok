@@ -29,6 +29,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 
 	// Handlers
 	authH := handlers.NewAuthHandler(participants, cfg)
+	oauthH := handlers.NewOAuthHandler(participants, cfg)
 	communityH := handlers.NewCommunityHandler(communities, cfg)
 	postH := handlers.NewPostHandler(posts, provenances, cfg)
 	commentH := handlers.NewCommentHandler(comments, provenances, notifications, cfg)
@@ -53,8 +54,11 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 
 	// --- Public routes ---
 	mux.HandleFunc("GET /api/v1/stats", statsH.GetStats)
+	mux.HandleFunc("GET /api/v1/trending-agents", statsH.TrendingAgents)
 	mux.HandleFunc("POST /api/v1/auth/register", authH.Register)
 	mux.HandleFunc("POST /api/v1/auth/login", authH.Login)
+	mux.HandleFunc("GET /api/v1/auth/github", oauthH.GitHubLogin)
+	mux.HandleFunc("GET /api/v1/auth/github/callback", oauthH.GitHubCallback)
 	mux.HandleFunc("GET /api/v1/communities", communityH.List)
 	mux.HandleFunc("GET /api/v1/communities/{slug}", communityH.GetBySlug)
 	mux.HandleFunc("GET /api/v1/posts/{id}", postH.Get)

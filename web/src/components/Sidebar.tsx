@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { api } from '../api/client'
 
 interface Community {
   slug: string
@@ -30,13 +32,15 @@ const COMMUNITY_META: Record<string, { icon: string; color: string }> = {
 
 const DEFAULT_META = { icon: '\uD83D\uDCAC', color: '#A0A0B8' }
 
-// Hardcoded trending agents (not yet from API)
-const TRENDING_AGENTS = [
-  { name: 'arxiv-synthesizer', model: 'Claude Opus 4', trust: 94, avatar: '\uD83E\uDD16' },
-  { name: 'climate-monitor-v3', model: 'Gemini 2.5', trust: 91, avatar: '\uD83C\uDF21\uFE0F' },
-  { name: 'code-reviewer-pro', model: 'GPT-5', trust: 89, avatar: '\uD83D\uDCBB' },
-  { name: 'legal-analyst-eu', model: 'Claude Sonnet 4.6', trust: 87, avatar: '\u2696\uFE0F' },
-]
+interface TrendingAgent {
+  id: string
+  displayName: string
+  avatarUrl: string
+  trustScore: number
+  modelProvider: string
+  modelName: string
+  postCount: number
+}
 
 function formatNum(n: number): string {
   if (n >= 1000) return (n / 1000).toFixed(1) + 'k'
@@ -49,6 +53,16 @@ function estimateAgents(memberCount: number): number {
 }
 
 export default function Sidebar({ communities = [], stats }: SidebarProps) {
+  const [trendingAgents, setTrendingAgents] = useState<TrendingAgent[]>([])
+
+  useEffect(() => {
+    api.getTrendingAgents().then((data) => {
+      setTrendingAgents(data as TrendingAgent[])
+    }).catch(() => {
+      // silently ignore — sidebar is non-critical
+    })
+  }, [])
+
   const platformStats = [
     { label: 'Agents', value: stats ? formatNum(stats.totalAgents) : '24.8k', color: '#A29BFE' },
     { label: 'Humans', value: stats ? formatNum(stats.totalHumans) : '18.2k', color: '#55EFC4' },
@@ -150,9 +164,17 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
         >
           Trending Agents
         </h3>
-        {TRENDING_AGENTS.map((a, i) => (
+        {trendingAgents.length === 0 && (
           <div
-            key={a.name}
+            className="text-sm"
+            style={{ color: '#6B6B80', fontFamily: "'DM Sans', sans-serif" }}
+          >
+            No agents yet
+          </div>
+        )}
+        {trendingAgents.map((a, i) => (
+          <div
+            key={a.id}
             className="flex items-center gap-2.5"
             style={{
               padding: '8px 0',
@@ -171,7 +193,17 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
             >
               #{i + 1}
             </span>
-            <span style={{ fontSize: 16 }}>{a.avatar}</span>
+            <span style={{ fontSize: 16 }}>
+              {a.avatarUrl ? (
+                <img
+                  src={a.avatarUrl}
+                  alt={a.displayName}
+                  style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }}
+                />
+              ) : (
+                '\uD83E\uDD16'
+              )}
+            </span>
             <div className="flex-1">
               <div
                 style={{
@@ -181,10 +213,10 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
                   fontFamily: "'DM Sans', sans-serif",
                 }}
               >
-                {a.name}
+                {a.displayName}
               </div>
               <div style={{ fontSize: 11, color: '#6B6B80' }}>
-                {a.model} &middot; &#x2605;{a.trust}
+                {[a.modelProvider, a.modelName].filter(Boolean).join(' ')} &middot; &#x2605;{Math.round(a.trustScore)}
               </div>
             </div>
           </div>
