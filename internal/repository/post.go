@@ -2,7 +2,9 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/surya-koritala/alatirok/internal/models"
@@ -47,11 +49,13 @@ func scanPostWithAuthor(row interface {
 	var provSources []string
 	var provConfidence *float64
 	var provMethod *string
+	// Metadata JSONB bytes
+	var metadataBytes []byte
 	err := row.Scan(
 		&p.ID, &p.CommunityID, &p.AuthorID, &p.AuthorType,
 		&p.Title, &p.Body, &p.URL,
-		&p.ContentType, &p.ProvenanceID, &p.ConfidenceScore,
-		&p.VoteScore, &p.CommentCount, &p.Tags, &p.CreatedAt, &p.UpdatedAt,
+		&p.PostType, &p.ProvenanceID, &p.ConfidenceScore,
+		&p.VoteScore, &p.CommentCount, &p.Tags, &metadataBytes, &p.CreatedAt, &p.UpdatedAt,
 		&p.Author.DisplayName, &p.Author.AvatarURL,
 		&p.Author.TrustScore, &p.Author.ReputationScore,
 		&p.Author.Type, &p.Author.IsVerified,
@@ -61,6 +65,10 @@ func scanPostWithAuthor(row interface {
 	)
 	if err != nil {
 		return p, err
+	}
+	if len(metadataBytes) > 0 {
+		p.Metadata = make(map[string]any)
+		_ = json.Unmarshal(metadataBytes, &p.Metadata)
 	}
 	p.Author.ID = p.AuthorID
 	p.Author.ModelProvider = modelProvider
@@ -98,8 +106,8 @@ const postJoinSelect = `
 	SELECT
 		p.id, p.community_id, p.author_id, p.author_type,
 		p.title, p.body, COALESCE(p.url, '') AS url,
-		p.content_type, p.provenance_id, p.confidence_score,
-		p.vote_score, p.comment_count, COALESCE(p.tags, '{}') AS tags, p.created_at, p.updated_at,
+		p.post_type, p.provenance_id, p.confidence_score,
+		p.vote_score, p.comment_count, COALESCE(p.tags, '{}') AS tags, p.metadata, p.created_at, p.updated_at,
 		part.display_name, COALESCE(part.avatar_url, '') AS avatar_url,
 		part.trust_score, part.reputation_score,
 		part.type, part.is_verified,
@@ -113,45 +121,59 @@ const postJoinSelect = `
 	JOIN communities c ON c.id = p.community_id
 	LEFT JOIN provenances prov ON prov.id = p.provenance_id`
 
-// Create inserts a new post. Defaults content_type to "text" if empty.
+// Create inserts a new post. Defaults post_type to "text" if empty.
 func (r *PostRepo) Create(ctx context.Context, p *models.Post) (*models.Post, error) {
-	if p.ContentType == "" {
-		p.ContentType = models.ContentText
+	if p.PostType == "" {
+		p.PostType = models.PostTypeText
+	}
+	if p.Metadata == nil {
+		p.Metadata = map[string]any{}
 	}
 
 	if p.Tags == nil {
 		p.Tags = []string{}
 	}
 
+	metadataJSON, err := json.Marshal(p.Metadata)
+	if err != nil {
+		return nil, fmt.Errorf("marshal metadata: %w", err)
+	}
+
 	var result models.Post
-	err := r.pool.QueryRow(ctx, `
+	var resultMetaBytes []byte
+	err = r.pool.QueryRow(ctx, `
 		INSERT INTO posts
-		  (community_id, author_id, author_type, title, body, url, content_type,
-		   provenance_id, confidence_score, tags)
-		VALUES ($1, $2, $3, $4, $5, NULLIF($6, ''), $7, $8, $9, $10)
+		  (community_id, author_id, author_type, title, body, url, post_type,
+		   metadata, provenance_id, confidence_score, tags)
+		VALUES ($1, $2, $3, $4, $5, NULLIF($6, ''), $7, $8, $9, $10, $11)
 		RETURNING
 		  id, community_id, author_id, author_type,
 		  title, body, COALESCE(url, '') AS url,
-		  content_type, provenance_id, confidence_score,
-		  vote_score, comment_count, COALESCE(tags, '{}') AS tags, created_at, updated_at`,
+		  post_type, provenance_id, confidence_score,
+		  vote_score, comment_count, COALESCE(tags, '{}') AS tags, metadata, created_at, updated_at`,
 		p.CommunityID,
 		p.AuthorID,
 		p.AuthorType,
 		p.Title,
 		p.Body,
 		p.URL,
-		p.ContentType,
+		p.PostType,
+		metadataJSON,
 		p.ProvenanceID,
 		p.ConfidenceScore,
 		p.Tags,
 	).Scan(
 		&result.ID, &result.CommunityID, &result.AuthorID, &result.AuthorType,
 		&result.Title, &result.Body, &result.URL,
-		&result.ContentType, &result.ProvenanceID, &result.ConfidenceScore,
-		&result.VoteScore, &result.CommentCount, &result.Tags, &result.CreatedAt, &result.UpdatedAt,
+		&result.PostType, &result.ProvenanceID, &result.ConfidenceScore,
+		&result.VoteScore, &result.CommentCount, &result.Tags, &resultMetaBytes, &result.CreatedAt, &result.UpdatedAt,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("insert post: %w", err)
+	}
+	if len(resultMetaBytes) > 0 {
+		result.Metadata = make(map[string]any)
+		_ = json.Unmarshal(resultMetaBytes, &result.Metadata)
 	}
 	return &result, nil
 }
@@ -168,24 +190,39 @@ func (r *PostRepo) GetByID(ctx context.Context, id string) (*models.PostWithAuth
 	return &p, nil
 }
 
-// ListByCommunity returns paginated posts for a community with the given sort.
+// ListByCommunity returns paginated posts for a community with the given sort and optional post type filter.
 // Returns the posts slice, total count, and any error.
-func (r *PostRepo) ListByCommunity(ctx context.Context, communityID string, sort string, limit, offset int) ([]models.PostWithAuthor, int, error) {
+func (r *PostRepo) ListByCommunity(ctx context.Context, communityID string, sort string, postType string, limit, offset int) ([]models.PostWithAuthor, int, error) {
 	var total int
-	err := r.pool.QueryRow(ctx, `
-		SELECT COUNT(*) FROM posts p WHERE p.community_id = $1`,
-		communityID,
-	).Scan(&total)
+	countWhere := `p.community_id = $1`
+	countArgs := []any{communityID}
+	if postType != "" {
+		countWhere += ` AND p.post_type = $2`
+		countArgs = append(countArgs, postType)
+	}
+	err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM posts p WHERE `+countWhere, countArgs...).Scan(&total)
 	if err != nil {
 		return nil, 0, fmt.Errorf("count posts by community: %w", err)
 	}
 
 	orderBy := orderByClause(sort)
+
+	var whereClauses []string
+	queryArgs := []any{communityID}
+	whereClauses = append(whereClauses, `p.community_id = $1`)
+	if postType != "" {
+		queryArgs = append(queryArgs, postType)
+		whereClauses = append(whereClauses, fmt.Sprintf(`p.post_type = $%d`, len(queryArgs)))
+	}
+	queryArgs = append(queryArgs, limit, offset)
+	limitParam := fmt.Sprintf(`$%d`, len(queryArgs)-1)
+	offsetParam := fmt.Sprintf(`$%d`, len(queryArgs))
+
 	rows, err := r.pool.Query(ctx, postJoinSelect+`
-	WHERE p.community_id = $1
+	WHERE `+strings.Join(whereClauses, " AND ")+`
 	ORDER BY `+orderBy+`
-	LIMIT $2 OFFSET $3`,
-		communityID, limit, offset,
+	LIMIT `+limitParam+` OFFSET `+offsetParam,
+		queryArgs...,
 	)
 	if err != nil {
 		return nil, 0, fmt.Errorf("list posts by community: %w", err)
@@ -207,20 +244,41 @@ func (r *PostRepo) ListByCommunity(ctx context.Context, communityID string, sort
 	return posts, total, nil
 }
 
-// ListGlobal returns paginated posts across all communities with the given sort.
+// ListGlobal returns paginated posts across all communities with the given sort and optional post type filter.
 // Returns the posts slice, total count, and any error.
-func (r *PostRepo) ListGlobal(ctx context.Context, sort string, limit, offset int) ([]models.PostWithAuthor, int, error) {
+func (r *PostRepo) ListGlobal(ctx context.Context, sort string, postType string, limit, offset int) ([]models.PostWithAuthor, int, error) {
 	var total int
-	err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM posts`).Scan(&total)
-	if err != nil {
-		return nil, 0, fmt.Errorf("count global posts: %w", err)
+	if postType != "" {
+		err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM posts WHERE post_type = $1`, postType).Scan(&total)
+		if err != nil {
+			return nil, 0, fmt.Errorf("count global posts: %w", err)
+		}
+	} else {
+		err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM posts`).Scan(&total)
+		if err != nil {
+			return nil, 0, fmt.Errorf("count global posts: %w", err)
+		}
 	}
 
 	orderBy := orderByClause(sort)
-	rows, err := r.pool.Query(ctx, postJoinSelect+`
+
+	var queryArgs []any
+	var whereClause string
+	if postType != "" {
+		queryArgs = append(queryArgs, postType)
+		whereClause = `
+	WHERE p.post_type = $1`
+		queryArgs = append(queryArgs, limit, offset)
+	} else {
+		queryArgs = append(queryArgs, limit, offset)
+	}
+	limitParam := fmt.Sprintf(`$%d`, len(queryArgs)-1)
+	offsetParam := fmt.Sprintf(`$%d`, len(queryArgs))
+
+	rows, err := r.pool.Query(ctx, postJoinSelect+whereClause+`
 	ORDER BY `+orderBy+`
-	LIMIT $1 OFFSET $2`,
-		limit, offset,
+	LIMIT `+limitParam+` OFFSET `+offsetParam,
+		queryArgs...,
 	)
 	if err != nil {
 		return nil, 0, fmt.Errorf("list global posts: %w", err)
