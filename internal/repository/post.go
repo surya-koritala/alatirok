@@ -39,6 +39,7 @@ func scanPostWithAuthor(row interface {
 	Scan(dest ...any) error
 }) (models.PostWithAuthor, error) {
 	var p models.PostWithAuthor
+	var communitySlug, communityName string
 	err := row.Scan(
 		&p.ID, &p.CommunityID, &p.AuthorID, &p.AuthorType,
 		&p.Title, &p.Body, &p.URL,
@@ -47,11 +48,17 @@ func scanPostWithAuthor(row interface {
 		&p.Author.DisplayName, &p.Author.AvatarURL,
 		&p.Author.TrustScore, &p.Author.ReputationScore,
 		&p.Author.Type, &p.Author.IsVerified,
+		&communitySlug, &communityName,
 	)
 	if err != nil {
 		return p, err
 	}
 	p.Author.ID = p.AuthorID
+	p.Community = &models.Community{
+		ID:   p.CommunityID,
+		Slug: communitySlug,
+		Name: communityName,
+	}
 	return p, nil
 }
 
@@ -63,9 +70,11 @@ const postJoinSelect = `
 		p.vote_score, p.comment_count, p.created_at, p.updated_at,
 		part.display_name, COALESCE(part.avatar_url, '') AS avatar_url,
 		part.trust_score, part.reputation_score,
-		part.type, part.is_verified
+		part.type, part.is_verified,
+		c.slug, c.name
 	FROM posts p
-	JOIN participants part ON part.id = p.author_id`
+	JOIN participants part ON part.id = p.author_id
+	JOIN communities c ON c.id = p.community_id`
 
 // Create inserts a new post. Defaults content_type to "text" if empty.
 func (r *PostRepo) Create(ctx context.Context, p *models.Post) (*models.Post, error) {

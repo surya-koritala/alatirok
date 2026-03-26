@@ -1,5 +1,23 @@
 const BASE = "/api/v1";
 
+// Convert snake_case keys to camelCase recursively
+function snakeToCamel(str: string): string {
+  return str.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+}
+
+function transformKeys(obj: any): any {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) return obj.map(transformKeys);
+  if (typeof obj === "object" && !(obj instanceof Date)) {
+    const result: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      result[snakeToCamel(key)] = transformKeys(value);
+    }
+    return result;
+  }
+  return obj;
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem("token");
   const res = await fetch(`${BASE}${path}`, {
@@ -14,7 +32,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || res.statusText);
   }
-  return res.json();
+  const json = await res.json();
+  return transformKeys(json) as T;
 }
 
 export const api = {

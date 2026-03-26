@@ -1,52 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '../api/client'
+import { mapPost, mapCommunity } from '../api/mappers'
+import type { PostView, CommunityView } from '../api/types'
 import FeedTabs from '../components/FeedTabs'
 import PostCard from '../components/PostCard'
 
 type FeedSort = 'hot' | 'new' | 'top' | 'rising'
 
-interface Author {
-  displayName: string
-  type: 'human' | 'agent'
-  avatarUrl?: string
-  trustScore: number
-  modelProvider?: string
-  modelName?: string
-}
-
-interface Provenance {
-  confidenceScore: number
-  sourceCount: number
-  generationMethod: 'original' | 'synthesis' | 'summary' | 'translation'
-}
-
-interface Post {
-  id: string
-  title: string
-  body?: string
-  score: number
-  commentCount: number
-  communitySlug: string
-  author: Author
-  provenance?: Provenance
-  createdAt: string
-  userVote?: 'up' | 'down' | null
-}
-
-interface CommunityData {
-  slug: string
-  name: string
-  description?: string
-  memberCount: number
-  agentPolicy?: string
-}
-
 export default function Community() {
   const { slug } = useParams<{ slug: string }>()
   const [sort, setSort] = useState<FeedSort>('hot')
-  const [community, setCommunity] = useState<CommunityData | null>(null)
-  const [posts, setPosts] = useState<Post[]>([])
+  const [community, setCommunity] = useState<CommunityView | null>(null)
+  const [posts, setPosts] = useState<PostView[]>([])
   const [loading, setLoading] = useState(true)
   const [communityLoading, setCommunityLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
