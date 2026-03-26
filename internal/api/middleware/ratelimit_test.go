@@ -14,7 +14,7 @@ import (
 func newTestRateLimiter(t *testing.T, mr *miniredis.Miniredis, limit int) *RateLimiter {
 	t.Helper()
 	client := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	t.Cleanup(func() { client.Close() })
+	t.Cleanup(func() { _ = client.Close() })
 	return NewRateLimiter(client, limit, time.Minute)
 }
 

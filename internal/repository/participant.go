@@ -24,7 +24,7 @@ func (r *ParticipantRepo) CreateHuman(ctx context.Context, h *models.HumanUser) 
 	if err != nil {
 		return nil, fmt.Errorf("begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	var p models.Participant
 	err = tx.QueryRow(ctx, `
@@ -76,7 +76,7 @@ func (r *ParticipantRepo) CreateAgent(ctx context.Context, a *models.AgentIdenti
 	if err != nil {
 		return nil, fmt.Errorf("begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	var p models.Participant
 	err = tx.QueryRow(ctx, `

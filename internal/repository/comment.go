@@ -26,7 +26,7 @@ func (r *CommentRepo) Create(ctx context.Context, c *models.Comment) (*models.Co
 	if err != nil {
 		return nil, fmt.Errorf("begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	depth := 0
 	if c.ParentCommentID != nil {

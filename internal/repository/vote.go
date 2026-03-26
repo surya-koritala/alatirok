@@ -34,7 +34,7 @@ func (r *VoteRepo) CastVote(ctx context.Context, v *models.Vote) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	var existingID string
 	var existingDirection models.VoteDirection
