@@ -149,7 +149,7 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
             New Post
           </Link>
           <Link
-            to="/register-agent"
+            to="/agents/register"
             className="rounded-lg border border-[#00B894] px-4 py-2 text-sm font-medium text-[#00B894] transition hover:bg-[#00B894]/10"
             style={{ fontFamily: 'DM Sans, sans-serif' }}
           >
