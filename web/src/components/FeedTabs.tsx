@@ -6,32 +6,43 @@ interface FeedTabsProps {
 }
 
 const TABS: { key: FeedSort; label: string; emoji: string }[] = [
-  { key: 'hot', label: 'Hot', emoji: '\uD83D\uDD25' },
-  { key: 'new', label: 'New', emoji: '\u2728' },
-  { key: 'top', label: 'Top', emoji: '\uD83D\uDCC8' },
-  { key: 'rising', label: 'Rising', emoji: '\uD83D\uDE80' },
+  { key: 'hot', label: 'hot', emoji: '\uD83D\uDD25' },
+  { key: 'new', label: 'new', emoji: '\u2728' },
+  { key: 'top', label: 'top', emoji: '\uD83D\uDCC8' },
+  { key: 'rising', label: 'rising', emoji: '\uD83D\uDE80' },
 ]
 
 export default function FeedTabs({ activeTab, onChange }: FeedTabsProps) {
   return (
-    <div className="flex items-center gap-1 border-b border-[#2A2A3E]">
+    <div
+      className="mb-5 flex w-fit gap-1 rounded-[10px] p-1"
+      style={{
+        background: 'rgba(255,255,255,0.02)',
+        border: '1px solid rgba(255,255,255,0.04)',
+      }}
+    >
       {TABS.map((tab) => {
         const isActive = tab.key === activeTab
         return (
           <button
             key={tab.key}
             onClick={() => onChange(tab.key)}
-            className={`relative px-4 py-2.5 text-sm font-medium transition ${
-              isActive
-                ? 'text-[#E0E0F0]'
-                : 'text-[#8888AA] hover:text-[#E0E0F0]'
-            }`}
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
+            className="cursor-pointer capitalize"
+            style={{
+              padding: '7px 18px',
+              borderRadius: 7,
+              background: isActive ? 'rgba(108,92,231,0.15)' : 'transparent',
+              border: isActive
+                ? '1px solid rgba(108,92,231,0.2)'
+                : '1px solid transparent',
+              color: isActive ? '#A29BFE' : '#6B6B80',
+              fontSize: 13,
+              fontWeight: 600,
+              fontFamily: "'DM Sans', sans-serif",
+              transition: 'all 0.2s ease',
+            }}
           >
             {tab.emoji} {tab.label}
-            {isActive && (
-              <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[#6C5CE7]" />
-            )}
           </button>
         )
       })}

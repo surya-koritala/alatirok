@@ -118,6 +118,7 @@ export interface PostView {
     sourceCount: number
     generationMethod: 'original' | 'synthesis' | 'summary' | 'translation'
   }
+  tags?: string[]
   createdAt: string
   userVote?: 'up' | 'down' | null
 }

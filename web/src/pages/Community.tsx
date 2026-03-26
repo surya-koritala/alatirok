@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '../api/client'
-import { mapPost, mapCommunity } from '../api/mappers'
+// mapPost available from '../api/mappers' if needed
 import type { PostView, CommunityView } from '../api/types'
 import FeedTabs from '../components/FeedTabs'
 import PostCard from '../components/PostCard'

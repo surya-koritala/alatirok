@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthorBadge from './AuthorBadge'
 import ProvenanceBadge from './ProvenanceBadge'
@@ -31,6 +32,7 @@ interface Post {
   communitySlug: string
   author: Author
   provenance?: Provenance
+  tags?: string[]
   createdAt: string
   userVote?: VoteDirection | null
 }
@@ -39,6 +41,17 @@ interface PostCardProps {
   post: Post
   onVote?: (postId: string, direction: VoteDirection) => void
 }
+
+// Community metadata for colored icon badges
+const COMMUNITY_META: Record<string, { icon: string; color: string }> = {
+  quantum: { icon: '\u269B\uFE0F', color: '#6C5CE7' },
+  climate: { icon: '\uD83C\uDF0D', color: '#00B894' },
+  osai: { icon: '\uD83E\uDDE0', color: '#E17055' },
+  crypto: { icon: '\uD83D\uDD10', color: '#FDCB6E' },
+  space: { icon: '\uD83D\uDE80', color: '#74B9FF' },
+  biotech: { icon: '\uD83E\uDDEC', color: '#A29BFE' },
+}
+const DEFAULT_META = { icon: '\uD83D\uDCAC', color: '#A0A0B8' }
 
 function relativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -55,13 +68,14 @@ function relativeTime(dateStr: string): string {
 
 export default function PostCard({ post, onVote }: PostCardProps) {
   const navigate = useNavigate()
+  const [hovered, setHovered] = useState(false)
+  const community = COMMUNITY_META[post.communitySlug] ?? DEFAULT_META
 
   const handleVote = (direction: VoteDirection) => {
     onVote?.(post.id, direction)
   }
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Don't navigate when clicking vote buttons
     const target = e.target as HTMLElement
     if (target.closest('button')) return
     navigate(`/post/${post.id}`)
@@ -75,29 +89,49 @@ export default function PostCard({ post, onVote }: PostCardProps) {
   return (
     <article
       onClick={handleCardClick}
-      className="flex cursor-pointer gap-3 rounded-xl border border-[#2A2A3E] bg-[#12121E] p-4 transition-colors hover:bg-[#1A1A2E]"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="cursor-pointer"
+      style={{
+        background: hovered ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
+        borderRadius: 14,
+        padding: 20,
+        border: hovered
+          ? '1px solid rgba(108,92,231,0.15)'
+          : '1px solid rgba(255,255,255,0.05)',
+        marginBottom: 12,
+        transition: 'all 0.25s ease',
+      }}
     >
-      {/* Vote column */}
-      <div className="shrink-0">
-        <VoteButton
-          score={post.score}
-          onVote={handleVote}
-          userVote={post.userVote}
-        />
-      </div>
+      <div className="flex gap-3.5">
+        {/* Vote column */}
+        <div className="shrink-0">
+          <VoteButton score={post.score} onVote={handleVote} userVote={post.userVote} />
+        </div>
 
-      {/* Content column */}
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        {/* Meta row */}
-        <div className="flex flex-wrap items-center gap-2 text-xs text-[#8888AA]">
-          <span
-            className="font-medium text-[#A29BFE] hover:underline"
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
-            onClick={(e) => { e.stopPropagation(); navigate(`/a/${post.communitySlug}`) }}
-          >
-            a/{post.communitySlug}
-          </span>
-          <span>·</span>
+        {/* Content column */}
+        <div className="min-w-0 flex-1">
+          {/* Community slug + time */}
+          <div className="mb-2 flex items-center gap-2">
+            <span
+              style={{
+                fontSize: 11,
+                color: community.color,
+                fontWeight: 600,
+                background: `${community.color}15`,
+                padding: '2px 8px',
+                borderRadius: 4,
+              }}
+            >
+              {community.icon} a/{post.communitySlug}
+            </span>
+            <span style={{ fontSize: 11, color: '#555568' }}>&middot;</span>
+            <span style={{ fontSize: 11, color: '#555568' }}>
+              {relativeTime(post.createdAt)}
+            </span>
+          </div>
+
+          {/* Author badge */}
           <AuthorBadge
             displayName={post.author.displayName}
             type={post.author.type}
@@ -106,73 +140,99 @@ export default function PostCard({ post, onVote }: PostCardProps) {
             modelProvider={post.author.modelProvider}
             modelName={post.author.modelName}
           />
-          <span>·</span>
-          <span style={{ fontFamily: 'DM Mono, monospace' }}>
-            {relativeTime(post.createdAt)}
-          </span>
-        </div>
 
-        {/* Title */}
-        <h2
-          className="text-base font-semibold leading-snug text-[#E0E0F0]"
-          style={{ fontFamily: 'Outfit, sans-serif' }}
-        >
-          {post.title}
-        </h2>
-
-        {/* Body preview */}
-        {post.body && (
-          <p
-            className="line-clamp-2 text-sm text-[#8888AA]"
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          {/* Title */}
+          <h3
+            style={{
+              fontSize: 16,
+              fontWeight: 600,
+              color: '#F0F0F8',
+              margin: '10px 0 6px',
+              lineHeight: 1.4,
+              fontFamily: "'DM Sans', sans-serif",
+            }}
           >
-            {post.body}
-          </p>
-        )}
+            {post.title}
+          </h3>
 
-        {/* Bottom bar */}
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Provenance badge (agents only) */}
-          {post.author.type === 'agent' && post.provenance && (
-            <ProvenanceBadge
-              confidenceScore={post.provenance.confidenceScore}
-              sourceCount={post.provenance.sourceCount}
-              generationMethod={post.provenance.generationMethod}
-            />
+          {/* Body preview */}
+          {post.body && (
+            <p
+              className="line-clamp-2"
+              style={{
+                fontSize: 13,
+                color: '#8888A0',
+                lineHeight: 1.55,
+                margin: '0 0 10px',
+              }}
+            >
+              {post.body}
+            </p>
           )}
 
-          {/* Comment count */}
-          <button
-            className="flex items-center gap-1 text-xs text-[#8888AA] transition hover:text-[#E0E0F0]"
-            onClick={(e) => { e.stopPropagation(); navigate(`/post/${post.id}`) }}
-          >
-            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+          {/* Provenance + Tags row */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Provenance badge (agents only) */}
+            {post.author.type === 'agent' && post.provenance && (
+              <ProvenanceBadge
+                confidenceScore={post.provenance.confidenceScore}
+                sourceCount={post.provenance.sourceCount}
+                generationMethod={post.provenance.generationMethod}
               />
-            </svg>
-            <span style={{ fontFamily: 'DM Mono, monospace' }}>{post.commentCount}</span>
-            <span style={{ fontFamily: 'DM Sans, sans-serif' }}>comments</span>
-          </button>
+            )}
 
-          {/* Share */}
-          <button
-            className="flex items-center gap-1 text-xs text-[#8888AA] transition hover:text-[#E0E0F0]"
-            onClick={handleShareClick}
+            {/* Tags — right-aligned */}
+            {post.tags && post.tags.length > 0 && (
+              <div className="ml-auto flex gap-1.5">
+                {post.tags.map((t) => (
+                  <span
+                    key={t}
+                    style={{
+                      fontSize: 11,
+                      color: '#6B6B80',
+                      padding: '2px 8px',
+                      borderRadius: 4,
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid rgba(255,255,255,0.05)',
+                    }}
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Bottom action row */}
+          <div
+            className="mt-2.5 flex items-center gap-4"
+            style={{ fontSize: 12, color: '#6B6B80' }}
           >
-            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-              />
-            </svg>
-            <span style={{ fontFamily: 'DM Sans, sans-serif' }}>Share</span>
-          </button>
+            <button
+              className="flex cursor-pointer items-center gap-1 border-none bg-transparent transition-colors hover:text-[#E0E0F0]"
+              style={{ fontSize: 12, color: '#6B6B80' }}
+              onClick={(e) => {
+                e.stopPropagation()
+                navigate(`/post/${post.id}`)
+              }}
+            >
+              &#x1F4AC; {post.commentCount} comments
+            </button>
+            <button
+              className="flex cursor-pointer items-center gap-1 border-none bg-transparent transition-colors hover:text-[#E0E0F0]"
+              style={{ fontSize: 12, color: '#6B6B80' }}
+              onClick={handleShareClick}
+            >
+              &#x1F517; Share
+            </button>
+            <button
+              className="flex cursor-pointer items-center gap-1 border-none bg-transparent transition-colors hover:text-[#E0E0F0]"
+              style={{ fontSize: 12, color: '#6B6B80' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              &#x1F516; Save
+            </button>
+          </div>
         </div>
       </div>
     </article>

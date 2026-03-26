@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 type VoteDirection = 'up' | 'down'
 
 interface VoteButtonProps {
@@ -6,66 +8,75 @@ interface VoteButtonProps {
   userVote?: VoteDirection | null
 }
 
+function formatNum(n: number): string {
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k'
+  return String(n)
+}
+
 export default function VoteButton({ score, onVote, userVote }: VoteButtonProps) {
+  const [hoverUp, setHoverUp] = useState(false)
+  const [hoverDown, setHoverDown] = useState(false)
+
   const upActive = userVote === 'up'
   const downActive = userVote === 'down'
 
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div
+      className="flex flex-col items-center gap-0.5"
+      style={{
+        padding: '6px 4px',
+        borderRadius: 10,
+        background: 'rgba(255,255,255,0.02)',
+        border: '1px solid rgba(255,255,255,0.04)',
+        minWidth: 48,
+      }}
+    >
       {/* Upvote */}
       <button
         onClick={() => onVote('up')}
+        onMouseEnter={() => setHoverUp(true)}
+        onMouseLeave={() => setHoverUp(false)}
         aria-label="Upvote"
-        className={`flex h-7 w-7 items-center justify-center rounded transition ${
-          upActive
-            ? 'text-[#6C5CE7]'
-            : 'text-[#8888AA] hover:text-[#A29BFE]'
-        }`}
+        className="cursor-pointer border-none bg-transparent p-0.5"
+        style={{
+          fontSize: 16,
+          color: upActive ? '#6C5CE7' : hoverUp ? '#A29BFE' : '#6B6B80',
+          transition: 'all 0.2s',
+          transform: upActive ? 'scale(1.2)' : 'scale(1)',
+          lineHeight: 1,
+        }}
       >
-        <svg
-          viewBox="0 0 24 24"
-          fill={upActive ? 'currentColor' : 'none'}
-          stroke="currentColor"
-          strokeWidth={2}
-          className="h-5 w-5"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-        </svg>
+        &#x25B2;
       </button>
 
       {/* Score */}
       <span
-        className={`text-sm font-semibold leading-none ${
-          upActive
-            ? 'text-[#6C5CE7]'
-            : downActive
-            ? 'text-orange-400'
-            : 'text-[#E0E0F0]'
-        }`}
-        style={{ fontFamily: 'DM Mono, monospace' }}
+        style={{
+          fontWeight: 700,
+          fontSize: 14,
+          fontFamily: "'DM Mono', monospace",
+          color: upActive ? '#6C5CE7' : downActive ? '#E17055' : '#A0A0B8',
+        }}
       >
-        {score}
+        {formatNum(score)}
       </span>
 
       {/* Downvote */}
       <button
         onClick={() => onVote('down')}
+        onMouseEnter={() => setHoverDown(true)}
+        onMouseLeave={() => setHoverDown(false)}
         aria-label="Downvote"
-        className={`flex h-7 w-7 items-center justify-center rounded transition ${
-          downActive
-            ? 'text-orange-400'
-            : 'text-[#8888AA] hover:text-orange-300'
-        }`}
+        className="cursor-pointer border-none bg-transparent p-0.5"
+        style={{
+          fontSize: 16,
+          color: downActive ? '#E17055' : hoverDown ? '#E17055' : '#6B6B80',
+          transition: 'all 0.2s',
+          transform: downActive ? 'scale(1.2)' : 'scale(1)',
+          lineHeight: 1,
+        }}
       >
-        <svg
-          viewBox="0 0 24 24"
-          fill={downActive ? 'currentColor' : 'none'}
-          stroke="currentColor"
-          strokeWidth={2}
-          className="h-5 w-5"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
+        &#x25BC;
       </button>
     </div>
   )
