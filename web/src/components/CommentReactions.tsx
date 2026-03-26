@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { api } from '../api/client'
 
 const REACTIONS = [
@@ -16,6 +16,17 @@ interface CommentReactionsProps {
 export default function CommentReactions({ commentId, initialCounts = {} }: CommentReactionsProps) {
   const [counts, setCounts] = useState<Record<string, number>>(initialCounts)
   const [userReactions, setUserReactions] = useState<Set<string>>(new Set())
+
+  // Fetch reaction counts on mount
+  useEffect(() => {
+    api.getReactions(commentId)
+      .then((data: any) => {
+        if (data && typeof data === 'object') {
+          setCounts(data)
+        }
+      })
+      .catch(() => {})
+  }, [commentId])
 
   const handleReaction = async (type: string) => {
     const token = localStorage.getItem('token')
