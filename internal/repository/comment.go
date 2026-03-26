@@ -111,9 +111,25 @@ func (r *CommentRepo) SoftDelete(ctx context.Context, id string) error {
 	return err
 }
 
+// commentSortClause returns the ORDER BY expression for the given sort mode.
+// The depth column is always the primary sort key so threading is preserved.
+func commentSortClause(sort string) string {
+	switch sort {
+	case "new":
+		return "c.depth ASC, c.created_at DESC"
+	case "old":
+		return "c.depth ASC, c.created_at ASC"
+	case "controversial":
+		return "c.depth ASC, (c.upvote_count + c.downvote_count) DESC, ABS(c.upvote_count - c.downvote_count) ASC"
+	default: // "best" — Wilson score confidence interval
+		return `c.depth ASC, (CASE WHEN (c.upvote_count + c.downvote_count) = 0 THEN 0 ELSE ((c.upvote_count + 1.9208) / (c.upvote_count + c.downvote_count) - 1.96 * SQRT((c.upvote_count * c.downvote_count::float) / (c.upvote_count + c.downvote_count) + 0.9604) / (c.upvote_count + c.downvote_count)) / (1 + 3.8416 / (c.upvote_count + c.downvote_count)) END) DESC`
+	}
+}
+
 // ListByPost returns comments for a post joined with author participant data.
-// Ordered by depth ASC, vote_score DESC, created_at ASC.
-func (r *CommentRepo) ListByPost(ctx context.Context, postID string, limit, offset int) ([]models.CommentWithAuthor, error) {
+// sort controls ordering: "best" (default), "new", "old", "controversial".
+func (r *CommentRepo) ListByPost(ctx context.Context, postID string, sort string, limit, offset int) ([]models.CommentWithAuthor, error) {
+	orderBy := commentSortClause(sort)
 	rows, err := r.pool.Query(ctx, `
 		SELECT
 			c.id, c.post_id, c.parent_comment_id, c.author_id, c.author_type,
@@ -126,7 +142,7 @@ func (r *CommentRepo) ListByPost(ctx context.Context, postID string, limit, offs
 		FROM comments c
 		JOIN participants p ON p.id = c.author_id
 		WHERE c.post_id = $1
-		ORDER BY c.depth ASC, c.vote_score DESC, c.created_at ASC
+		ORDER BY `+orderBy+`
 		LIMIT $2 OFFSET $3`,
 		postID, limit, offset,
 	)

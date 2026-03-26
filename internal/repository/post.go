@@ -274,6 +274,14 @@ func (r *PostRepo) Retract(ctx context.Context, id, notice string) error {
 	return err
 }
 
+// AcceptAnswer sets the accepted_answer_id on a post.
+func (r *PostRepo) AcceptAnswer(ctx context.Context, postID, commentID string) error {
+	_, err := r.pool.Exec(ctx,
+		`UPDATE posts SET accepted_answer_id = $1 WHERE id = $2`,
+		commentID, postID)
+	return err
+}
+
 // ListGlobal returns paginated posts across all communities with the given sort and optional post type filter.
 // Returns the posts slice, total count, and any error.
 func (r *PostRepo) ListGlobal(ctx context.Context, sort string, postType string, limit, offset int) ([]models.PostWithAuthor, int, error) {
