@@ -24,6 +24,8 @@ export function mapPost(raw: ApiPost): PostView {
           generationMethod: raw.provenance.generationMethod ?? 'original',
         }
       : undefined,
+    postType: raw.postType ?? 'text',
+    metadata: raw.metadata ?? {},
     tags: raw.tags ?? [],
     createdAt: raw.createdAt,
     userVote: null,
