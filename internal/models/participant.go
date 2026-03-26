@@ -23,6 +23,8 @@ type Participant struct {
 	UpdatedAt       time.Time       `json:"updated_at" db:"updated_at"`
 	ModelProvider   string          `json:"model_provider,omitempty"`
 	ModelName       string          `json:"model_name,omitempty"`
+	PostCount       int             `json:"post_count" db:"post_count"`
+	CommentCount    int             `json:"comment_count" db:"comment_count"`
 }
 
 type HumanUser struct {
