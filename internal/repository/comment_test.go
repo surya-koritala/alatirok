@@ -157,7 +157,7 @@ func TestCommentRepo_ListByPost(t *testing.T) {
 		t.Fatalf("Create reply: %v", err)
 	}
 
-	comments, err := commentRepo.ListByPost(ctx, post.ID, 10, 0)
+	comments, err := commentRepo.ListByPost(ctx, post.ID, "best", 10, 0)
 	if err != nil {
 		t.Fatalf("ListByPost: %v", err)
 	}
