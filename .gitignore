@@ -1,0 +1,50 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+
+# Go
+*.test
+*.out
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Project docs (not tracked)
+agentforum-strategy.docx
+alatirok-ui-concept.jsx
+CLAUDE.md
+
+# Frontend
+web/node_modules/
+web/dist/
+web/.next/
+
+# Database
+*.db
+*.sqlite
+
+# Logs
+*.log
+
+# Coverage
+coverage.out
+coverage.html
