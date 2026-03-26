@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
-
-interface BookmarkEntry {
-  postId: string
-}
+import { mapPost } from '../api/mappers'
+import type { PostView } from '../api/types'
+import PostCard from '../components/PostCard'
 
 export default function Bookmarks() {
   const navigate = useNavigate()
-  const [bookmarks, setBookmarks] = useState<BookmarkEntry[]>([])
+  const [posts, setPosts] = useState<PostView[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -21,26 +20,18 @@ export default function Bookmarks() {
 
     setLoading(true)
     setError(null)
+
     api
       .getBookmarks()
-      .then((data: any) => {
-        // API may return { post_ids: [...] } or { bookmarks: [...] } or a raw array
-        let raw: any[] = []
-        if (Array.isArray(data)) {
-          raw = data
-        } else if (Array.isArray(data.postIds)) {
-          raw = data.postIds.map((id: string) => ({ postId: id }))
-        } else if (Array.isArray(data.bookmarks)) {
-          raw = data.bookmarks
-        } else if (Array.isArray(data.data)) {
-          raw = data.data
-        }
+      .then(async (data: any) => {
+        // API returns { post_ids: [...] } or { postIds: [...] } (camelCased by client)
+        const ids = data.postIds ?? data.post_ids ?? []
 
-        // Normalise each entry to { postId }
-        const normalised: BookmarkEntry[] = raw.map((item) => ({
-          postId: typeof item === 'string' ? item : item.postId ?? item.post_id ?? item.id ?? String(item),
-        }))
-        setBookmarks(normalised)
+        // Fetch each post in parallel
+        const postPromises = ids.map((id: string) => api.getPost(id).catch(() => null))
+        const rawPosts = await Promise.all(postPromises)
+        const mapped = rawPosts.filter(Boolean).map((p: any) => mapPost(p))
+        setPosts(mapped)
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false))
@@ -49,7 +40,7 @@ export default function Bookmarks() {
   const handleRemove = async (postId: string) => {
     try {
       await api.toggleBookmark(postId)
-      setBookmarks((prev) => prev.filter((b) => b.postId !== postId))
+      setPosts((prev) => prev.filter((p) => p.id !== postId))
     } catch {
       // ignore
     }
@@ -70,12 +61,12 @@ export default function Bookmarks() {
         >
           Your Saved Posts
         </h1>
-        {!loading && bookmarks.length > 0 && (
+        {!loading && posts.length > 0 && (
           <span
             className="text-sm text-[#8888AA]"
             style={{ fontFamily: 'DM Mono, monospace' }}
           >
-            {bookmarks.length} saved
+            {posts.length} saved
           </span>
         )}
       </div>
@@ -86,7 +77,7 @@ export default function Bookmarks() {
           {[...Array(5)].map((_, i) => (
             <div
               key={i}
-              className="h-14 animate-pulse rounded-xl border border-[#2A2A3E] bg-[#12121E]"
+              className="h-24 animate-pulse rounded-xl border border-[#2A2A3E] bg-[#12121E]"
             />
           ))}
         </div>
@@ -100,12 +91,12 @@ export default function Bookmarks() {
       )}
 
       {/* Empty state */}
-      {!loading && !error && bookmarks.length === 0 && (
+      {!loading && !error && posts.length === 0 && (
         <div
           className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-12 text-center"
           style={{ fontFamily: 'DM Sans, sans-serif' }}
         >
-          <p className="text-[#8888AA] mb-3">You haven&apos;t saved any posts yet.</p>
+          <p className="text-[#8888AA] mb-3">No saved posts yet.</p>
           <Link
             to="/"
             className="inline-block rounded-lg bg-[#6C5CE7] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#5a4bd1]"
@@ -115,34 +106,15 @@ export default function Bookmarks() {
         </div>
       )}
 
-      {/* Bookmark list */}
-      {!loading && !error && bookmarks.length > 0 && (
-        <div className="flex flex-col gap-2">
-          {bookmarks.map((b) => (
-            <div
-              key={b.postId}
-              className="flex items-center justify-between gap-4 rounded-xl border border-[#2A2A3E] bg-[#12121E] px-5 py-3.5 transition hover:border-[#6C5CE7] hover:bg-[#16162A]"
-            >
-              <Link
-                to={`/post/${b.postId}`}
-                className="flex-1 min-w-0"
-              >
-                <p
-                  className="text-sm text-[#E0E0F0] truncate"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
-                >
-                  Post
-                </p>
-                <p
-                  className="text-xs text-[#6C5CE7] font-mono mt-0.5 truncate"
-                  style={{ fontFamily: 'DM Mono, monospace' }}
-                >
-                  /post/{b.postId}
-                </p>
-              </Link>
+      {/* Post list */}
+      {!loading && !error && posts.length > 0 && (
+        <div className="flex flex-col gap-3">
+          {posts.map((post) => (
+            <div key={post.id} className="relative group">
+              <PostCard post={post} />
               <button
-                onClick={() => handleRemove(b.postId)}
-                className="shrink-0 rounded-lg border border-[#2A2A3E] px-3 py-1.5 text-xs text-[#8888AA] transition hover:border-red-500/50 hover:text-red-400"
+                onClick={() => handleRemove(post.id)}
+                className="absolute top-3 right-3 z-10 rounded-lg border border-[#2A2A3E] px-3 py-1 text-xs text-[#8888AA] transition hover:border-red-500/50 hover:text-red-400 bg-[#12121E]"
                 title="Remove bookmark"
                 style={{ fontFamily: 'DM Sans, sans-serif' }}
               >
