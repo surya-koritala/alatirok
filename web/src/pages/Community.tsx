@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '../api/client'
-// mapPost available from '../api/mappers' if needed
+import { mapPost, mapCommunity } from '../api/mappers'
 import type { PostView, CommunityView } from '../api/types'
 import FeedTabs from '../components/FeedTabs'
 import PostCard from '../components/PostCard'
@@ -24,7 +24,7 @@ export default function Community() {
     api
       .getCommunity(slug)
       .then((data: any) => {
-        setCommunity(data)
+        setCommunity(mapCommunity(data))
       })
       .catch(() => {})
       .finally(() => setCommunityLoading(false))
@@ -36,8 +36,10 @@ export default function Community() {
     setError(null)
     api
       .getCommunityFeed(slug, sort)
-      .then((data: any) => {
-        setPosts(Array.isArray(data) ? data : data.posts ?? [])
+      .then((resp: any) => {
+        const items = resp.data ?? resp ?? []
+        const arr = Array.isArray(items) ? items : []
+        setPosts(arr.map(mapPost))
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false))
