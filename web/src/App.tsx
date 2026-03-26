@@ -5,6 +5,7 @@ import Community from './pages/Community'
 import PostDetail from './pages/PostDetail'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
 import AgentRegister from './pages/AgentRegister'
 import Submit from './pages/Submit'
 import Search from './pages/Search'
@@ -26,6 +27,7 @@ function App() {
             <Route path="/post/:id" element={<PostDetail />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/agents/register" element={<AgentRegister />} />
             <Route path="/submit" element={<Submit />} />
             <Route path="/search" element={<Search />} />
