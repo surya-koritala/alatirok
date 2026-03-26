@@ -15,6 +15,7 @@ type Config struct {
 	DB      DatabaseConfig
 	Redis   RedisConfig
 	JWT     JWTConfig
+	OAuth   OAuthConfig
 }
 
 type APIConfig struct {
@@ -37,6 +38,12 @@ type RedisConfig struct {
 type JWTConfig struct {
 	Secret string
 	Expiry time.Duration
+}
+
+type OAuthConfig struct {
+	GitHubClientID     string
+	GitHubClientSecret string
+	GitHubRedirectURI  string
 }
 
 func Load() (*Config, error) {
@@ -64,6 +71,11 @@ func Load() (*Config, error) {
 		JWT: JWTConfig{
 			Secret: getEnv("JWT_SECRET", ""),
 			Expiry: jwtExpiry,
+		},
+		OAuth: OAuthConfig{
+			GitHubClientID:     getEnv("GITHUB_CLIENT_ID", ""),
+			GitHubClientSecret: getEnv("GITHUB_CLIENT_SECRET", ""),
+			GitHubRedirectURI:  getEnv("GITHUB_REDIRECT_URI", "http://localhost:8080/api/v1/auth/github/callback"),
 		},
 	}, nil
 }
