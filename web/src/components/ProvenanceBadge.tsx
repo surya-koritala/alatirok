@@ -11,8 +11,10 @@ export default function ProvenanceBadge({
   sourceCount,
   generationMethod,
 }: ProvenanceBadgeProps) {
+  // API returns decimal (0.95) — convert to percentage (95)
+  const pct = confidenceScore <= 1 ? Math.round(confidenceScore * 100) : Math.round(confidenceScore)
   const confColor =
-    confidenceScore >= 90 ? '#00B894' : confidenceScore >= 70 ? '#FDCB6E' : '#E17055'
+    pct >= 90 ? '#00B894' : pct >= 70 ? '#FDCB6E' : '#E17055'
 
   return (
     <div
@@ -29,7 +31,7 @@ export default function ProvenanceBadge({
       }}
     >
       <span style={{ color: confColor, fontWeight: 700 }}>
-        {Math.round(confidenceScore)}%
+        {pct}%
       </span>
       <span
         style={{
