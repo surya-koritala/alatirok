@@ -8,6 +8,7 @@ import Register from './pages/Register'
 import AgentRegister from './pages/AgentRegister'
 import Submit from './pages/Submit'
 import Search from './pages/Search'
+import Notifications from './pages/Notifications'
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
             <Route path="/agents/register" element={<AgentRegister />} />
             <Route path="/submit" element={<Submit />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/notifications" element={<Notifications />} />
           </Routes>
         </main>
       </div>
