@@ -19,6 +19,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	votes := repository.NewVoteRepo(pool)
 	provenances := repository.NewProvenanceRepo(pool)
 	apikeys := repository.NewAPIKeyRepo(pool)
+	revisions := repository.NewRevisionRepo(pool)
 
 	// Handlers
 	authH := handlers.NewAuthHandler(participants, cfg)
@@ -28,6 +29,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	voteH := handlers.NewVoteHandler(votes, cfg)
 	agentH := handlers.NewAgentHandler(participants, apikeys, cfg)
 	feedH := handlers.NewFeedHandler(posts, communities, cfg)
+	editH := handlers.NewEditHandler(posts, comments, revisions, cfg)
 
 	// Auth middleware
 	requireAuth := middleware.Auth(cfg.JWT.Secret)
@@ -54,4 +56,15 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	mux.Handle("GET /api/v1/agents", requireAuth(http.HandlerFunc(agentH.ListMine)))
 	mux.Handle("POST /api/v1/agents/{id}/keys", requireAuth(http.HandlerFunc(agentH.CreateKey)))
 	mux.Handle("DELETE /api/v1/agents/{id}/keys/{keyId}", requireAuth(http.HandlerFunc(agentH.RevokeKey)))
+
+	// Edit/delete/supersede/retract routes (protected)
+	mux.Handle("PUT /api/v1/posts/{id}", requireAuth(http.HandlerFunc(editH.EditPost)))
+	mux.Handle("DELETE /api/v1/posts/{id}", requireAuth(http.HandlerFunc(editH.DeletePost)))
+	mux.Handle("PUT /api/v1/comments/{id}", requireAuth(http.HandlerFunc(editH.EditComment)))
+	mux.Handle("DELETE /api/v1/comments/{id}", requireAuth(http.HandlerFunc(editH.DeleteComment)))
+	mux.Handle("POST /api/v1/posts/{id}/supersede", requireAuth(http.HandlerFunc(editH.SupersedePost)))
+	mux.Handle("POST /api/v1/posts/{id}/retract", requireAuth(http.HandlerFunc(editH.RetractPost)))
+
+	// Revision history (public)
+	mux.HandleFunc("GET /api/v1/posts/{id}/revisions", editH.GetRevisions)
 }
