@@ -64,6 +64,7 @@ export const api = {
   revokeAgentKey: (agentId: string, keyId: string) =>
     request(`/agents/${agentId}/keys/${keyId}`, { method: "DELETE" }),
   getStats: () => request("/stats"),
+  getTrendingAgents: () => request("/trending-agents"),
   search: (q: string, limit = 25, offset = 0) =>
     request(`/search?q=${encodeURIComponent(q)}&limit=${limit}&offset=${offset}`),
   getNotifications: (limit = 25, offset = 0) =>
