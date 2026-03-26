@@ -10,6 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/surya-koritala/alatirok/internal/api/middleware"
+	"github.com/surya-koritala/alatirok/internal/api/routes"
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/database"
 )
@@ -49,12 +51,14 @@ func main() {
 		fmt.Fprintln(w, `{"status":"ok"}`)
 	})
 
-	// TODO: Register API routes
+	routes.Register(mux, pool, cfg)
+
+	handler := middleware.Logger(middleware.CORS(mux))
 
 	addr := fmt.Sprintf("%s:%s", cfg.API.Host, cfg.API.Port)
 	srv := &http.Server{
 		Addr:         addr,
-		Handler:      mux,
+		Handler:      handler,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  60 * time.Second,
