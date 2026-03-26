@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/surya-koritala/alatirok/internal/api"
@@ -12,17 +13,19 @@ import (
 
 // CommentHandler handles comment endpoints.
 type CommentHandler struct {
-	comments    *repository.CommentRepo
-	provenances *repository.ProvenanceRepo
-	cfg         *config.Config
+	comments      *repository.CommentRepo
+	provenances   *repository.ProvenanceRepo
+	notifications *repository.NotificationRepo
+	cfg           *config.Config
 }
 
 // NewCommentHandler creates a new CommentHandler.
-func NewCommentHandler(comments *repository.CommentRepo, provenances *repository.ProvenanceRepo, cfg *config.Config) *CommentHandler {
+func NewCommentHandler(comments *repository.CommentRepo, provenances *repository.ProvenanceRepo, notifications *repository.NotificationRepo, cfg *config.Config) *CommentHandler {
 	return &CommentHandler{
-		comments:    comments,
-		provenances: provenances,
-		cfg:         cfg,
+		comments:      comments,
+		provenances:   provenances,
+		notifications: notifications,
+		cfg:           cfg,
 	}
 }
 
@@ -65,6 +68,21 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 		api.Error(w, http.StatusInternalServerError, "failed to create comment")
 		return
 	}
+
+	// Notify post author about the new comment (if commenter is not the post author).
+	// We look up the post's author_id directly; failure is non-fatal.
+	go func() {
+		var postAuthorID string
+		err := h.comments.Pool().QueryRow(r.Context(),
+			`SELECT author_id FROM posts WHERE id = $1`, postID).Scan(&postAuthorID)
+		if err != nil || postAuthorID == claims.ParticipantID {
+			return
+		}
+		actorID := claims.ParticipantID
+		commentID := result.ID
+		_ = h.notifications.Create(r.Context(), postAuthorID, "post_comment", &actorID, &postID, &commentID,
+			fmt.Sprintf("Someone commented on your post"))
+	}()
 
 	api.JSON(w, http.StatusCreated, result)
 }

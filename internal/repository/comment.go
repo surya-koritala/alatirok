@@ -18,6 +18,11 @@ func NewCommentRepo(pool *pgxpool.Pool) *CommentRepo {
 	return &CommentRepo{pool: pool}
 }
 
+// Pool returns the underlying database pool (used by handlers for ad-hoc queries).
+func (r *CommentRepo) Pool() *pgxpool.Pool {
+	return r.pool
+}
+
 // Create inserts a new comment in a transaction.
 // If parent_comment_id is set, depth = parent_depth + 1; otherwise depth = 0.
 // Also increments the post's comment_count.
