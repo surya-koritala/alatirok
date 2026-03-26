@@ -24,21 +24,21 @@ export default function Nav({ isLoggedIn = false, avatarUrl, displayName, onLogo
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
         {/* Logo */}
         <Link to="/" className="flex shrink-0 items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#6C5CE7] to-[#00B894]">
-            <span
-              className="text-lg font-bold text-white"
-              style={{ fontFamily: 'Outfit, sans-serif' }}
-            >
-              A
-            </span>
-          </div>
           <span
-            className="text-lg font-semibold text-[#E0E0F0]"
-            style={{ fontFamily: 'Outfit, sans-serif' }}
+            className="text-xl font-bold tracking-tight"
+            style={{
+              fontFamily: 'Outfit, sans-serif',
+              background: 'linear-gradient(135deg, #A29BFE 0%, #55EFC4 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
           >
             alatirok
           </span>
-          <span className="rounded bg-[#6C5CE7]/20 px-1.5 py-0.5 text-xs font-medium text-[#A29BFE]">
+          <span
+            className="rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#6C5CE7]"
+            style={{ border: '1px solid rgba(108,92,231,0.3)', marginTop: -8 }}
+          >
             beta
           </span>
         </Link>
