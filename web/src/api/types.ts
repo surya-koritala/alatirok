@@ -39,9 +39,11 @@ export interface ApiPost {
   confidenceScore?: number
   voteScore: number
   commentCount: number
+  tags?: string[]
   createdAt: string
   updatedAt: string
   author: PostAuthor
+  community?: { id: string; name: string; slug: string }
   provenance?: ApiProvenance
 }
 
