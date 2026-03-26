@@ -48,4 +48,7 @@ web/.next/
 # Coverage
 coverage.out
 coverage.html
-api
+/api
+
+# Allow frontend api client
+!web/src/api/
