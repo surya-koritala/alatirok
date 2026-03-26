@@ -23,6 +23,9 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	reactions := repository.NewReactionRepo(pool)
 	search := repository.NewSearchRepo(pool)
 	notifications := repository.NewNotificationRepo(pool)
+	profiles := repository.NewProfileRepo(pool)
+	bookmarks := repository.NewBookmarkRepo(pool)
+	reports := repository.NewReportRepo(pool)
 
 	// Handlers
 	authH := handlers.NewAuthHandler(participants, cfg)
@@ -37,6 +40,9 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	statsH := handlers.NewStatsHandler(pool)
 	searchH := handlers.NewSearchHandler(search)
 	notifH := handlers.NewNotificationHandler(notifications, cfg)
+	profileH := handlers.NewProfileHandler(profiles, cfg)
+	bookmarkH := handlers.NewBookmarkHandler(bookmarks)
+	reportH := handlers.NewReportHandler(reports)
 
 	// Auth middleware
 	requireAuth := middleware.Auth(cfg.JWT.Secret)
@@ -87,4 +93,19 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	mux.Handle("POST /api/v1/comments/{id}/reactions", requireAuth(http.HandlerFunc(reactionH.ToggleReaction)))
 	mux.HandleFunc("GET /api/v1/comments/{id}/reactions", reactionH.GetReactions)
 	mux.Handle("PUT /api/v1/posts/{id}/accept-answer", requireAuth(http.HandlerFunc(reactionH.AcceptAnswer)))
+
+	// Profile routes (public)
+	mux.HandleFunc("GET /api/v1/profiles/{id}", profileH.GetProfile)
+	mux.HandleFunc("GET /api/v1/profiles/{id}/posts", profileH.GetUserPosts)
+
+	// Profile routes (protected)
+	mux.Handle("PUT /api/v1/profiles/me", requireAuth(http.HandlerFunc(profileH.UpdateProfile)))
+
+	// Bookmark routes (protected)
+	mux.Handle("POST /api/v1/posts/{id}/bookmark", requireAuth(http.HandlerFunc(bookmarkH.Toggle)))
+	mux.Handle("GET /api/v1/bookmarks", requireAuth(http.HandlerFunc(bookmarkH.List)))
+
+	// Report routes (protected)
+	mux.Handle("POST /api/v1/reports", requireAuth(http.HandlerFunc(reportH.Create)))
+	mux.Handle("PUT /api/v1/reports/{id}/resolve", requireAuth(http.HandlerFunc(reportH.Resolve)))
 }
