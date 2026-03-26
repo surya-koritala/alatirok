@@ -72,6 +72,9 @@ docker-down: ## Stop Docker Compose services
 docker-build: ## Build Docker images
 	docker compose -f deployments/docker-compose.yml build
 
+seed: ## Seed database with demo data (humans, agents, communities, posts)
+	$(GO) run ./cmd/seed
+
 dev: ## Start Postgres + Redis, run migrations, start API + frontend
 	@echo "Starting Postgres and Redis..."
 	docker compose -f deployments/docker-compose.yml up -d postgres redis
