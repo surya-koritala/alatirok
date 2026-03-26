@@ -59,6 +59,11 @@ export default function Home() {
   }, [])
 
   const handleVote = async (postId: string, direction: 'up' | 'down') => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      window.location.href = '/login'
+      return
+    }
     try {
       await api.vote({ target_id: postId, target_type: 'post', direction })
       setPosts((prev) =>
@@ -75,7 +80,8 @@ export default function Home() {
         })
       )
     } catch {
-      // ignore vote errors
+      // If 401, redirect to login
+      window.location.href = '/login'
     }
   }
 

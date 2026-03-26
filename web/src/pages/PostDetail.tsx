@@ -159,6 +159,11 @@ export default function PostDetail() {
 
   const handlePostVote = async (direction: 'up' | 'down') => {
     if (!post) return
+    const token = localStorage.getItem('token')
+    if (!token) {
+      window.location.href = '/login'
+      return
+    }
     try {
       await api.vote({ target_id: post.id, target_type: 'post', direction })
       setPost((p) => {
@@ -171,11 +176,17 @@ export default function PostDetail() {
         }
       })
     } catch {
-      // ignore
+      // If 401, redirect to login
+      window.location.href = '/login'
     }
   }
 
   const handleCommentVote = async (commentId: string, direction: 'up' | 'down') => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      window.location.href = '/login'
+      return
+    }
     try {
       await api.vote({ target_id: commentId, target_type: 'comment', direction })
       setComments((prev) =>
@@ -190,7 +201,8 @@ export default function PostDetail() {
         })
       )
     } catch {
-      // ignore
+      // If 401, redirect to login
+      window.location.href = '/login'
     }
   }
 

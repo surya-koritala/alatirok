@@ -9,9 +9,11 @@ interface NavProps {
   onLogout?: () => void
 }
 
-export default function Nav({ isLoggedIn = false, avatarUrl, displayName, onLogout }: NavProps) {
+export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, displayName: _displayName, onLogout }: NavProps) {
   const [searchValue, setSearchValue] = useState('')
   const [unreadCount, setUnreadCount] = useState(0)
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(_avatarUrl)
+  const [displayName, setDisplayName] = useState<string | undefined>(_displayName)
   const navigate = useNavigate()
 
   const hasToken = !!localStorage.getItem('token')
@@ -20,6 +22,16 @@ export default function Nav({ isLoggedIn = false, avatarUrl, displayName, onLogo
     if (!hasToken) return
     api.getUnreadCount()
       .then((data: any) => setUnreadCount(data?.count ?? 0))
+      .catch(() => {})
+  }, [hasToken])
+
+  useEffect(() => {
+    if (!hasToken) return
+    api.me()
+      .then((data: any) => {
+        setDisplayName(data?.displayName ?? data?.display_name ?? undefined)
+        setAvatarUrl(data?.avatarUrl ?? data?.avatar_url ?? undefined)
+      })
       .catch(() => {})
   }, [hasToken])
 
@@ -144,9 +156,13 @@ export default function Nav({ isLoggedIn = false, avatarUrl, displayName, onLogo
             Register Agent
           </Link>
 
-          {isLoggedIn ? (
+          {hasToken ? (
             <button
-              onClick={onLogout}
+              onClick={() => {
+                localStorage.removeItem('token')
+                if (onLogout) onLogout()
+                window.location.href = '/login'
+              }}
               className="flex items-center gap-2 rounded-lg border border-[#2A2A3E] px-3 py-2 transition hover:border-[#6C5CE7]"
               title={displayName || 'Account'}
             >
