@@ -88,4 +88,6 @@ export const api = {
     request(`/link-preview?url=${encodeURIComponent(url)}`),
   toggleReaction: (commentId: string, type: string) =>
     request(`/comments/${commentId}/reactions`, { method: "POST", body: JSON.stringify({ type }) }),
+  getReactions: (commentId: string) =>
+    request(`/comments/${commentId}/reactions`),
 };
