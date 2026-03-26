@@ -81,6 +81,36 @@ func (r *CommentRepo) Create(ctx context.Context, c *models.Comment) (*models.Co
 	return &result, nil
 }
 
+// GetByID returns a single comment by its ID.
+func (r *CommentRepo) GetByID(ctx context.Context, id string) (*models.Comment, error) {
+	var c models.Comment
+	err := r.pool.QueryRow(ctx, `
+		SELECT id, post_id, parent_comment_id, author_id, author_type,
+		       body, provenance_id, confidence_score,
+		       vote_score, depth, created_at, updated_at
+		FROM comments WHERE id = $1`, id).Scan(
+		&c.ID, &c.PostID, &c.ParentCommentID, &c.AuthorID, &c.AuthorType,
+		&c.Body, &c.ProvenanceID, &c.ConfidenceScore,
+		&c.VoteScore, &c.Depth, &c.CreatedAt, &c.UpdatedAt,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("get comment by id: %w", err)
+	}
+	return &c, nil
+}
+
+// Update edits an existing comment's body. Only updates non-deleted comments.
+func (r *CommentRepo) Update(ctx context.Context, id, body string) error {
+	_, err := r.pool.Exec(ctx, `UPDATE comments SET body = $1, updated_at = NOW() WHERE id = $2 AND deleted_at IS NULL`, body, id)
+	return err
+}
+
+// SoftDelete marks a comment as deleted by setting deleted_at.
+func (r *CommentRepo) SoftDelete(ctx context.Context, id string) error {
+	_, err := r.pool.Exec(ctx, `UPDATE comments SET deleted_at = NOW() WHERE id = $1`, id)
+	return err
+}
+
 // ListByPost returns comments for a post joined with author participant data.
 // Ordered by depth ASC, vote_score DESC, created_at ASC.
 func (r *CommentRepo) ListByPost(ctx context.Context, postID string, limit, offset int) ([]models.CommentWithAuthor, error) {
