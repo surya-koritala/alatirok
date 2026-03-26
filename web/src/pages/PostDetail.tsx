@@ -21,10 +21,29 @@ interface Provenance {
   generationMethod: 'original' | 'synthesis' | 'summary' | 'translation'
 }
 
+interface PostMetadata {
+  positionA?: string
+  positionB?: string
+  expectedFormat?: string
+  dataSources?: string[]
+  repoUrl?: string
+  language?: string
+  status?: string
+  deadline?: string
+  capabilities?: string[]
+  severity?: string
+  methodology?: string
+  findings?: string
+  limitations?: string
+  [key: string]: unknown
+}
+
 interface Post {
   id: string
   title: string
   body?: string
+  postType?: string
+  metadata?: PostMetadata
   score: number
   commentCount: number
   communitySlug: string
@@ -185,11 +204,147 @@ export default function PostDetail() {
                 {post.title}
               </h1>
 
-              {post.body && (
+              {/* Type-specific rendering */}
+              {post.postType === 'debate' && post.metadata?.positionA && post.metadata?.positionB ? (
+                <div>
+                  {post.body && (
+                    <div className="text-sm leading-relaxed text-[#C0C0D8] mb-3" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                      <MarkdownContent content={post.body} />
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div style={{ background: 'rgba(108,92,231,0.06)', border: '1px solid rgba(108,92,231,0.15)', borderRadius: 12, padding: 16 }}>
+                      <h3 style={{ fontSize: 13, fontWeight: 700, color: '#A29BFE', marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}>Position A</h3>
+                      <MarkdownContent content={post.metadata.positionA as string} />
+                    </div>
+                    <div style={{ background: 'rgba(0,184,148,0.06)', border: '1px solid rgba(0,184,148,0.15)', borderRadius: 12, padding: 16 }}>
+                      <h3 style={{ fontSize: 13, fontWeight: 700, color: '#55EFC4', marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}>Position B</h3>
+                      <MarkdownContent content={post.metadata.positionB as string} />
+                    </div>
+                  </div>
+                </div>
+              ) : post.postType === 'question' && post.metadata?.expectedFormat ? (
+                <div>
+                  {post.body && (
+                    <div className="text-sm leading-relaxed text-[#C0C0D8] mb-3" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                      <MarkdownContent content={post.body} />
+                    </div>
+                  )}
+                  <div style={{ background: 'rgba(108,92,231,0.06)', border: '1px solid rgba(108,92,231,0.15)', borderRadius: 12, padding: 14, marginTop: 12 }}>
+                    <h3 style={{ fontSize: 12, fontWeight: 700, color: '#A29BFE', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: "'DM Sans', sans-serif" }}>Expected Format</h3>
+                    <div className="text-sm text-[#C0C0D8]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                      <MarkdownContent content={post.metadata.expectedFormat} />
+                    </div>
+                  </div>
+                </div>
+              ) : post.postType === 'task' ? (
+                <div>
+                  {post.body && (
+                    <div className="text-sm leading-relaxed text-[#C0C0D8] mb-3" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                      <MarkdownContent content={post.body} />
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {post.metadata?.status && (
+                      <span style={{ background: 'rgba(0,184,148,0.12)', border: '1px solid rgba(0,184,148,0.25)', borderRadius: 6, padding: '3px 10px', fontSize: 12, fontWeight: 600, color: '#55EFC4', fontFamily: "'DM Mono', monospace" }}>
+                        {post.metadata.status}
+                      </span>
+                    )}
+                    {post.metadata?.deadline && (
+                      <span style={{ background: 'rgba(253,203,110,0.1)', border: '1px solid rgba(253,203,110,0.25)', borderRadius: 6, padding: '3px 10px', fontSize: 12, fontWeight: 600, color: '#FDCB6E', fontFamily: "'DM Mono', monospace" }}>
+                        Due: {post.metadata.deadline}
+                      </span>
+                    )}
+                    {Array.isArray(post.metadata?.capabilities) && post.metadata.capabilities.map((cap: string, i: number) => (
+                      <span key={i} style={{ background: 'rgba(108,92,231,0.1)', border: '1px solid rgba(108,92,231,0.2)', borderRadius: 6, padding: '3px 10px', fontSize: 12, color: '#A29BFE', fontFamily: "'DM Mono', monospace" }}>
+                        {cap}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : post.postType === 'alert' ? (
+                <div>
+                  {post.metadata?.severity && (
+                    <div className="flex items-center gap-2 mb-3">
+                      <span style={{
+                        background: post.metadata.severity === 'critical' ? 'rgba(214,48,49,0.12)' : post.metadata.severity === 'high' ? 'rgba(225,112,85,0.12)' : 'rgba(253,203,110,0.1)',
+                        border: `1px solid ${post.metadata.severity === 'critical' ? 'rgba(214,48,49,0.3)' : post.metadata.severity === 'high' ? 'rgba(225,112,85,0.3)' : 'rgba(253,203,110,0.25)'}`,
+                        borderRadius: 6,
+                        padding: '4px 12px',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: post.metadata.severity === 'critical' ? '#FF7675' : post.metadata.severity === 'high' ? '#E17055' : '#FDCB6E',
+                        fontFamily: "'DM Mono', monospace",
+                        textTransform: 'uppercase' as const,
+                        letterSpacing: '0.05em',
+                      }}>
+                        {post.metadata.severity} severity
+                      </span>
+                    </div>
+                  )}
+                  {post.body && (
+                    <div className="text-sm leading-relaxed text-[#C0C0D8]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                      <MarkdownContent content={post.body} />
+                    </div>
+                  )}
+                </div>
+              ) : post.postType === 'code_review' ? (
+                <div>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {post.metadata?.repoUrl && (
+                      <a href={post.metadata.repoUrl} target="_blank" rel="noopener noreferrer" style={{ background: 'rgba(108,92,231,0.08)', border: '1px solid rgba(108,92,231,0.2)', borderRadius: 6, padding: '3px 10px', fontSize: 12, color: '#A29BFE', fontFamily: "'DM Mono', monospace", textDecoration: 'none' }}>
+                        {post.metadata.repoUrl}
+                      </a>
+                    )}
+                    {post.metadata?.language && (
+                      <span style={{ background: 'rgba(0,184,148,0.08)', border: '1px solid rgba(0,184,148,0.2)', borderRadius: 6, padding: '3px 10px', fontSize: 12, fontWeight: 600, color: '#55EFC4', fontFamily: "'DM Mono', monospace" }}>
+                        {post.metadata.language}
+                      </span>
+                    )}
+                  </div>
+                  {post.body && (
+                    <div className="text-sm leading-relaxed text-[#C0C0D8]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                      <MarkdownContent content={post.body} />
+                    </div>
+                  )}
+                </div>
+              ) : post.postType === 'synthesis' ? (
+                <div className="flex flex-col gap-4">
+                  {post.body && (
+                    <div className="text-sm leading-relaxed text-[#C0C0D8]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                      <MarkdownContent content={post.body} />
+                    </div>
+                  )}
+                  {post.metadata?.methodology && (
+                    <div style={{ background: 'rgba(108,92,231,0.06)', border: '1px solid rgba(108,92,231,0.15)', borderRadius: 12, padding: 14 }}>
+                      <h3 style={{ fontSize: 12, fontWeight: 700, color: '#A29BFE', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: "'DM Sans', sans-serif" }}>Methodology</h3>
+                      <div className="text-sm text-[#C0C0D8]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                        <MarkdownContent content={post.metadata.methodology} />
+                      </div>
+                    </div>
+                  )}
+                  {post.metadata?.findings && (
+                    <div style={{ background: 'rgba(0,184,148,0.06)', border: '1px solid rgba(0,184,148,0.15)', borderRadius: 12, padding: 14 }}>
+                      <h3 style={{ fontSize: 12, fontWeight: 700, color: '#55EFC4', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: "'DM Sans', sans-serif" }}>Findings</h3>
+                      <div className="text-sm text-[#C0C0D8]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                        <MarkdownContent content={post.metadata.findings} />
+                      </div>
+                    </div>
+                  )}
+                  {post.metadata?.limitations && (
+                    <div style={{ background: 'rgba(253,203,110,0.05)', border: '1px solid rgba(253,203,110,0.15)', borderRadius: 12, padding: 14 }}>
+                      <h3 style={{ fontSize: 12, fontWeight: 700, color: '#FDCB6E', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: "'DM Sans', sans-serif" }}>Limitations</h3>
+                      <div className="text-sm text-[#C0C0D8]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                        <MarkdownContent content={post.metadata.limitations} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : post.body ? (
                 <div className="text-sm leading-relaxed text-[#C0C0D8]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
                   <MarkdownContent content={post.body} />
                 </div>
-              )}
+              ) : null}
 
               {post.author.type === 'agent' && post.provenance && (
                 <div>
