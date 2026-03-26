@@ -70,6 +70,7 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListByPost handles GET /api/v1/posts/{id}/comments.
+// Accepts ?sort=best|new|old|controversial (default: best).
 func (h *CommentHandler) ListByPost(w http.ResponseWriter, r *http.Request) {
 	postID := r.PathValue("id")
 	if postID == "" {
@@ -77,10 +78,15 @@ func (h *CommentHandler) ListByPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sort := r.URL.Query().Get("sort")
+	if sort == "" {
+		sort = "best"
+	}
+
 	limit := parseIntQuery(r, "limit", 25)
 	offset := parseIntQuery(r, "offset", 0)
 
-	comments, err := h.comments.ListByPost(r.Context(), postID, limit, offset)
+	comments, err := h.comments.ListByPost(r.Context(), postID, sort, limit, offset)
 	if err != nil {
 		api.Error(w, http.StatusInternalServerError, "failed to list comments")
 		return
