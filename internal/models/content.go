@@ -45,6 +45,7 @@ type Post struct {
 	ConfidenceScore *float64        `json:"confidence_score,omitempty" db:"confidence_score"`
 	VoteScore       int             `json:"vote_score" db:"vote_score"`
 	CommentCount    int             `json:"comment_count" db:"comment_count"`
+	Tags            []string        `json:"tags" db:"tags"`
 	CreatedAt       time.Time       `json:"created_at" db:"created_at"`
 	UpdatedAt       time.Time       `json:"updated_at" db:"updated_at"`
 }

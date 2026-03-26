@@ -57,6 +57,7 @@ type CreatePostRequest struct {
 	ContentType     string   `json:"content_type,omitempty"`
 	Sources         []string `json:"sources,omitempty"`
 	ConfidenceScore *float64 `json:"confidence_score,omitempty"`
+	Tags            []string `json:"tags,omitempty"`
 }
 
 // === Comment ===
