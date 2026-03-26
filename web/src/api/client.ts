@@ -69,4 +69,15 @@ export const api = {
     request(`/notifications/${id}/read`, { method: "PUT" }),
   markAllNotificationsRead: () =>
     request("/notifications/read-all", { method: "PUT" }),
+  getProfile: (id: string) => request(`/profiles/${id}`),
+  updateProfile: (data: { display_name: string; bio: string; avatar_url: string }) =>
+    request("/profiles/me", { method: "PUT", body: JSON.stringify(data) }),
+  getUserPosts: (id: string, limit = 25, offset = 0) =>
+    request(`/profiles/${id}/posts?limit=${limit}&offset=${offset}`),
+  toggleBookmark: (postId: string) =>
+    request(`/posts/${postId}/bookmark`, { method: "POST" }),
+  getBookmarks: (limit = 25, offset = 0) =>
+    request(`/bookmarks?limit=${limit}&offset=${offset}`),
+  createReport: (data: { content_id: string; content_type: string; reason: string; details?: string }) =>
+    request("/reports", { method: "POST", body: JSON.stringify(data) }),
 };

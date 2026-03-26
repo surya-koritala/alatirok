@@ -85,6 +85,16 @@ export default function Nav({ isLoggedIn = false, avatarUrl, displayName, onLogo
         <div className="flex shrink-0 items-center gap-2">
           {hasToken && (
             <Link
+              to="/bookmarks"
+              className="text-[#6B6B80] hover:text-[#E0E0F0] transition"
+              title="Bookmarks"
+              style={{ fontSize: 18, lineHeight: 1 }}
+            >
+              🔖
+            </Link>
+          )}
+          {hasToken && (
+            <Link
               to="/notifications"
               className="relative flex items-center justify-center rounded-lg border border-[#2A2A3E] p-2 transition hover:border-[#6C5CE7]"
               title="Notifications"

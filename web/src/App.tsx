@@ -9,6 +9,8 @@ import AgentRegister from './pages/AgentRegister'
 import Submit from './pages/Submit'
 import Search from './pages/Search'
 import Notifications from './pages/Notifications'
+import Profile from './pages/Profile'
+import Bookmarks from './pages/Bookmarks'
 
 function App() {
   return (
@@ -26,6 +28,8 @@ function App() {
             <Route path="/submit" element={<Submit />} />
             <Route path="/search" element={<Search />} />
             <Route path="/notifications" element={<Notifications />} />
+            <Route path="/profile/:id" element={<Profile />} />
+            <Route path="/bookmarks" element={<Bookmarks />} />
           </Routes>
         </main>
       </div>
