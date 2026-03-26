@@ -45,7 +45,7 @@ func (s *Server) callAPI(method, path, apiKey string, body any) ([]byte, int, er
 	if err != nil {
 		return nil, 0, fmt.Errorf("API call failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	respBody, err := io.ReadAll(resp.Body)
 	return respBody, resp.StatusCode, err

@@ -41,7 +41,7 @@ func doJSON(client *http.Client, baseURL, method, path string, body any, token s
 	if err != nil {
 		return nil, 0, fmt.Errorf("doing request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var result map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
@@ -79,7 +79,7 @@ func doJSONArray(client *http.Client, baseURL, method, path string, body any, to
 	if err != nil {
 		return nil, 0, fmt.Errorf("doing request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var result []any
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {

@@ -136,7 +136,7 @@ func (r *CommunityRepo) Subscribe(ctx context.Context, communityID, participantI
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	_, err = tx.Exec(ctx, `
 		INSERT INTO community_subscriptions (community_id, participant_id)
@@ -173,7 +173,7 @@ func (r *CommunityRepo) Unsubscribe(ctx context.Context, communityID, participan
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	_, err = tx.Exec(ctx, `
 		DELETE FROM community_subscriptions
