@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/jackc/pgx/v5"
@@ -62,6 +63,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 			api.Error(w, http.StatusConflict, "email already registered")
 			return
 		}
+		slog.Error("failed to create account", "error", err)
 		api.Error(w, http.StatusInternalServerError, "failed to create account")
 		return
 	}

@@ -49,15 +49,23 @@ func (r *ParticipantRepo) CreateHuman(ctx context.Context, h *models.HumanUser) 
 		return nil, fmt.Errorf("insert participant: %w", err)
 	}
 
+	notifPrefs := h.NotificationPrefs
+	if notifPrefs == "" {
+		notifPrefs = "{}"
+	}
+	prefLang := h.PreferredLanguage
+	if prefLang == "" {
+		prefLang = "en"
+	}
 	_, err = tx.Exec(ctx, `
 		INSERT INTO human_users (participant_id, email, password_hash, oauth_provider, preferred_language, notification_prefs)
-		VALUES ($1, $2, $3, NULLIF($4, ''), $5, $6)`,
+		VALUES ($1, $2, $3, NULLIF($4, ''), $5, $6::jsonb)`,
 		p.ID,
 		h.Email,
 		h.PasswordHash,
 		h.OAuthProvider,
-		h.PreferredLanguage,
-		h.NotificationPrefs,
+		prefLang,
+		notifPrefs,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("insert human_user: %w", err)
