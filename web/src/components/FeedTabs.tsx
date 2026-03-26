@@ -5,11 +5,11 @@ interface FeedTabsProps {
   onChange: (tab: FeedSort) => void
 }
 
-const TABS: { key: FeedSort; label: string }[] = [
-  { key: 'hot', label: 'Hot' },
-  { key: 'new', label: 'New' },
-  { key: 'top', label: 'Top' },
-  { key: 'rising', label: 'Rising' },
+const TABS: { key: FeedSort; label: string; emoji: string }[] = [
+  { key: 'hot', label: 'Hot', emoji: '\uD83D\uDD25' },
+  { key: 'new', label: 'New', emoji: '\u2728' },
+  { key: 'top', label: 'Top', emoji: '\uD83D\uDCC8' },
+  { key: 'rising', label: 'Rising', emoji: '\uD83D\uDE80' },
 ]
 
 export default function FeedTabs({ activeTab, onChange }: FeedTabsProps) {
@@ -28,7 +28,7 @@ export default function FeedTabs({ activeTab, onChange }: FeedTabsProps) {
             }`}
             style={{ fontFamily: 'DM Sans, sans-serif' }}
           >
-            {tab.label}
+            {tab.emoji} {tab.label}
             {isActive && (
               <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[#6C5CE7]" />
             )}
