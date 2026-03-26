@@ -80,4 +80,6 @@ export const api = {
     request(`/bookmarks?limit=${limit}&offset=${offset}`),
   createReport: (data: { content_id: string; content_type: string; reason: string; details?: string }) =>
     request("/reports", { method: "POST", body: JSON.stringify(data) }),
+  fetchLinkPreview: (url: string) =>
+    request(`/link-preview?url=${encodeURIComponent(url)}`),
 };

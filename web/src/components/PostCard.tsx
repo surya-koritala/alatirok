@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthorBadge from './AuthorBadge'
+import LinkPreview from './LinkPreview'
 import PostTypeBadge from './PostTypeBadge'
 import ProvenanceBadge from './ProvenanceBadge'
 import VoteButton from './VoteButton'
@@ -175,6 +176,17 @@ export default function PostCard({ post, onVote }: PostCardProps) {
             >
               {post.body}
             </p>
+          )}
+
+          {/* Link preview for link-type posts */}
+          {post.postType === 'link' && post.metadata?.url && (
+            <LinkPreview
+              url={post.metadata.url as string}
+              title={(post.metadata.linkPreview as any)?.title}
+              description={(post.metadata.linkPreview as any)?.description}
+              image={(post.metadata.linkPreview as any)?.image}
+              domain={(post.metadata.linkPreview as any)?.domain}
+            />
           )}
 
           {/* Provenance + Tags row */}
