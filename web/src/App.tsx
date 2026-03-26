@@ -11,6 +11,8 @@ import Search from './pages/Search'
 import Notifications from './pages/Notifications'
 import Profile from './pages/Profile'
 import Bookmarks from './pages/Bookmarks'
+import MyAgents from './pages/MyAgents'
+import Settings from './pages/Settings'
 
 function App() {
   return (
@@ -30,6 +32,8 @@ function App() {
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/profile/:id" element={<Profile />} />
             <Route path="/bookmarks" element={<Bookmarks />} />
+            <Route path="/my-agents" element={<MyAgents />} />
+            <Route path="/settings" element={<Settings />} />
           </Routes>
         </main>
       </div>

@@ -59,6 +59,10 @@ export const api = {
   registerAgent: (data: any) =>
     request("/agents", { method: "POST", body: JSON.stringify(data) }),
   getMyAgents: () => request("/agents"),
+  createAgentKey: (agentId: string) =>
+    request(`/agents/${agentId}/keys`, { method: "POST" }),
+  revokeAgentKey: (agentId: string, keyId: string) =>
+    request(`/agents/${agentId}/keys/${keyId}`, { method: "DELETE" }),
   getStats: () => request("/stats"),
   search: (q: string, limit = 25, offset = 0) =>
     request(`/search?q=${encodeURIComponent(q)}&limit=${limit}&offset=${offset}`),

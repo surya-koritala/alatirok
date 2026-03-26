@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { api } from '../api/client'
 
 interface NavProps {
@@ -14,6 +14,9 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
   const [unreadCount, setUnreadCount] = useState(0)
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(_avatarUrl)
   const [displayName, setDisplayName] = useState<string | undefined>(_displayName)
+  const [userId, setUserId] = useState<string | undefined>(localStorage.getItem('userId') ?? undefined)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
 
   const hasToken = !!localStorage.getItem('token')
@@ -31,9 +34,24 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
       .then((data: any) => {
         setDisplayName(data?.displayName ?? data?.display_name ?? undefined)
         setAvatarUrl(data?.avatarUrl ?? data?.avatar_url ?? undefined)
+        if (data?.id) {
+          setUserId(data.id)
+          localStorage.setItem('userId', data.id)
+        }
       })
       .catch(() => {})
   }, [hasToken])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -157,30 +175,97 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
           </Link>
 
           {hasToken ? (
-            <button
-              onClick={() => {
-                localStorage.removeItem('token')
-                if (onLogout) onLogout()
-                window.location.href = '/login'
-              }}
-              className="flex items-center gap-2 rounded-lg border border-[#2A2A3E] px-3 py-2 transition hover:border-[#6C5CE7]"
-              title={displayName || 'Account'}
-            >
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={displayName}
-                  className="h-6 w-6 rounded-full object-cover"
-                />
-              ) : (
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#6C5CE7] to-[#A29BFE] text-xs font-semibold text-white">
-                  {displayName ? displayName[0].toUpperCase() : 'U'}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setShowDropdown(prev => !prev)}
+                className="flex items-center gap-2 rounded-lg border border-[#2A2A3E] px-3 py-2 transition hover:border-[#6C5CE7]"
+                title={displayName || 'Account'}
+              >
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={displayName}
+                    className="h-6 w-6 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#6C5CE7] to-[#A29BFE] text-xs font-semibold text-white">
+                    {displayName ? displayName[0].toUpperCase() : 'U'}
+                  </div>
+                )}
+                <span className="text-sm text-[#E0E0F0]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  {displayName}
+                </span>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#8888AA"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ transform: showDropdown ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+
+              {showDropdown && (
+                <div
+                  className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-[#2A2A3E] bg-[#12121E] py-1 shadow-2xl"
+                  style={{ zIndex: 100 }}
+                >
+                  {userId && (
+                    <Link
+                      to={`/profile/${userId}`}
+                      onClick={() => setShowDropdown(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#E0E0F0] transition hover:bg-[#1E1E2E]"
+                      style={{ fontFamily: 'DM Sans, sans-serif' }}
+                    >
+                      <span>My Profile</span>
+                    </Link>
+                  )}
+                  <Link
+                    to="/my-agents"
+                    onClick={() => setShowDropdown(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#E0E0F0] transition hover:bg-[#1E1E2E]"
+                    style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  >
+                    <span>My Agents</span>
+                  </Link>
+                  <Link
+                    to="/settings"
+                    onClick={() => setShowDropdown(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#E0E0F0] transition hover:bg-[#1E1E2E]"
+                    style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  >
+                    <span>Settings</span>
+                  </Link>
+                  <Link
+                    to="/bookmarks"
+                    onClick={() => setShowDropdown(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#E0E0F0] transition hover:bg-[#1E1E2E]"
+                    style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  >
+                    <span>Bookmarks</span>
+                  </Link>
+                  <div className="my-1 border-t border-[#2A2A3E]" />
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('token')
+                      localStorage.removeItem('userId')
+                      setShowDropdown(false)
+                      if (onLogout) onLogout()
+                      window.location.href = '/'
+                    }}
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-[#E17055] transition hover:bg-[#1E1E2E]"
+                    style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  >
+                    Logout
+                  </button>
                 </div>
               )}
-              <span className="text-sm text-[#E0E0F0]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-                {displayName}
-              </span>
-            </button>
+            </div>
           ) : (
             <Link
               to="/login"
