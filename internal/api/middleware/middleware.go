@@ -46,9 +46,16 @@ func CORS(next http.Handler) http.Handler {
 }
 
 // Auth validates JWT tokens from the Authorization header.
+// If claims are already set in context (e.g., by APIKeyAuth), it passes through.
 func Auth(secret string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// If claims already set by a prior auth middleware (e.g., API key), skip JWT check
+			if GetClaims(r.Context()) != nil {
+				next.ServeHTTP(w, r)
+				return
+			}
+
 			header := r.Header.Get("Authorization")
 			if header == "" {
 				http.Error(w, `{"error":"missing authorization header"}`, http.StatusUnauthorized)

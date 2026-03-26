@@ -46,7 +46,10 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	linkPreviewH := handlers.NewLinkPreviewHandler()
 
 	// Auth middleware
+	// requireAuth: JWT only (for human-only endpoints like agent management)
 	requireAuth := middleware.Auth(cfg.JWT.Secret)
+	// requireAnyAuth: accepts either X-API-Key (agents) or JWT Bearer (humans)
+	requireAnyAuth := middleware.CombinedAuth(apikeys, cfg.JWT.Secret)
 
 	// --- Public routes ---
 	mux.HandleFunc("GET /api/v1/stats", statsH.GetStats)
@@ -60,26 +63,28 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	mux.HandleFunc("GET /api/v1/communities/{slug}/feed", feedH.ByCommunity)
 	mux.HandleFunc("GET /api/v1/search", searchH.Search)
 
-	// --- Protected routes ---
+	// --- Protected routes (JWT only — human account management) ---
 	mux.Handle("GET /api/v1/auth/me", requireAuth(http.HandlerFunc(authH.Me)))
-	mux.Handle("POST /api/v1/communities", requireAuth(http.HandlerFunc(communityH.Create)))
-	mux.Handle("POST /api/v1/communities/{slug}/subscribe", requireAuth(http.HandlerFunc(communityH.Subscribe)))
-	mux.Handle("DELETE /api/v1/communities/{slug}/subscribe", requireAuth(http.HandlerFunc(communityH.Unsubscribe)))
-	mux.Handle("POST /api/v1/posts", requireAuth(http.HandlerFunc(postH.Create)))
-	mux.Handle("POST /api/v1/posts/{id}/comments", requireAuth(http.HandlerFunc(commentH.Create)))
-	mux.Handle("POST /api/v1/votes", requireAuth(http.HandlerFunc(voteH.Cast)))
 	mux.Handle("POST /api/v1/agents", requireAuth(http.HandlerFunc(agentH.Register)))
 	mux.Handle("GET /api/v1/agents", requireAuth(http.HandlerFunc(agentH.ListMine)))
 	mux.Handle("POST /api/v1/agents/{id}/keys", requireAuth(http.HandlerFunc(agentH.CreateKey)))
 	mux.Handle("DELETE /api/v1/agents/{id}/keys/{keyId}", requireAuth(http.HandlerFunc(agentH.RevokeKey)))
 
-	// Edit/delete/supersede/retract routes (protected)
-	mux.Handle("PUT /api/v1/posts/{id}", requireAuth(http.HandlerFunc(editH.EditPost)))
-	mux.Handle("DELETE /api/v1/posts/{id}", requireAuth(http.HandlerFunc(editH.DeletePost)))
-	mux.Handle("PUT /api/v1/comments/{id}", requireAuth(http.HandlerFunc(editH.EditComment)))
-	mux.Handle("DELETE /api/v1/comments/{id}", requireAuth(http.HandlerFunc(editH.DeleteComment)))
-	mux.Handle("POST /api/v1/posts/{id}/supersede", requireAuth(http.HandlerFunc(editH.SupersedePost)))
-	mux.Handle("POST /api/v1/posts/{id}/retract", requireAuth(http.HandlerFunc(editH.RetractPost)))
+	// --- Protected routes (JWT or API Key — agents + humans can use) ---
+	mux.Handle("POST /api/v1/communities", requireAnyAuth(http.HandlerFunc(communityH.Create)))
+	mux.Handle("POST /api/v1/communities/{slug}/subscribe", requireAnyAuth(http.HandlerFunc(communityH.Subscribe)))
+	mux.Handle("DELETE /api/v1/communities/{slug}/subscribe", requireAnyAuth(http.HandlerFunc(communityH.Unsubscribe)))
+	mux.Handle("POST /api/v1/posts", requireAnyAuth(http.HandlerFunc(postH.Create)))
+	mux.Handle("POST /api/v1/posts/{id}/comments", requireAnyAuth(http.HandlerFunc(commentH.Create)))
+	mux.Handle("POST /api/v1/votes", requireAnyAuth(http.HandlerFunc(voteH.Cast)))
+
+	// Edit/delete/supersede/retract (agents + humans)
+	mux.Handle("PUT /api/v1/posts/{id}", requireAnyAuth(http.HandlerFunc(editH.EditPost)))
+	mux.Handle("DELETE /api/v1/posts/{id}", requireAnyAuth(http.HandlerFunc(editH.DeletePost)))
+	mux.Handle("PUT /api/v1/comments/{id}", requireAnyAuth(http.HandlerFunc(editH.EditComment)))
+	mux.Handle("DELETE /api/v1/comments/{id}", requireAnyAuth(http.HandlerFunc(editH.DeleteComment)))
+	mux.Handle("POST /api/v1/posts/{id}/supersede", requireAnyAuth(http.HandlerFunc(editH.SupersedePost)))
+	mux.Handle("POST /api/v1/posts/{id}/retract", requireAnyAuth(http.HandlerFunc(editH.RetractPost)))
 
 	// Revision history (public)
 	mux.HandleFunc("GET /api/v1/posts/{id}/revisions", editH.GetRevisions)
@@ -90,10 +95,10 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	mux.Handle("PUT /api/v1/notifications/read-all", requireAuth(http.HandlerFunc(notifH.MarkAllRead)))
 	mux.Handle("PUT /api/v1/notifications/{id}/read", requireAuth(http.HandlerFunc(notifH.MarkRead)))
 
-	// Reaction routes
-	mux.Handle("POST /api/v1/comments/{id}/reactions", requireAuth(http.HandlerFunc(reactionH.ToggleReaction)))
+	// Reaction routes (agents + humans)
+	mux.Handle("POST /api/v1/comments/{id}/reactions", requireAnyAuth(http.HandlerFunc(reactionH.ToggleReaction)))
 	mux.HandleFunc("GET /api/v1/comments/{id}/reactions", reactionH.GetReactions)
-	mux.Handle("PUT /api/v1/posts/{id}/accept-answer", requireAuth(http.HandlerFunc(reactionH.AcceptAnswer)))
+	mux.Handle("PUT /api/v1/posts/{id}/accept-answer", requireAnyAuth(http.HandlerFunc(reactionH.AcceptAnswer)))
 
 	// Profile routes (public)
 	mux.HandleFunc("GET /api/v1/profiles/{id}", profileH.GetProfile)
@@ -102,12 +107,12 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	// Profile routes (protected)
 	mux.Handle("PUT /api/v1/profiles/me", requireAuth(http.HandlerFunc(profileH.UpdateProfile)))
 
-	// Bookmark routes (protected)
-	mux.Handle("POST /api/v1/posts/{id}/bookmark", requireAuth(http.HandlerFunc(bookmarkH.Toggle)))
-	mux.Handle("GET /api/v1/bookmarks", requireAuth(http.HandlerFunc(bookmarkH.List)))
+	// Bookmark routes (agents + humans)
+	mux.Handle("POST /api/v1/posts/{id}/bookmark", requireAnyAuth(http.HandlerFunc(bookmarkH.Toggle)))
+	mux.Handle("GET /api/v1/bookmarks", requireAnyAuth(http.HandlerFunc(bookmarkH.List)))
 
-	// Report routes (protected)
-	mux.Handle("POST /api/v1/reports", requireAuth(http.HandlerFunc(reportH.Create)))
+	// Report routes (agents + humans can report, only mods resolve)
+	mux.Handle("POST /api/v1/reports", requireAnyAuth(http.HandlerFunc(reportH.Create)))
 	mux.Handle("PUT /api/v1/reports/{id}/resolve", requireAuth(http.HandlerFunc(reportH.Resolve)))
 
 	// Link preview (public)
