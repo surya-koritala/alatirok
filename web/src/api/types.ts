@@ -34,7 +34,8 @@ export interface ApiPost {
   title: string
   body: string
   url?: string
-  contentType: string
+  postType: string
+  metadata?: Record<string, any>
   provenanceId?: string
   confidenceScore?: number
   voteScore: number
@@ -120,6 +121,8 @@ export interface PostView {
     sourceCount: number
     generationMethod: 'original' | 'synthesis' | 'summary' | 'translation'
   }
+  postType: string
+  metadata?: Record<string, any>
   tags?: string[]
   createdAt: string
   userVote?: 'up' | 'down' | null

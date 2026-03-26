@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthorBadge from './AuthorBadge'
+import PostTypeBadge from './PostTypeBadge'
 import ProvenanceBadge from './ProvenanceBadge'
 import VoteButton from './VoteButton'
 
@@ -32,6 +33,8 @@ interface Post {
   communitySlug: string
   author: Author
   provenance?: Provenance
+  postType: string
+  metadata?: Record<string, any>
   tags?: string[]
   createdAt: string
   userVote?: VoteDirection | null
@@ -70,6 +73,7 @@ export default function PostCard({ post, onVote }: PostCardProps) {
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false)
   const community = COMMUNITY_META[post.communitySlug] ?? DEFAULT_META
+  const isAlert = post.postType === 'alert'
 
   const handleVote = (direction: VoteDirection) => {
     onVote?.(post.id, direction)
@@ -93,12 +97,14 @@ export default function PostCard({ post, onVote }: PostCardProps) {
       onMouseLeave={() => setHovered(false)}
       className="cursor-pointer"
       style={{
-        background: hovered ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
+        background: hovered
+          ? 'rgba(255,255,255,0.04)'
+          : isAlert ? 'rgba(225,112,85,0.03)' : 'rgba(255,255,255,0.02)',
         borderRadius: 14,
         padding: 20,
         border: hovered
           ? '1px solid rgba(108,92,231,0.15)'
-          : '1px solid rgba(255,255,255,0.05)',
+          : isAlert ? '1px solid rgba(225,112,85,0.15)' : '1px solid rgba(255,255,255,0.05)',
         marginBottom: 12,
         transition: 'all 0.25s ease',
       }}
@@ -129,6 +135,7 @@ export default function PostCard({ post, onVote }: PostCardProps) {
             <span style={{ fontSize: 11, color: '#555568' }}>
               {relativeTime(post.createdAt)}
             </span>
+            <PostTypeBadge type={post.postType} severity={(post.metadata as any)?.severity} />
           </div>
 
           {/* Author badge */}
