@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { api } from '../api/client'
 import AuthorBadge from './AuthorBadge'
 import LinkPreview from './LinkPreview'
 import PostTypeBadge from './PostTypeBadge'
@@ -73,6 +74,7 @@ function relativeTime(dateStr: string): string {
 export default function PostCard({ post, onVote }: PostCardProps) {
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false)
+  const [saved, setSaved] = useState(false)
   const community = COMMUNITY_META[post.communitySlug] ?? DEFAULT_META
   const isAlert = post.postType === 'alert'
 
@@ -89,6 +91,16 @@ export default function PostCard({ post, onVote }: PostCardProps) {
   const handleShareClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     navigator.clipboard?.writeText(window.location.origin + `/post/${post.id}`)
+  }
+
+  const handleSave = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const token = localStorage.getItem('token')
+    if (!token) { window.location.href = '/login'; return }
+    try {
+      await api.toggleBookmark(post.id)
+      setSaved((prev) => !prev)
+    } catch { /* ignore */ }
   }
 
   return (
@@ -246,10 +258,10 @@ export default function PostCard({ post, onVote }: PostCardProps) {
             </button>
             <button
               className="flex cursor-pointer items-center gap-1 border-none bg-transparent transition-colors hover:text-[#E0E0F0]"
-              style={{ fontSize: 12, color: '#6B6B80' }}
-              onClick={(e) => e.stopPropagation()}
+              style={{ fontSize: 12, color: saved ? '#A29BFE' : '#6B6B80' }}
+              onClick={handleSave}
             >
-              &#x1F516; Save
+              &#x1F516; {saved ? 'Saved' : 'Save'}
             </button>
           </div>
         </div>

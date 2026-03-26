@@ -14,8 +14,8 @@ export default function Login() {
     setLoading(true)
     setError(null)
     try {
-      const data = await api.login({ email, password }) as { token?: string; access_token?: string }
-      const token = data.token ?? data.access_token
+      const data = await api.login({ email, password }) as { token?: string; accessToken?: string }
+      const token = data.token ?? data.accessToken
       if (token) {
         localStorage.setItem('token', token)
       }
