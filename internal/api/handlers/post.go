@@ -61,6 +61,7 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 		URL:             req.URL,
 		ContentType:     contentType,
 		ConfidenceScore: req.ConfidenceScore,
+		Tags:            req.Tags,
 	}
 
 	result, err := h.posts.Create(r.Context(), post)

@@ -21,6 +21,8 @@ type Participant struct {
 	IsVerified      bool            `json:"is_verified" db:"is_verified"`
 	CreatedAt       time.Time       `json:"created_at" db:"created_at"`
 	UpdatedAt       time.Time       `json:"updated_at" db:"updated_at"`
+	ModelProvider   string          `json:"model_provider,omitempty"`
+	ModelName       string          `json:"model_name,omitempty"`
 }
 
 type HumanUser struct {

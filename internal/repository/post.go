@@ -34,30 +34,62 @@ func orderByClause(sort string) string {
 
 // scanPostWithAuthor scans a row into a PostWithAuthor. The row must contain
 // post fields followed by author fields (display_name, avatar_url, trust_score,
-// reputation_score, type, is_verified).
+// reputation_score, type, is_verified), then agent identity fields, then
+// community fields, then provenance fields.
 func scanPostWithAuthor(row interface {
 	Scan(dest ...any) error
 }) (models.PostWithAuthor, error) {
 	var p models.PostWithAuthor
 	var communitySlug, communityName string
+	// Agent identity fields (nullable via LEFT JOIN)
+	var modelProvider, modelName string
+	// Provenance fields (nullable via LEFT JOIN)
+	var provSources []string
+	var provConfidence *float64
+	var provMethod *string
 	err := row.Scan(
 		&p.ID, &p.CommunityID, &p.AuthorID, &p.AuthorType,
 		&p.Title, &p.Body, &p.URL,
 		&p.ContentType, &p.ProvenanceID, &p.ConfidenceScore,
-		&p.VoteScore, &p.CommentCount, &p.CreatedAt, &p.UpdatedAt,
+		&p.VoteScore, &p.CommentCount, &p.Tags, &p.CreatedAt, &p.UpdatedAt,
 		&p.Author.DisplayName, &p.Author.AvatarURL,
 		&p.Author.TrustScore, &p.Author.ReputationScore,
 		&p.Author.Type, &p.Author.IsVerified,
+		&modelProvider, &modelName,
 		&communitySlug, &communityName,
+		&provSources, &provConfidence, &provMethod,
 	)
 	if err != nil {
 		return p, err
 	}
 	p.Author.ID = p.AuthorID
+	p.Author.ModelProvider = modelProvider
+	p.Author.ModelName = modelName
 	p.Community = &models.Community{
 		ID:   p.CommunityID,
 		Slug: communitySlug,
 		Name: communityName,
+	}
+	// Populate Provenance if provenance_id is set
+	if p.ProvenanceID != nil {
+		confidence := 0.0
+		if provConfidence != nil {
+			confidence = *provConfidence
+		}
+		method := models.GenerationMethod("")
+		if provMethod != nil {
+			method = models.GenerationMethod(*provMethod)
+		}
+		sources := provSources
+		if sources == nil {
+			sources = []string{}
+		}
+		p.Provenance = &models.Provenance{
+			ID:               *p.ProvenanceID,
+			Sources:          sources,
+			ConfidenceScore:  confidence,
+			GenerationMethod: method,
+		}
 	}
 	return p, nil
 }
@@ -67,14 +99,19 @@ const postJoinSelect = `
 		p.id, p.community_id, p.author_id, p.author_type,
 		p.title, p.body, COALESCE(p.url, '') AS url,
 		p.content_type, p.provenance_id, p.confidence_score,
-		p.vote_score, p.comment_count, p.created_at, p.updated_at,
+		p.vote_score, p.comment_count, COALESCE(p.tags, '{}') AS tags, p.created_at, p.updated_at,
 		part.display_name, COALESCE(part.avatar_url, '') AS avatar_url,
 		part.trust_score, part.reputation_score,
 		part.type, part.is_verified,
-		c.slug, c.name
+		COALESCE(ai.model_provider, '') AS model_provider,
+		COALESCE(ai.model_name, '') AS model_name,
+		c.slug, c.name,
+		prov.sources, prov.confidence_score AS prov_confidence, prov.generation_method
 	FROM posts p
 	JOIN participants part ON part.id = p.author_id
-	JOIN communities c ON c.id = p.community_id`
+	LEFT JOIN agent_identities ai ON ai.participant_id = p.author_id
+	JOIN communities c ON c.id = p.community_id
+	LEFT JOIN provenances prov ON prov.id = p.provenance_id`
 
 // Create inserts a new post. Defaults content_type to "text" if empty.
 func (r *PostRepo) Create(ctx context.Context, p *models.Post) (*models.Post, error) {
@@ -82,17 +119,21 @@ func (r *PostRepo) Create(ctx context.Context, p *models.Post) (*models.Post, er
 		p.ContentType = models.ContentText
 	}
 
+	if p.Tags == nil {
+		p.Tags = []string{}
+	}
+
 	var result models.Post
 	err := r.pool.QueryRow(ctx, `
 		INSERT INTO posts
 		  (community_id, author_id, author_type, title, body, url, content_type,
-		   provenance_id, confidence_score)
-		VALUES ($1, $2, $3, $4, $5, NULLIF($6, ''), $7, $8, $9)
+		   provenance_id, confidence_score, tags)
+		VALUES ($1, $2, $3, $4, $5, NULLIF($6, ''), $7, $8, $9, $10)
 		RETURNING
 		  id, community_id, author_id, author_type,
 		  title, body, COALESCE(url, '') AS url,
 		  content_type, provenance_id, confidence_score,
-		  vote_score, comment_count, created_at, updated_at`,
+		  vote_score, comment_count, COALESCE(tags, '{}') AS tags, created_at, updated_at`,
 		p.CommunityID,
 		p.AuthorID,
 		p.AuthorType,
@@ -102,11 +143,12 @@ func (r *PostRepo) Create(ctx context.Context, p *models.Post) (*models.Post, er
 		p.ContentType,
 		p.ProvenanceID,
 		p.ConfidenceScore,
+		p.Tags,
 	).Scan(
 		&result.ID, &result.CommunityID, &result.AuthorID, &result.AuthorType,
 		&result.Title, &result.Body, &result.URL,
 		&result.ContentType, &result.ProvenanceID, &result.ConfidenceScore,
-		&result.VoteScore, &result.CommentCount, &result.CreatedAt, &result.UpdatedAt,
+		&result.VoteScore, &result.CommentCount, &result.Tags, &result.CreatedAt, &result.UpdatedAt,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("insert post: %w", err)
