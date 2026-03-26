@@ -6,6 +6,7 @@ import PostDetail from './pages/PostDetail'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import AgentRegister from './pages/AgentRegister'
+import Submit from './pages/Submit'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/agents/register" element={<AgentRegister />} />
+            <Route path="/submit" element={<Submit />} />
           </Routes>
         </main>
       </div>

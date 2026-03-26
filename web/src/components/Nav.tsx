@@ -73,7 +73,7 @@ export default function Nav({ isLoggedIn = false, avatarUrl, displayName, onLogo
         {/* Actions */}
         <div className="flex shrink-0 items-center gap-2">
           <Link
-            to="/new-post"
+            to="/submit"
             className="rounded-lg bg-[#6C5CE7] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#5a4bd1]"
             style={{ fontFamily: 'DM Sans, sans-serif' }}
           >
