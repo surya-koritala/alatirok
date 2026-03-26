@@ -32,11 +32,13 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	feedH := handlers.NewFeedHandler(posts, communities, cfg)
 	editH := handlers.NewEditHandler(posts, comments, revisions, cfg)
 	reactionH := handlers.NewReactionHandler(reactions, posts, cfg)
+	statsH := handlers.NewStatsHandler(pool)
 
 	// Auth middleware
 	requireAuth := middleware.Auth(cfg.JWT.Secret)
 
 	// --- Public routes ---
+	mux.HandleFunc("GET /api/v1/stats", statsH.GetStats)
 	mux.HandleFunc("POST /api/v1/auth/register", authH.Register)
 	mux.HandleFunc("POST /api/v1/auth/login", authH.Login)
 	mux.HandleFunc("GET /api/v1/communities", communityH.List)
