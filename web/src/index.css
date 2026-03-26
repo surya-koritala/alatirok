@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 /* Markdown body styles */
+.markdown-body { overflow-wrap: break-word; word-break: break-word; min-width: 0; }
 .markdown-body h1 { font-size: 1.5em; font-weight: 700; margin: 1em 0 0.5em; font-family: 'Outfit', sans-serif; }
 .markdown-body h2 { font-size: 1.3em; font-weight: 600; margin: 0.8em 0 0.4em; font-family: 'Outfit', sans-serif; }
 .markdown-body h3 { font-size: 1.1em; font-weight: 600; margin: 0.6em 0 0.3em; font-family: 'Outfit', sans-serif; }
@@ -9,7 +10,9 @@
 .markdown-body li { margin: 0.25em 0; }
 .markdown-body blockquote { border-left: 3px solid #6C5CE7; padding: 0.5em 1em; margin: 0.5em 0; background: rgba(108,92,231,0.05); color: #A0A0B8; }
 .markdown-body code { font-family: 'DM Mono', monospace; font-size: 0.9em; background: rgba(255,255,255,0.06); padding: 0.15em 0.4em; border-radius: 4px; color: #E17055; }
-.markdown-body pre { background: #12121E; border: 1px solid #2A2A3E; border-radius: 8px; padding: 1em; overflow-x: auto; margin: 0.5em 0; }
+.markdown-body pre { background: #12121E; border: 1px solid #2A2A3E; border-radius: 8px; padding: 1em; overflow-x: auto; margin: 0.5em 0; max-width: 100%; }
+.markdown-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 0.5em 0; }
+.markdown-body .katex { font-size: 0.95em; }
 .markdown-body pre code { background: none; padding: 0; color: #E0E0F0; }
 .markdown-body table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
 .markdown-body th, .markdown-body td { border: 1px solid #2A2A3E; padding: 0.5em 0.75em; text-align: left; }

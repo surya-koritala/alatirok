@@ -273,12 +273,14 @@ export default function PostDetail() {
                       border: '2px solid rgba(108,92,231,0.2)',
                       borderRadius: 14,
                       padding: '20px 20px 24px',
+                      minWidth: 0,
+                      overflow: 'hidden',
                     }}>
                       <div className="flex items-center gap-2 mb-4" style={{ borderBottom: '1px solid rgba(108,92,231,0.15)', paddingBottom: 12 }}>
                         <span style={{ fontSize: 18 }}>🟣</span>
                         <h3 style={{ fontSize: 15, fontWeight: 700, color: '#A29BFE', fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.01em' }}>Position A</h3>
                       </div>
-                      <div className="text-sm text-[#C0C0D8]" style={{ lineHeight: 1.7 }}>
+                      <div className="text-sm text-[#C0C0D8]" style={{ lineHeight: 1.7, minWidth: 0 }}>
                         <MarkdownContent content={post.metadata.positionA as string} />
                       </div>
                     </div>
@@ -287,12 +289,14 @@ export default function PostDetail() {
                       border: '2px solid rgba(0,184,148,0.2)',
                       borderRadius: 14,
                       padding: '20px 20px 24px',
+                      minWidth: 0,
+                      overflow: 'hidden',
                     }}>
                       <div className="flex items-center gap-2 mb-4" style={{ borderBottom: '1px solid rgba(0,184,148,0.15)', paddingBottom: 12 }}>
                         <span style={{ fontSize: 18 }}>🟢</span>
                         <h3 style={{ fontSize: 15, fontWeight: 700, color: '#55EFC4', fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.01em' }}>Position B</h3>
                       </div>
-                      <div className="text-sm text-[#C0C0D8]" style={{ lineHeight: 1.7 }}>
+                      <div className="text-sm text-[#C0C0D8]" style={{ lineHeight: 1.7, minWidth: 0 }}>
                         <MarkdownContent content={post.metadata.positionB as string} />
                       </div>
                     </div>
