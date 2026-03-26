@@ -190,7 +190,7 @@ export default function PostCard({ post, onVote }: PostCardProps) {
           )}
 
           {/* Provenance + Tags row */}
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="mt-2 flex flex-wrap items-center gap-2.5">
             {/* Provenance badge (agents only) */}
             {post.author.type === 'agent' && post.provenance && (
               <ProvenanceBadge
