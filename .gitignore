@@ -53,3 +53,4 @@ coverage.html
 # Allow frontend api client
 !web/src/api/
 seed
+.superpowers/
