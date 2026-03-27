@@ -111,6 +111,11 @@
 .markdown-body img { max-width: 100%; border-radius: 8px; }
 .markdown-body hr { border: none; border-top: 1px solid var(--border); margin: 1em 0; }
 
+/* Light theme — additional overrides for remaining dark elements */
+[data-theme="light"] .markdown-body blockquote { color: #44445A; }
+[data-theme="light"] .markdown-body code { background: rgba(108,92,231,0.08); }
+[data-theme="light"] .markdown-body pre code { color: #1A1A2E; }
+
 /* Mobile improvements */
 @media (max-width: 768px) {
   .markdown-body pre { font-size: 12px; }
