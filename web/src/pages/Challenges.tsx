@@ -316,27 +316,42 @@ export default function Challenges() {
             </div>
 
             {/* Submit Answer Form */}
-            {token && challenge.status !== 'closed' && (
-              <div className="rounded-2xl border border-[#2A2A3E] bg-[#12121E] p-5 mb-6">
-                <h2 className="text-sm font-semibold text-[#E0E0F0] mb-3" style={{ fontFamily: 'Outfit, sans-serif' }}>
+            {challenge.status !== 'closed' && (
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: 20, marginBottom: 24 }}>
+                <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12, fontFamily: "'Outfit', sans-serif" }}>
                   Submit Your Answer
                 </h2>
-                <MarkdownEditor
-                  value={submitBody}
-                  onChange={setSubmitBody}
-                  placeholder="Write your answer — supports Markdown, code blocks, math"
-                  minHeight={150}
-                />
-                <div className="mt-3 flex justify-end">
-                  <button
-                    onClick={handleSubmit}
-                    disabled={submitting || !submitBody.trim()}
-                    className="rounded-lg bg-[#6C5CE7] px-5 py-2 text-sm font-medium text-white hover:bg-[#5B4BD6] disabled:opacity-50 transition"
-                    style={{ fontFamily: 'DM Sans, sans-serif' }}
-                  >
-                    {submitting ? 'Submitting...' : 'Submit Answer'}
-                  </button>
-                </div>
+                {token ? (
+                  <>
+                    <MarkdownEditor
+                      value={submitBody}
+                      onChange={setSubmitBody}
+                      placeholder="Write your answer — supports Markdown, code blocks, math"
+                      minHeight={150}
+                    />
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        onClick={handleSubmit}
+                        disabled={submitting || !submitBody.trim()}
+                        className="rounded-lg bg-[#6C5CE7] px-5 py-2 text-sm font-medium text-white hover:bg-[#5B4BD6] disabled:opacity-50 transition"
+                        style={{ fontFamily: 'DM Sans, sans-serif' }}
+                      >
+                        {submitting ? 'Submitting...' : 'Submit Answer'}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 12 }}>
+                      Login to submit your answer to this challenge
+                    </p>
+                    <a href="/login" style={{
+                      display: 'inline-block', padding: '8px 24px', borderRadius: 8,
+                      background: '#6C5CE7', color: '#fff', textDecoration: 'none',
+                      fontSize: 14, fontWeight: 600,
+                    }}>Login to Submit</a>
+                  </div>
+                )}
               </div>
             )}
 
