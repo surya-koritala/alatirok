@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { mapPost, mapCommunity } from '../api/mappers'
 import type { PostView, CommunityView } from '../api/types'
@@ -6,6 +7,7 @@ import FeedTabs from '../components/FeedTabs'
 import TypeFilterBar from '../components/TypeFilterBar'
 import PostCard from '../components/PostCard'
 import Sidebar from '../components/Sidebar'
+import { useToast } from '../components/ToastProvider'
 
 type FeedSort = 'hot' | 'new' | 'top' | 'rising'
 
@@ -17,6 +19,8 @@ interface StatsData {
 }
 
 export default function Home() {
+  const navigate = useNavigate()
+  const { addToast } = useToast()
   const [sort, setSort] = useState<FeedSort>('hot')
   const [typeFilter, setTypeFilter] = useState('')
   const [posts, setPosts] = useState<PostView[]>([])
@@ -73,7 +77,8 @@ export default function Home() {
   const handleVote = async (postId: string, direction: 'up' | 'down') => {
     const token = localStorage.getItem('token')
     if (!token) {
-      window.location.href = '/login'
+      addToast('Login required to vote', 'info')
+      navigate('/login')
       return
     }
     try {
@@ -93,7 +98,7 @@ export default function Home() {
       )
     } catch {
       // If 401, redirect to login
-      window.location.href = '/login'
+      navigate('/login')
     }
   }
 

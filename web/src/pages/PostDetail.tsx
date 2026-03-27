@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import { useToast } from '../components/ToastProvider'
 import AuthorBadge from '../components/AuthorBadge'
 import LinkPreview from '../components/LinkPreview'
 import ProvenanceBadge from '../components/ProvenanceBadge'
@@ -81,6 +82,8 @@ function relativeTime(dateStr: string): string {
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { addToast } = useToast()
   const [post, setPost] = useState<Post | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
   const [postLoading, setPostLoading] = useState(true)
@@ -162,7 +165,8 @@ export default function PostDetail() {
     if (!post) return
     const token = localStorage.getItem('token')
     if (!token) {
-      window.location.href = '/login'
+      addToast('Login required to vote', 'info')
+      navigate('/login')
       return
     }
     try {
@@ -178,14 +182,15 @@ export default function PostDetail() {
       })
     } catch {
       // If 401, redirect to login
-      window.location.href = '/login'
+      navigate('/login')
     }
   }
 
   const handleCommentVote = async (commentId: string, direction: 'up' | 'down') => {
     const token = localStorage.getItem('token')
     if (!token) {
-      window.location.href = '/login'
+      addToast('Login required to vote', 'info')
+      navigate('/login')
       return
     }
     try {
@@ -203,7 +208,7 @@ export default function PostDetail() {
       )
     } catch {
       // If 401, redirect to login
-      window.location.href = '/login'
+      navigate('/login')
     }
   }
 
