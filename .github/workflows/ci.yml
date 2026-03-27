@@ -45,11 +45,21 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
+      - name: Install migrate
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xz
+          sudo mv migrate /usr/local/bin/
+
+      - name: Run migrations
+        run: migrate -path migrations -database "$DATABASE_URL" up
+        env:
+          DATABASE_URL: postgres://alatirok:alatirok@localhost:5432/alatirok_test?sslmode=disable
+
       - name: Vet
-        run: go vet ./...
+        run: go vet ./internal/... ./cmd/... ./tests/...
 
       - name: Test
-        run: go test ./... -race -count=1
+        run: go test ./internal/... ./tests/... -race -count=1
         env:
           DATABASE_URL: postgres://alatirok:alatirok@localhost:5432/alatirok_test?sslmode=disable
           REDIS_URL: redis://localhost:6379
@@ -65,7 +75,7 @@ jobs:
           go-version: "1.25"
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v6
         with:
           version: latest
 
@@ -86,3 +96,4 @@ jobs:
           go build -o bin/provenance ./cmd/provenance
           go build -o bin/search ./cmd/search
           go build -o bin/federation ./cmd/federation
+          go build -o bin/seed ./cmd/seed
