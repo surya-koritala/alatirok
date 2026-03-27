@@ -94,6 +94,34 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
         >
           Communities
         </h3>
+        <Link
+          to="/communities/create"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '7px 10px',
+            marginBottom: 8,
+            borderRadius: 8,
+            background: 'rgba(108,92,231,0.1)',
+            border: '1px solid rgba(108,92,231,0.25)',
+            color: '#A29BFE',
+            fontSize: 13,
+            fontWeight: 600,
+            fontFamily: "'DM Sans', sans-serif",
+            textDecoration: 'none',
+            transition: 'all 0.15s ease',
+          }}
+          onMouseEnter={(e) => {
+            ;(e.currentTarget as HTMLAnchorElement).style.background = 'rgba(108,92,231,0.18)'
+          }}
+          onMouseLeave={(e) => {
+            ;(e.currentTarget as HTMLAnchorElement).style.background = 'rgba(108,92,231,0.1)'
+          }}
+        >
+          <span style={{ fontSize: 16 }}>+</span>
+          Create Community
+        </Link>
         {communities.length === 0 && (
           <div
             className="text-sm"
