@@ -22,6 +22,7 @@ export default function Home() {
   const navigate = useNavigate()
   const { addToast } = useToast()
   const [sort, setSort] = useState<FeedSort>('hot')
+  const [feedMode, setFeedMode] = useState<'all' | 'home'>(localStorage.getItem('token') ? 'home' : 'all')
   const [typeFilter, setTypeFilter] = useState('')
   const [posts, setPosts] = useState<PostView[]>([])
   const [communities, setCommunities] = useState<CommunityView[]>([])
@@ -37,14 +38,16 @@ export default function Home() {
     setTimeout(() => setLoaded(true), 100)
   }, [])
 
-  // Reset offset when sort or typeFilter changes
-  useEffect(() => { setOffset(0) }, [sort, typeFilter])
+  // Reset offset when sort, typeFilter, or feedMode changes
+  useEffect(() => { setOffset(0) }, [sort, typeFilter, feedMode])
 
   useEffect(() => {
     setLoading(true)
     setError(null)
-    api
-      .getFeed(sort, 25, offset, typeFilter)
+    const fetchFn = feedMode === 'home' && localStorage.getItem('token')
+      ? () => api.getSubscribedFeed(sort, 25, offset, typeFilter)
+      : () => api.getFeed(sort, 25, offset, typeFilter)
+    fetchFn()
       .then((resp: any) => {
         const items = resp.data ?? resp ?? []
         const arr = Array.isArray(items) ? items : []
@@ -56,9 +59,16 @@ export default function Home() {
         }
         setHasMore(resp.hasMore ?? arr.length === 25)
       })
-      .catch((e: Error) => setError(e.message))
+      .catch((e: Error) => {
+        // If token expired (401), fall back to All feed
+        if (e.message === 'Unauthorized' || e.message === 'login required') {
+          setFeedMode('all')
+          return
+        }
+        setError(e.message)
+      })
       .finally(() => setLoading(false))
-  }, [sort, typeFilter, offset])
+  }, [sort, typeFilter, offset, feedMode])
 
   useEffect(() => {
     api
@@ -156,6 +166,22 @@ export default function Home() {
             </div>
           )}
 
+          {localStorage.getItem('token') && (
+            <div className="flex items-center gap-4 mb-3">
+              {(['home', 'all'] as const).map(mode => (
+                <button key={mode} onClick={() => setFeedMode(mode)}
+                  style={{
+                    fontSize: 15, fontWeight: feedMode === mode ? 700 : 400,
+                    color: feedMode === mode ? '#E0E0F0' : '#6B6B80',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    fontFamily: "'Outfit', sans-serif", textTransform: 'capitalize',
+                    borderBottom: feedMode === mode ? '2px solid #6C5CE7' : '2px solid transparent',
+                    paddingBottom: 4,
+                  }}
+                >{mode === 'home' ? 'Home' : 'All'}</button>
+              ))}
+            </div>
+          )}
           <FeedTabs activeTab={sort} onChange={setSort} />
           <TypeFilterBar activeType={typeFilter} onChange={setTypeFilter} />
 

@@ -44,6 +44,8 @@ export const api = {
   me: () => request("/auth/me"),
   getFeed: (sort = "hot", limit = 25, offset = 0, type = "") =>
     request(`/feed?sort=${sort}&limit=${limit}&offset=${offset}${type ? `&type=${type}` : ''}`),
+  getSubscribedFeed: (sort = "hot", limit = 25, offset = 0, type = "") =>
+    request(`/feed/subscribed?sort=${sort}&limit=${limit}&offset=${offset}${type ? `&type=${type}` : ''}`),
   getCommunityFeed: (slug: string, sort = "hot", limit = 25, offset = 0, type = "") =>
     request(`/communities/${slug}/feed?sort=${sort}&limit=${limit}&offset=${offset}${type ? `&type=${type}` : ''}`),
   getCommunities: () => request("/communities"),

@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/surya-koritala/alatirok/internal/api"
+	"github.com/surya-koritala/alatirok/internal/api/middleware"
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/models"
 	"github.com/surya-koritala/alatirok/internal/repository"
@@ -44,6 +45,36 @@ func (h *FeedHandler) Global(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	api.JSON(w, http.StatusOK, models.PaginatedResponse{
+		Data:        posts,
+		Total:       total,
+		Limit:       limit,
+		Offset:      offset,
+		HasMore:     offset+limit < total,
+		RetrievedAt: time.Now(),
+	})
+}
+
+// Subscribed handles GET /api/v1/feed/subscribed — returns posts from communities the user subscribes to.
+func (h *FeedHandler) Subscribed(w http.ResponseWriter, r *http.Request) {
+	claims := middleware.GetClaims(r.Context())
+	if claims == nil {
+		api.Error(w, http.StatusUnauthorized, "login required")
+		return
+	}
+	sort := r.URL.Query().Get("sort")
+	if sort == "" {
+		sort = "hot"
+	}
+	postType := r.URL.Query().Get("type")
+	limit := parseIntQuery(r, "limit", 25)
+	offset := parseIntQuery(r, "offset", 0)
+
+	posts, total, err := h.posts.ListBySubscriptions(r.Context(), claims.ParticipantID, sort, postType, limit, offset)
+	if err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to fetch feed")
+		return
+	}
 	api.JSON(w, http.StatusOK, models.PaginatedResponse{
 		Data:        posts,
 		Total:       total,

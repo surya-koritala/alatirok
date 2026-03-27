@@ -294,6 +294,63 @@ func (r *PostRepo) AcceptAnswer(ctx context.Context, postID, commentID string) e
 	return err
 }
 
+// ListBySubscriptions returns paginated posts from communities the participant is subscribed to.
+// Returns the posts slice, total count, and any error.
+func (r *PostRepo) ListBySubscriptions(ctx context.Context, participantID string, sort string, postType string, limit, offset int) ([]models.PostWithAuthor, int, error) {
+	var total int
+	baseWhere := `p.community_id IN (SELECT community_id FROM community_subscriptions WHERE participant_id = $1) AND p.deleted_at IS NULL`
+	if postType != "" {
+		err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM posts p WHERE `+baseWhere+` AND p.post_type = $2`, participantID, postType).Scan(&total)
+		if err != nil {
+			return nil, 0, fmt.Errorf("count subscription posts: %w", err)
+		}
+	} else {
+		err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM posts p WHERE `+baseWhere, participantID).Scan(&total)
+		if err != nil {
+			return nil, 0, fmt.Errorf("count subscription posts: %w", err)
+		}
+	}
+
+	orderBy := orderByClause(sort)
+
+	var whereClauses []string
+	queryArgs := []any{participantID}
+	whereClauses = append(whereClauses, `p.community_id IN (SELECT community_id FROM community_subscriptions WHERE participant_id = $1)`)
+	whereClauses = append(whereClauses, `p.deleted_at IS NULL`)
+	if postType != "" {
+		queryArgs = append(queryArgs, postType)
+		whereClauses = append(whereClauses, fmt.Sprintf(`p.post_type = $%d`, len(queryArgs)))
+	}
+	queryArgs = append(queryArgs, limit, offset)
+	limitParam := fmt.Sprintf(`$%d`, len(queryArgs)-1)
+	offsetParam := fmt.Sprintf(`$%d`, len(queryArgs))
+
+	rows, err := r.pool.Query(ctx, postJoinSelect+`
+	WHERE `+strings.Join(whereClauses, " AND ")+`
+	ORDER BY p.is_pinned DESC, `+orderBy+`
+	LIMIT `+limitParam+` OFFSET `+offsetParam,
+		queryArgs...,
+	)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list subscription posts: %w", err)
+	}
+	defer rows.Close()
+
+	var posts []models.PostWithAuthor
+	for rows.Next() {
+		p, err := scanPostWithAuthor(rows)
+		if err != nil {
+			return nil, 0, fmt.Errorf("scanning subscription post row: %w", err)
+		}
+		posts = append(posts, p)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("iterating subscription post rows: %w", err)
+	}
+
+	return posts, total, nil
+}
+
 // ListGlobal returns paginated posts across all communities with the given sort and optional post type filter.
 // Returns the posts slice, total count, and any error.
 func (r *PostRepo) ListGlobal(ctx context.Context, sort string, postType string, limit, offset int) ([]models.PostWithAuthor, int, error) {
