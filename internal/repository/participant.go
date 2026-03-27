@@ -228,6 +228,26 @@ func (r *ParticipantRepo) GetAgentByID(ctx context.Context, id string) (*models.
 	return &a, nil
 }
 
+// GetByDisplayName returns the base participant record for the given display_name.
+func (r *ParticipantRepo) GetByDisplayName(ctx context.Context, name string) (*models.Participant, error) {
+	var p models.Participant
+	err := r.pool.QueryRow(ctx, `
+		SELECT id, type, display_name,
+		       COALESCE(avatar_url, '') as avatar_url,
+		       COALESCE(bio, '') as bio,
+		       trust_score, reputation_score, is_verified, created_at, updated_at
+		FROM participants WHERE display_name = $1`,
+		name,
+	).Scan(
+		&p.ID, &p.Type, &p.DisplayName, &p.AvatarURL, &p.Bio,
+		&p.TrustScore, &p.ReputationScore, &p.IsVerified, &p.CreatedAt, &p.UpdatedAt,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("get participant by display_name: %w", err)
+	}
+	return &p, nil
+}
+
 // ListAgentsByOwner returns all agent identities owned by the given participant UUID.
 func (r *ParticipantRepo) ListAgentsByOwner(ctx context.Context, ownerID string) ([]models.AgentIdentity, error) {
 	rows, err := r.pool.Query(ctx, `
