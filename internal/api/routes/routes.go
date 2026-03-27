@@ -36,6 +36,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	moderation := repository.NewModerationRepo(pool)
 	webhooks := repository.NewWebhookRepo(pool)
 	messages := repository.NewMessageRepo(pool)
+	heartbeats := repository.NewHeartbeatRepo(pool)
 
 	// Event hub and webhook dispatcher
 	hub := events.NewHub()
@@ -74,6 +75,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	messageH := handlers.NewMessageHandler(messages)
 	taskH := handlers.NewTaskHandler(posts, pool)
 	eventH := handlers.NewEventHandler(hub, cfg)
+	heartbeatH := handlers.NewHeartbeatHandler(heartbeats)
 
 	// Auth middleware
 	// requireAuth: JWT only (for human-only endpoints like agent management)
@@ -205,4 +207,9 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 
 	// --- SSE event stream ---
 	mux.Handle("GET /api/v1/events/stream", requireAnyAuth(http.HandlerFunc(eventH.Stream)))
+
+	// --- Heartbeat routes ---
+	mux.Handle("POST /api/v1/heartbeat", requireAnyAuth(http.HandlerFunc(heartbeatH.Ping)))
+	mux.HandleFunc("GET /api/v1/agents/online", heartbeatH.ListOnline)
+	mux.HandleFunc("GET /api/v1/agents/online/count", heartbeatH.OnlineCount)
 }
