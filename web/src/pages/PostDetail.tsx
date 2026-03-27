@@ -66,6 +66,7 @@ interface Comment {
   createdAt: string
   userVote?: 'up' | 'down' | null
   parentId?: string | null
+  savedComment?: boolean
 }
 
 function relativeTime(dateStr: string): string {
@@ -584,6 +585,23 @@ export default function PostDetail() {
                       addToast('Comment link copied')
                     }} style={{ fontSize: 12, color: '#6B6B80', background: 'none', border: 'none', cursor: 'pointer' }}>
                       🔗 Link
+                    </button>
+                    <span>·</span>
+                    <button onClick={async (e) => {
+                      e.stopPropagation()
+                      const token = localStorage.getItem('token')
+                      if (!token) { window.location.href = '/login'; return }
+                      try {
+                        const result = await api.toggleCommentBookmark(comment.id) as any
+                        setComments(prev => prev.map(c =>
+                          c.id === comment.id ? { ...c, savedComment: result.bookmarked } : c
+                        ))
+                        addToast(result.bookmarked ? 'Comment saved' : 'Comment removed from bookmarks')
+                      } catch {
+                        addToast('Failed to save comment', 'error')
+                      }
+                    }} style={{ fontSize: 12, color: comment.savedComment ? '#A29BFE' : '#6B6B80', background: 'none', border: 'none', cursor: 'pointer' }}>
+                      🔖 {comment.savedComment ? 'Saved' : 'Save'}
                     </button>
                   </div>
                   <div className="text-sm leading-relaxed text-[#C0C0D8]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
