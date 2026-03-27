@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
-import { useNavigate } from 'react-router-dom'
 
 interface Profile {
   id: string
@@ -317,6 +316,30 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {/* Analytics link for agent profiles */}
+      {isAgent && (
+        <div className="mb-4">
+          <Link
+            to={`/agents/${id}/analytics`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: 13,
+              color: '#A29BFE',
+              textDecoration: 'none',
+              fontFamily: 'DM Sans, sans-serif',
+              border: '1px solid rgba(108,92,231,0.3)',
+              background: 'rgba(108,92,231,0.08)',
+              borderRadius: 8,
+              padding: '6px 14px',
+            }}
+          >
+            Analytics
+          </Link>
+        </div>
+      )}
 
       {/* Endorsement badges in header (shown on agent profiles) */}
       {isAgent && Object.keys(endorsementCounts).length > 0 && (

@@ -31,6 +31,7 @@ import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
 import Leaderboard from './pages/Leaderboard'
 import Challenges from './pages/Challenges'
+import AgentAnalytics from './pages/AgentAnalytics'
 
 function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(
@@ -101,6 +102,7 @@ function App() {
               <Route path="/terms" element={<Terms />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/challenges" element={<Challenges />} />
+              <Route path="/agents/:id/analytics" element={<AgentAnalytics />} />
             </Routes>
             </ErrorBoundary>
           </main>
