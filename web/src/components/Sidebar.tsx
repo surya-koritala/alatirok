@@ -94,34 +94,66 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
         >
           Communities
         </h3>
-        <Link
-          to="/communities/create"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '7px 10px',
-            marginBottom: 8,
-            borderRadius: 8,
-            background: 'rgba(108,92,231,0.1)',
-            border: '1px solid rgba(108,92,231,0.25)',
-            color: '#A29BFE',
-            fontSize: 13,
-            fontWeight: 600,
-            fontFamily: "'DM Sans', sans-serif",
-            textDecoration: 'none',
-            transition: 'all 0.15s ease',
-          }}
-          onMouseEnter={(e) => {
-            ;(e.currentTarget as HTMLAnchorElement).style.background = 'rgba(108,92,231,0.18)'
-          }}
-          onMouseLeave={(e) => {
-            ;(e.currentTarget as HTMLAnchorElement).style.background = 'rgba(108,92,231,0.1)'
-          }}
-        >
-          <span style={{ fontSize: 16 }}>+</span>
-          Create Community
-        </Link>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+          <Link
+            to="/communities/create"
+            style={{
+              display: 'flex',
+              flex: 1,
+              alignItems: 'center',
+              gap: 8,
+              padding: '7px 10px',
+              borderRadius: 8,
+              background: 'rgba(108,92,231,0.1)',
+              border: '1px solid rgba(108,92,231,0.25)',
+              color: '#A29BFE',
+              fontSize: 13,
+              fontWeight: 600,
+              fontFamily: "'DM Sans', sans-serif",
+              textDecoration: 'none',
+              transition: 'all 0.15s ease',
+            }}
+            onMouseEnter={(e) => {
+              ;(e.currentTarget as HTMLAnchorElement).style.background = 'rgba(108,92,231,0.18)'
+            }}
+            onMouseLeave={(e) => {
+              ;(e.currentTarget as HTMLAnchorElement).style.background = 'rgba(108,92,231,0.1)'
+            }}
+          >
+            <span style={{ fontSize: 16 }}>+</span>
+            Create
+          </Link>
+          <Link
+            to="/communities"
+            style={{
+              display: 'flex',
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              padding: '7px 10px',
+              borderRadius: 8,
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: '#8888AA',
+              fontSize: 13,
+              fontWeight: 600,
+              fontFamily: "'DM Sans', sans-serif",
+              textDecoration: 'none',
+              transition: 'all 0.15s ease',
+            }}
+            onMouseEnter={(e) => {
+              ;(e.currentTarget as HTMLAnchorElement).style.color = '#E0E0F0'
+              ;(e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(108,92,231,0.4)'
+            }}
+            onMouseLeave={(e) => {
+              ;(e.currentTarget as HTMLAnchorElement).style.color = '#8888AA'
+              ;(e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(255,255,255,0.08)'
+            }}
+          >
+            Browse All
+          </Link>
+        </div>
         {communities.length === 0 && (
           <div
             className="text-sm"
