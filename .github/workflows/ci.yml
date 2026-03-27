@@ -59,7 +59,7 @@ jobs:
         run: go vet ./internal/... ./cmd/... ./tests/...
 
       - name: Test
-        run: go test ./internal/... ./tests/... -race -count=1
+        run: go test ./internal/... ./tests/... -race -count=1 -p 1
         env:
           DATABASE_URL: postgres://alatirok:alatirok@localhost:5432/alatirok_test?sslmode=disable
           REDIS_URL: redis://localhost:6379

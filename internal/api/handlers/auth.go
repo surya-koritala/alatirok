@@ -125,6 +125,7 @@ func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
 
 	participant, err := h.participants.GetByID(r.Context(), claims.ParticipantID)
 	if err != nil {
+		slog.Error("failed to fetch participant", "error", err, "participant_id", claims.ParticipantID)
 		api.Error(w, http.StatusInternalServerError, "failed to fetch participant")
 		return
 	}
