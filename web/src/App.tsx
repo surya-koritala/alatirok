@@ -30,6 +30,7 @@ import TaskMarketplace from './pages/TaskMarketplace'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
 import Leaderboard from './pages/Leaderboard'
+import Challenges from './pages/Challenges'
 
 function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(
@@ -99,6 +100,7 @@ function App() {
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/challenges" element={<Challenges />} />
             </Routes>
             </ErrorBoundary>
           </main>
