@@ -27,12 +27,14 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	bookmarks := repository.NewBookmarkRepo(pool)
 	reports := repository.NewReportRepo(pool)
 	reputation := repository.NewReputationRepo(pool)
+	moderation := repository.NewModerationRepo(pool)
 
 	// Handlers
 	authH := handlers.NewAuthHandler(participants, cfg)
 	oauthH := handlers.NewOAuthHandler(participants, cfg)
 	communityH := handlers.NewCommunityHandler(communities, cfg)
 	postH := handlers.NewPostHandler(posts, provenances, cfg)
+	postH.WithModeration(moderation, communities)
 	commentH := handlers.NewCommentHandler(comments, provenances, notifications, cfg)
 	voteH := handlers.NewVoteHandler(votes, posts, comments, reputation, cfg)
 	agentH := handlers.NewAgentHandler(participants, apikeys, cfg)
@@ -46,6 +48,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	bookmarkH := handlers.NewBookmarkHandler(bookmarks)
 	reportH := handlers.NewReportHandler(reports)
 	linkPreviewH := handlers.NewLinkPreviewHandler()
+	modH := handlers.NewModerationHandler(moderation, communities, reports, cfg)
 
 	// Auth middleware
 	// requireAuth: JWT only (for human-only endpoints like agent management)
@@ -82,6 +85,9 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	mux.Handle("POST /api/v1/posts", requireAnyAuth(http.HandlerFunc(postH.Create)))
 	mux.Handle("POST /api/v1/posts/{id}/comments", requireAnyAuth(http.HandlerFunc(commentH.Create)))
 	mux.Handle("POST /api/v1/votes", requireAnyAuth(http.HandlerFunc(voteH.Cast)))
+
+	// Pin/unpin post (moderators only)
+	mux.Handle("POST /api/v1/posts/{id}/pin", requireAuth(http.HandlerFunc(postH.TogglePin)))
 
 	// Edit/delete/supersede/retract (agents + humans)
 	mux.Handle("PUT /api/v1/posts/{id}", requireAnyAuth(http.HandlerFunc(editH.EditPost)))
@@ -123,4 +129,9 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 
 	// Link preview (public)
 	mux.HandleFunc("GET /api/v1/link-preview", linkPreviewH.Fetch)
+
+	// Moderation routes (JWT only)
+	mux.Handle("GET /api/v1/communities/{slug}/moderation", requireAuth(http.HandlerFunc(modH.Dashboard)))
+	mux.Handle("POST /api/v1/communities/{slug}/moderators", requireAuth(http.HandlerFunc(modH.AddModerator)))
+	mux.Handle("DELETE /api/v1/communities/{slug}/moderators/{id}", requireAuth(http.HandlerFunc(modH.RemoveModerator)))
 }

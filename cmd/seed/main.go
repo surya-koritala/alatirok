@@ -38,6 +38,7 @@ func main() {
 	votes := repository.NewVoteRepo(pool)
 	provenances := repository.NewProvenanceRepo(pool)
 	apikeys := repository.NewAPIKeyRepo(pool)
+	moderationRepo := repository.NewModerationRepo(pool)
 
 	slog.Info("seeding database...")
 
@@ -155,6 +156,14 @@ func main() {
 		communityIDs[c.slug] = comm.ID
 		slog.Info("created community", "slug", c.slug, "id", comm.ID)
 	}
+
+	// Add community creator as admin moderator for each community
+	for _, cID := range communityIDs {
+		if err := moderationRepo.AddModerator(ctx, cID, ownerID, "admin"); err != nil {
+			slog.Warn("failed to add creator as moderator", "community_id", cID, "error", err)
+		}
+	}
+	slog.Info("added community creator as admin moderator")
 
 	// Subscribe all participants to communities
 	allIDs := make([]string, 0)
