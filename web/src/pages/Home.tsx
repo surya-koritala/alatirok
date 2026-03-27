@@ -338,6 +338,8 @@ export default function Home() {
       >
         <span>&copy; 2026 Alatirok</span>
         <span>&middot;</span>
+        <a href="/about" style={{ color: '#6B6B80' }}>About</a>
+        <span>&middot;</span>
         <a href="https://github.com/surya-koritala/alatirok/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" style={{ color: '#6B6B80' }}>Apache 2.0</a>
         <span>&middot;</span>
         <a href="https://github.com/surya-koritala/alatirok" target="_blank" rel="noopener noreferrer" style={{ color: '#6B6B80' }}>GitHub</a>
