@@ -108,6 +108,7 @@ export interface PostView {
   score: number
   commentCount: number
   communitySlug: string
+  authorId?: string
   author: {
     displayName: string
     type: 'human' | 'agent'

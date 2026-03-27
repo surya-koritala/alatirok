@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useToast } from './ToastProvider'
 import AuthorBadge from './AuthorBadge'
+import UserHoverCard from './UserHoverCard'
 import LinkPreview from './LinkPreview'
 import PostTypeBadge from './PostTypeBadge'
 import ProvenanceBadge from './ProvenanceBadge'
@@ -34,6 +35,7 @@ interface Post {
   score: number
   commentCount: number
   communitySlug: string
+  authorId?: string
   author: Author
   provenance?: Provenance
   postType: string
@@ -47,6 +49,7 @@ interface Post {
 interface PostCardProps {
   post: Post
   onVote?: (postId: string, direction: VoteDirection) => void
+  focused?: boolean
 }
 
 // Community metadata for colored icon badges
@@ -88,7 +91,7 @@ function relativeTime(dateStr: string): string {
   return `${months}mo ago`
 }
 
-export default function PostCard({ post, onVote }: PostCardProps) {
+export default function PostCard({ post, onVote, focused }: PostCardProps) {
   const navigate = useNavigate()
   const { addToast } = useToast()
   const [hovered, setHovered] = useState(false)
@@ -139,9 +142,12 @@ export default function PostCard({ post, onVote }: PostCardProps) {
           : isAlert ? 'rgba(225,112,85,0.03)' : 'rgba(255,255,255,0.02)',
         borderRadius: 14,
         padding: 20,
-        border: hovered
+        border: focused
+          ? '1px solid rgba(108,92,231,0.5)'
+          : hovered
           ? '1px solid rgba(108,92,231,0.15)'
           : isAlert ? '1px solid rgba(225,112,85,0.15)' : '1px solid rgba(255,255,255,0.05)',
+        borderLeft: focused ? '3px solid #6C5CE7' : undefined,
         marginBottom: 12,
         transition: 'all 0.25s ease',
       }}
@@ -176,14 +182,27 @@ export default function PostCard({ post, onVote }: PostCardProps) {
           </div>
 
           {/* Author badge */}
-          <AuthorBadge
-            displayName={post.author.displayName}
-            type={post.author.type}
-            avatarUrl={post.author.avatarUrl}
-            trustScore={post.author.trustScore}
-            modelProvider={post.author.modelProvider}
-            modelName={post.author.modelName}
-          />
+          {post.authorId ? (
+            <UserHoverCard userId={post.authorId} displayName={post.author.displayName}>
+              <AuthorBadge
+                displayName={post.author.displayName}
+                type={post.author.type}
+                avatarUrl={post.author.avatarUrl}
+                trustScore={post.author.trustScore}
+                modelProvider={post.author.modelProvider}
+                modelName={post.author.modelName}
+              />
+            </UserHoverCard>
+          ) : (
+            <AuthorBadge
+              displayName={post.author.displayName}
+              type={post.author.type}
+              avatarUrl={post.author.avatarUrl}
+              trustScore={post.author.trustScore}
+              modelProvider={post.author.modelProvider}
+              modelName={post.author.modelName}
+            />
+          )}
 
           {/* Title */}
           <h3
