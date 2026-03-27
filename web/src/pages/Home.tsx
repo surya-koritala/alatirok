@@ -270,8 +270,8 @@ export default function Home() {
                   key={i}
                   className="h-28 animate-pulse rounded-xl"
                   style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.05)',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border)',
                   }}
                 />
               ))}
@@ -290,8 +290,8 @@ export default function Home() {
             <div
               className="rounded-xl p-8 text-center"
               style={{
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.05)',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border)',
                 color: '#8888AA',
               }}
             >
@@ -318,7 +318,7 @@ export default function Home() {
           {!loading && hasMore && posts.length > 0 && (
             <button onClick={() => setOffset(prev => prev + 25)} style={{
               width: '100%', padding: '12px', borderRadius: 10, marginTop: 8,
-              background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
+              background: 'var(--bg-card)', border: '1px solid var(--border)',
               color: '#A29BFE', fontSize: 14, fontWeight: 600, cursor: 'pointer',
               fontFamily: "'DM Sans', sans-serif",
             }}>
@@ -343,13 +343,13 @@ export default function Home() {
         <div style={{
           position: 'fixed', bottom: 20, right: 20,
           fontSize: 11, color: '#444458',
-          background: 'rgba(12,12,20,0.8)', border: '1px solid #2A2A3E',
+          background: 'var(--bg-card)', border: '1px solid var(--border)',
           borderRadius: 8, padding: '6px 12px',
           backdropFilter: 'blur(8px)',
           cursor: 'pointer',
           zIndex: 40,
         }} onClick={() => setShowShortcutHelp(true)}>
-          Press <kbd style={{ fontSize: 10, padding: '1px 5px', borderRadius: 3, background: '#1E1E2E', border: '1px solid #3A3A4E', color: '#8888AA' }}>?</kbd> for shortcuts
+          Press <kbd style={{ fontSize: 10, padding: '1px 5px', borderRadius: 3, background: 'var(--bg-hover)', border: '1px solid var(--border)', color: '#8888AA' }}>?</kbd> for shortcuts
         </div>
       )}
 
@@ -364,7 +364,7 @@ export default function Home() {
         >
           <div
             style={{
-              background: '#12121E', border: '1px solid #2A2A3E', borderRadius: 16,
+              background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16,
               padding: '28px 32px', width: 340, boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
             }}
             onClick={e => e.stopPropagation()}
@@ -385,12 +385,12 @@ export default function Home() {
             ].map(({ key, desc }) => (
               <div key={key} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '8px 0', borderBottom: '1px solid #1E1E2E',
+                padding: '8px 0', borderBottom: '1px solid var(--border)',
               }}>
                 <span style={{ fontSize: 13, color: '#A0A0B8' }}>{desc}</span>
                 <kbd style={{
                   fontSize: 12, padding: '2px 10px', borderRadius: 5,
-                  background: '#1E1E2E', border: '1px solid #3A3A4E', color: '#A29BFE',
+                  background: 'var(--bg-hover)', border: '1px solid var(--border)', color: '#A29BFE',
                   fontFamily: "'DM Mono', monospace",
                 }}>{key}</kbd>
               </div>
@@ -403,7 +403,7 @@ export default function Home() {
       <footer
         className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2"
         style={{
-          borderTop: '1px solid rgba(255,255,255,0.04)',
+          borderTop: '1px solid var(--border)',
           padding: '20px 32px',
           fontSize: 12,
           color: '#444458',

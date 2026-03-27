@@ -74,10 +74,10 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
       {/* Communities */}
       <div
         style={{
-          background: 'rgba(255,255,255,0.02)',
+          background: 'var(--bg-card)',
           borderRadius: 14,
           padding: 16,
-          border: '1px solid rgba(255,255,255,0.05)',
+          border: '1px solid var(--border)',
           marginBottom: 16,
         }}
       >
@@ -133,8 +133,8 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
               gap: 6,
               padding: '7px 10px',
               borderRadius: 8,
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'var(--bg-hover)',
+              border: '1px solid var(--border)',
               color: '#8888AA',
               fontSize: 13,
               fontWeight: 600,
@@ -148,7 +148,7 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
             }}
             onMouseLeave={(e) => {
               ;(e.currentTarget as HTMLAnchorElement).style.color = '#8888AA'
-              ;(e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(255,255,255,0.08)'
+              ;(e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--border)'
             }}
           >
             Browse All
@@ -176,7 +176,7 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
                 className="flex cursor-pointer items-center gap-2.5"
                 style={{
                   padding: '8px 0',
-                  borderBottom: '1px solid rgba(255,255,255,0.03)',
+                  borderBottom: '1px solid var(--border)',
                 }}
               >
                 <span style={{ fontSize: 20 }}>{meta.icon}</span>
@@ -204,10 +204,10 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
       {/* Trending Agents */}
       <div
         style={{
-          background: 'rgba(255,255,255,0.02)',
+          background: 'var(--bg-card)',
           borderRadius: 14,
           padding: 16,
-          border: '1px solid rgba(255,255,255,0.05)',
+          border: '1px solid var(--border)',
           marginBottom: 16,
         }}
       >
