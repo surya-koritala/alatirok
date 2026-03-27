@@ -45,8 +45,10 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	hub := events.NewHub()
 	dispatcher := webhook.NewDispatcher(webhooks)
 
+	refreshTokens := repository.NewRefreshTokenRepo(pool)
+
 	// Handlers
-	authH := handlers.NewAuthHandler(participants, cfg)
+	authH := handlers.NewAuthHandler(participants, refreshTokens, pool, cfg)
 	oauthH := handlers.NewOAuthHandler(participants, cfg)
 	communityH := handlers.NewCommunityHandler(communities, cfg)
 	postH := handlers.NewPostHandler(posts, provenances, cfg)
@@ -101,6 +103,8 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	mux.HandleFunc("GET /api/v1/trending-agents", statsH.TrendingAgents)
 	mux.HandleFunc("POST /api/v1/auth/register", authH.Register)
 	mux.HandleFunc("POST /api/v1/auth/login", authH.Login)
+	mux.HandleFunc("POST /api/v1/auth/refresh", authH.Refresh)
+	mux.Handle("POST /api/v1/auth/logout", requireAuth(http.HandlerFunc(authH.Logout)))
 	mux.HandleFunc("GET /api/v1/auth/github", oauthH.GitHubLogin)
 	mux.HandleFunc("GET /api/v1/auth/github/callback", oauthH.GitHubCallback)
 	mux.HandleFunc("GET /api/v1/communities", communityH.List)
@@ -119,27 +123,31 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	mux.Handle("POST /api/v1/agents/{id}/keys", requireAuth(http.HandlerFunc(agentH.CreateKey)))
 	mux.Handle("DELETE /api/v1/agents/{id}/keys/{keyId}", requireAuth(http.HandlerFunc(agentH.RevokeKey)))
 
+	// Scope enforcement helpers
+	requireWrite := middleware.RequireScope("write")
+	requireVote := middleware.RequireScope("vote")
+
 	// --- Protected routes (JWT or API Key — agents + humans can use) ---
-	mux.Handle("POST /api/v1/communities", requireAnyAuth(http.HandlerFunc(communityH.Create)))
-	mux.Handle("POST /api/v1/communities/{slug}/subscribe", requireAnyAuth(http.HandlerFunc(communityH.Subscribe)))
-	mux.Handle("DELETE /api/v1/communities/{slug}/subscribe", requireAnyAuth(http.HandlerFunc(communityH.Unsubscribe)))
-	mux.Handle("POST /api/v1/posts", requireAnyAuth(http.HandlerFunc(postH.Create)))
-	mux.Handle("POST /api/v1/posts/{id}/comments", requireAnyAuth(http.HandlerFunc(commentH.Create)))
-	mux.Handle("POST /api/v1/votes", requireAnyAuth(http.HandlerFunc(voteH.Cast)))
+	mux.Handle("POST /api/v1/communities", requireAnyAuth(requireWrite(http.HandlerFunc(communityH.Create))))
+	mux.Handle("POST /api/v1/communities/{slug}/subscribe", requireAnyAuth(requireWrite(http.HandlerFunc(communityH.Subscribe))))
+	mux.Handle("DELETE /api/v1/communities/{slug}/subscribe", requireAnyAuth(requireWrite(http.HandlerFunc(communityH.Unsubscribe))))
+	mux.Handle("POST /api/v1/posts", requireAnyAuth(requireWrite(http.HandlerFunc(postH.Create))))
+	mux.Handle("POST /api/v1/posts/{id}/comments", requireAnyAuth(requireWrite(http.HandlerFunc(commentH.Create))))
+	mux.Handle("POST /api/v1/votes", requireAnyAuth(requireVote(http.HandlerFunc(voteH.Cast))))
 
 	// Pin/unpin post (moderators only)
 	mux.Handle("POST /api/v1/posts/{id}/pin", requireAuth(http.HandlerFunc(postH.TogglePin)))
 
 	// Crosspost (agents + humans)
-	mux.Handle("POST /api/v1/posts/{id}/crosspost", requireAnyAuth(http.HandlerFunc(crosspostH.Crosspost)))
+	mux.Handle("POST /api/v1/posts/{id}/crosspost", requireAnyAuth(requireWrite(http.HandlerFunc(crosspostH.Crosspost))))
 
 	// Edit/delete/supersede/retract (agents + humans)
-	mux.Handle("PUT /api/v1/posts/{id}", requireAnyAuth(http.HandlerFunc(editH.EditPost)))
-	mux.Handle("DELETE /api/v1/posts/{id}", requireAnyAuth(http.HandlerFunc(editH.DeletePost)))
-	mux.Handle("PUT /api/v1/comments/{id}", requireAnyAuth(http.HandlerFunc(editH.EditComment)))
-	mux.Handle("DELETE /api/v1/comments/{id}", requireAnyAuth(http.HandlerFunc(editH.DeleteComment)))
-	mux.Handle("POST /api/v1/posts/{id}/supersede", requireAnyAuth(http.HandlerFunc(editH.SupersedePost)))
-	mux.Handle("POST /api/v1/posts/{id}/retract", requireAnyAuth(http.HandlerFunc(editH.RetractPost)))
+	mux.Handle("PUT /api/v1/posts/{id}", requireAnyAuth(requireWrite(http.HandlerFunc(editH.EditPost))))
+	mux.Handle("DELETE /api/v1/posts/{id}", requireAnyAuth(requireWrite(http.HandlerFunc(editH.DeletePost))))
+	mux.Handle("PUT /api/v1/comments/{id}", requireAnyAuth(requireWrite(http.HandlerFunc(editH.EditComment))))
+	mux.Handle("DELETE /api/v1/comments/{id}", requireAnyAuth(requireWrite(http.HandlerFunc(editH.DeleteComment))))
+	mux.Handle("POST /api/v1/posts/{id}/supersede", requireAnyAuth(requireWrite(http.HandlerFunc(editH.SupersedePost))))
+	mux.Handle("POST /api/v1/posts/{id}/retract", requireAnyAuth(requireWrite(http.HandlerFunc(editH.RetractPost))))
 
 	// Revision history (public)
 	mux.HandleFunc("GET /api/v1/posts/{id}/revisions", editH.GetRevisions)
@@ -151,9 +159,9 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	mux.Handle("PUT /api/v1/notifications/{id}/read", requireAuth(http.HandlerFunc(notifH.MarkRead)))
 
 	// Reaction routes (agents + humans)
-	mux.Handle("POST /api/v1/comments/{id}/reactions", requireAnyAuth(http.HandlerFunc(reactionH.ToggleReaction)))
+	mux.Handle("POST /api/v1/comments/{id}/reactions", requireAnyAuth(requireVote(http.HandlerFunc(reactionH.ToggleReaction))))
 	mux.HandleFunc("GET /api/v1/comments/{id}/reactions", reactionH.GetReactions)
-	mux.Handle("PUT /api/v1/posts/{id}/accept-answer", requireAnyAuth(http.HandlerFunc(reactionH.AcceptAnswer)))
+	mux.Handle("PUT /api/v1/posts/{id}/accept-answer", requireAnyAuth(requireWrite(http.HandlerFunc(reactionH.AcceptAnswer))))
 
 	// Profile routes (public)
 	mux.HandleFunc("GET /api/v1/profiles/{id}", profileH.GetProfile)

@@ -16,8 +16,24 @@ type LoginRequest struct {
 }
 
 type AuthResponse struct {
-	Token       string       `json:"token"`
-	Participant *Participant `json:"participant"`
+	Token        string       `json:"token,omitempty"`
+	AccessToken  string       `json:"access_token"`
+	RefreshToken string       `json:"refresh_token,omitempty"`
+	ExpiresIn    int          `json:"expires_in"`
+	Participant  *Participant `json:"participant"`
+}
+
+type RefreshRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+type RefreshToken struct {
+	ID            string     `json:"id" db:"id"`
+	ParticipantID string     `json:"participant_id" db:"participant_id"`
+	TokenHash     string     `json:"-" db:"token_hash"`
+	ExpiresAt     time.Time  `json:"expires_at" db:"expires_at"`
+	CreatedAt     time.Time  `json:"created_at" db:"created_at"`
+	RevokedAt     *time.Time `json:"revoked_at,omitempty" db:"revoked_at"`
 }
 
 // === Agent ===

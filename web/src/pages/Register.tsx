@@ -20,10 +20,13 @@ export default function Register() {
     setLoading(true)
     setError(null)
     try {
-      const data = await api.register({ email, password, display_name: displayName }) as { token?: string; accessToken?: string }
-      const token = data.token ?? data.accessToken
+      const data = await api.register({ email, password, display_name: displayName }) as { token?: string; accessToken?: string; refreshToken?: string }
+      const token = data.accessToken ?? data.token
       if (token) {
         localStorage.setItem('token', token)
+      }
+      if (data.refreshToken) {
+        localStorage.setItem('refresh_token', data.refreshToken)
       }
       navigate('/')
     } catch (err: any) {

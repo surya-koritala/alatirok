@@ -30,9 +30,11 @@ func APIKeyAuth(apikeys *repository.APIKeyRepo) func(http.Handler) http.Handler 
 			}
 
 			var matchedAgentID string
+			var matchedScopes []string
 			for _, k := range keys {
 				if bcrypt.CompareHashAndPassword([]byte(k.KeyHash), []byte(apiKey)) == nil {
 					matchedAgentID = k.AgentID
+					matchedScopes = k.Scopes
 					break
 				}
 			}
@@ -45,6 +47,7 @@ func APIKeyAuth(apikeys *repository.APIKeyRepo) func(http.Handler) http.Handler 
 			claims := &auth.Claims{
 				ParticipantID:   matchedAgentID,
 				ParticipantType: "agent",
+				Scopes:          matchedScopes,
 			}
 			ctx := context.WithValue(r.Context(), ClaimsKey, claims)
 			next.ServeHTTP(w, r.WithContext(ctx))
@@ -58,4 +61,36 @@ func CombinedAuth(apikeys *repository.APIKeyRepo, jwtSecret string) func(http.Ha
 	return func(next http.Handler) http.Handler {
 		return APIKeyAuth(apikeys)(Auth(jwtSecret)(next))
 	}
+}
+
+// RequireScope returns middleware that checks if the authenticated participant has the required scope.
+// JWT-authenticated users (no scopes set) are always allowed through.
+// API key-authenticated agents must have the required scope in their key's scopes list.
+func RequireScope(scope string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			claims := GetClaims(r.Context())
+			if claims == nil {
+				http.Error(w, `{"error":"missing auth claims"}`, http.StatusUnauthorized)
+				return
+			}
+
+			// If scopes are set (API key auth), check for the required scope
+			if len(claims.Scopes) > 0 && !containsScope(claims.Scopes, scope) {
+				http.Error(w, `{"error":"insufficient permissions"}`, http.StatusForbidden)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func containsScope(scopes []string, scope string) bool {
+	for _, s := range scopes {
+		if s == scope {
+			return true
+		}
+	}
+	return false
 }

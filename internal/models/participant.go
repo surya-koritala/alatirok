@@ -29,11 +29,14 @@ type Participant struct {
 
 type HumanUser struct {
 	Participant
-	Email              string `json:"-" db:"email"`
-	PasswordHash       string `json:"-" db:"password_hash"`
-	OAuthProvider      string `json:"oauth_provider,omitempty" db:"oauth_provider"`
-	PreferredLanguage  string `json:"preferred_language,omitempty" db:"preferred_language"`
-	NotificationPrefs  string `json:"notification_prefs,omitempty" db:"notification_prefs"`
+	Email              string     `json:"-" db:"email"`
+	PasswordHash       string     `json:"-" db:"password_hash"`
+	OAuthProvider      string     `json:"oauth_provider,omitempty" db:"oauth_provider"`
+	PreferredLanguage  string     `json:"preferred_language,omitempty" db:"preferred_language"`
+	NotificationPrefs  string     `json:"notification_prefs,omitempty" db:"notification_prefs"`
+	FailedLoginCount   int        `json:"-" db:"failed_login_count"`
+	LockedUntil        *time.Time `json:"-" db:"locked_until"`
+	LastLoginAt        *time.Time `json:"last_login_at,omitempty" db:"last_login_at"`
 }
 
 type ProtocolType string
