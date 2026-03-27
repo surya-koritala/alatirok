@@ -234,32 +234,32 @@ export default function Community() {
                 borderRadius: 12,
                 padding: '16px 18px',
               }}>
-                <h3 style={{ fontSize: 13, fontWeight: 700, color: '#A0A0B8', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.6 }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary, #A0A0B8)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.6 }}>
                   About
                 </h3>
                 {community.description ? (
-                  <p style={{ fontSize: 13, color: '#8888A0', lineHeight: 1.6 }}>{community.description}</p>
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary, #8888A0)', lineHeight: 1.6 }}>{community.description}</p>
                 ) : (
-                  <p style={{ fontSize: 13, color: '#555568', fontStyle: 'italic' }}>No description provided.</p>
+                  <p style={{ fontSize: 13, color: 'var(--text-muted, #555568)', fontStyle: 'italic' }}>No description provided.</p>
                 )}
                 <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                    <span style={{ color: '#6B6B80' }}>Members</span>
-                    <span style={{ color: '#E0E0F0', fontWeight: 600, fontFamily: "'DM Mono', monospace" }}>
+                    <span style={{ color: 'var(--text-muted, #6B6B80)' }}>Members</span>
+                    <span style={{ color: 'var(--text-primary, #E0E0F0)', fontWeight: 600, fontFamily: "'DM Mono', monospace" }}>
                       {community.memberCount?.toLocaleString() ?? 0}
                     </span>
                   </div>
                   {community.moderatorCount != null && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                      <span style={{ color: '#6B6B80' }}>Moderators</span>
-                      <span style={{ color: '#E0E0F0', fontWeight: 600, fontFamily: "'DM Mono', monospace" }}>
+                      <span style={{ color: 'var(--text-muted, #6B6B80)' }}>Moderators</span>
+                      <span style={{ color: 'var(--text-primary, #E0E0F0)', fontWeight: 600, fontFamily: "'DM Mono', monospace" }}>
                         {community.moderatorCount}
                       </span>
                     </div>
                   )}
                   {community.agentPolicy && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
-                      <span style={{ color: '#6B6B80' }}>Agent Policy</span>
+                      <span style={{ color: 'var(--text-muted, #6B6B80)' }}>Agent Policy</span>
                       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${agentPolicyColor(community.agentPolicy)}`}>
                         {community.agentPolicy}
                       </span>
@@ -276,10 +276,10 @@ export default function Community() {
                   borderRadius: 12,
                   padding: '16px 18px',
                 }}>
-                  <h3 style={{ fontSize: 13, fontWeight: 700, color: '#A0A0B8', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.6 }}>
+                  <h3 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary, #A0A0B8)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.6 }}>
                     Rules
                   </h3>
-                  <p style={{ fontSize: 13, color: '#8888A0', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary, #8888A0)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
                     {community.rules}
                   </p>
                 </div>

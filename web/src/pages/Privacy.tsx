@@ -1,6 +1,6 @@
 export default function Privacy() {
   return (
-    <div style={{ minHeight: '100vh', color: '#E0E0F0' }}>
+    <div style={{ minHeight: '100vh', color: 'var(--text-primary, #E0E0F0)' }}>
       <div style={{ maxWidth: 800, margin: '0 auto', padding: '48px 20px 80px' }}>
         <h1 style={{
           fontSize: 36, fontWeight: 800, fontFamily: "'Outfit', sans-serif",
@@ -10,7 +10,7 @@ export default function Privacy() {
         }}>
           Privacy Policy
         </h1>
-        <p style={{ color: '#8888AA', fontSize: 14, marginBottom: 40 }}>
+        <p style={{ color: 'var(--text-secondary, #8888AA)', fontSize: 14, marginBottom: 40 }}>
           Last updated: March 25, 2026
         </p>
 
@@ -30,7 +30,7 @@ export default function Privacy() {
             body: (
               <>
                 <p>Your data is used solely to operate the Alatirok platform. Specifically:</p>
-                <ul style={{ marginTop: 10, paddingLeft: 20, lineHeight: 2, color: '#A0A0B8' }}>
+                <ul style={{ marginTop: 10, paddingLeft: 20, lineHeight: 2, color: 'var(--text-secondary, #A0A0B8)' }}>
                   <li>Email is used for account authentication and optional notifications.</li>
                   <li>Content you post is displayed publicly within the communities you post to.</li>
                   <li>Usage logs are used to enforce rate limits and detect abuse.</li>
@@ -59,12 +59,12 @@ export default function Privacy() {
             body: (
               <>
                 <p>You have the right to:</p>
-                <ul style={{ marginTop: 10, paddingLeft: 20, lineHeight: 2, color: '#A0A0B8' }}>
-                  <li><strong style={{ color: '#E0E0F0' }}>Access</strong> — request a copy of the personal data we hold about you.</li>
-                  <li><strong style={{ color: '#E0E0F0' }}>Correction</strong> — update or correct inaccurate information via your account settings.</li>
-                  <li><strong style={{ color: '#E0E0F0' }}>Deletion</strong> — request deletion of your account and associated personal data.</li>
-                  <li><strong style={{ color: '#E0E0F0' }}>Portability</strong> — request an export of your data in a machine-readable format.</li>
-                  <li><strong style={{ color: '#E0E0F0' }}>Objection</strong> — object to certain types of processing of your data.</li>
+                <ul style={{ marginTop: 10, paddingLeft: 20, lineHeight: 2, color: 'var(--text-secondary, #A0A0B8)' }}>
+                  <li><strong style={{ color: 'var(--text-primary, #E0E0F0)' }}>Access</strong> — request a copy of the personal data we hold about you.</li>
+                  <li><strong style={{ color: 'var(--text-primary, #E0E0F0)' }}>Correction</strong> — update or correct inaccurate information via your account settings.</li>
+                  <li><strong style={{ color: 'var(--text-primary, #E0E0F0)' }}>Deletion</strong> — request deletion of your account and associated personal data.</li>
+                  <li><strong style={{ color: 'var(--text-primary, #E0E0F0)' }}>Portability</strong> — request an export of your data in a machine-readable format.</li>
+                  <li><strong style={{ color: 'var(--text-primary, #E0E0F0)' }}>Objection</strong> — object to certain types of processing of your data.</li>
                 </ul>
                 <p style={{ marginTop: 12 }}>To exercise any of these rights, contact us at the address below.</p>
               </>
@@ -109,18 +109,18 @@ export default function Privacy() {
             marginBottom: 16,
           }}>
             <h2 style={{
-              fontSize: 17, fontWeight: 700, color: '#E0E0F0',
+              fontSize: 17, fontWeight: 700, color: 'var(--text-primary, #E0E0F0)',
               fontFamily: "'Outfit', sans-serif", marginBottom: 12,
             }}>
               {section.title}
             </h2>
-            <div style={{ fontSize: 14, color: '#A0A0B8', lineHeight: 1.75 }}>
+            <div style={{ fontSize: 14, color: 'var(--text-secondary, #A0A0B8)', lineHeight: 1.75 }}>
               {section.body}
             </div>
           </div>
         ))}
 
-        <div style={{ marginTop: 32, textAlign: 'center', fontSize: 13, color: '#8888AA' }}>
+        <div style={{ marginTop: 32, textAlign: 'center', fontSize: 13, color: 'var(--text-secondary, #8888AA)' }}>
           <a href="/terms" style={{ color: '#A29BFE', textDecoration: 'none', marginRight: 24 }}>Terms of Service</a>
           <a href="/policy" style={{ color: '#A29BFE', textDecoration: 'none', marginRight: 24 }}>Content Policy</a>
           <a href="/about" style={{ color: '#A29BFE', textDecoration: 'none' }}>About</a>

@@ -39,7 +39,7 @@ export default function LinkPreview({ url, title, description, image, domain }: 
             width: 140,
             minHeight: 100,
             flexShrink: 0,
-            background: '#1A1A2E',
+            background: 'var(--bg-hover, #1A1A2E)',
             backgroundImage: `url(${image})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -48,7 +48,7 @@ export default function LinkPreview({ url, title, description, image, domain }: 
         <div style={{ padding: '12px 16px', minWidth: 0, flex: 1 }}>
           <div style={{
             fontSize: 10,
-            color: '#6B6B80',
+            color: 'var(--text-muted, #6B6B80)',
             textTransform: 'uppercase' as const,
             letterSpacing: 0.5,
             fontFamily: "'DM Mono', monospace",
@@ -60,7 +60,7 @@ export default function LinkPreview({ url, title, description, image, domain }: 
             <div style={{
               fontSize: 14,
               fontWeight: 600,
-              color: '#E0E0F0',
+              color: 'var(--text-primary, #E0E0F0)',
               fontFamily: "'DM Sans', sans-serif",
               lineHeight: 1.35,
               marginBottom: 4,
@@ -75,7 +75,7 @@ export default function LinkPreview({ url, title, description, image, domain }: 
           {description && (
             <div style={{
               fontSize: 12,
-              color: '#8888AA',
+              color: 'var(--text-secondary, #8888AA)',
               lineHeight: 1.45,
               overflow: 'hidden',
               display: '-webkit-box',

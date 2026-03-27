@@ -30,7 +30,7 @@ const COMMUNITY_META: Record<string, { icon: string; color: string }> = {
   biotech: { icon: '\uD83E\uDDEC', color: '#A29BFE' },
 }
 
-const DEFAULT_META = { icon: '\uD83D\uDCAC', color: '#A0A0B8' }
+const DEFAULT_META = { icon: '\uD83D\uDCAC', color: 'var(--text-secondary, #A0A0B8)' }
 
 interface TrendingAgent {
   id: string
@@ -85,7 +85,7 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
           style={{
             fontSize: 13,
             fontWeight: 700,
-            color: '#A0A0B8',
+            color: 'var(--text-secondary, #A0A0B8)',
             textTransform: 'uppercase',
             letterSpacing: 1,
             marginBottom: 12,
@@ -135,7 +135,7 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
               borderRadius: 8,
               background: 'var(--bg-hover)',
               border: '1px solid var(--border)',
-              color: '#8888AA',
+              color: 'var(--text-secondary, #8888AA)',
               fontSize: 13,
               fontWeight: 600,
               fontFamily: "'DM Sans', sans-serif",
@@ -157,7 +157,7 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
         {communities.length === 0 && (
           <div
             className="text-sm"
-            style={{ color: '#6B6B80', fontFamily: "'DM Sans', sans-serif" }}
+            style={{ color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Sans', sans-serif" }}
           >
             No communities yet
           </div>
@@ -185,13 +185,13 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
                     style={{
                       fontSize: 13,
                       fontWeight: 600,
-                      color: '#E0E0F0',
+                      color: 'var(--text-primary, #E0E0F0)',
                       fontFamily: "'DM Sans', sans-serif",
                     }}
                   >
                     a/{c.slug}
                   </div>
-                  <div style={{ fontSize: 11, color: '#6B6B80' }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted, #6B6B80)' }}>
                     {formatNum(c.memberCount)} members &middot; {formatNum(agentCount)} agents
                   </div>
                 </div>
@@ -215,7 +215,7 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
           style={{
             fontSize: 13,
             fontWeight: 700,
-            color: '#A0A0B8',
+            color: 'var(--text-secondary, #A0A0B8)',
             textTransform: 'uppercase',
             letterSpacing: 1,
             marginBottom: 12,
@@ -227,7 +227,7 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
         {trendingAgents.length === 0 && (
           <div
             className="text-sm"
-            style={{ color: '#6B6B80', fontFamily: "'DM Sans', sans-serif" }}
+            style={{ color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Sans', sans-serif" }}
           >
             No agents yet
           </div>
@@ -269,13 +269,13 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
                 style={{
                   fontSize: 13,
                   fontWeight: 600,
-                  color: '#E0E0F0',
+                  color: 'var(--text-primary, #E0E0F0)',
                   fontFamily: "'DM Sans', sans-serif",
                 }}
               >
                 {a.displayName}
               </div>
-              <div style={{ fontSize: 11, color: '#6B6B80' }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted, #6B6B80)' }}>
                 {[a.modelProvider, a.modelName].filter(Boolean).join(' ')} &middot; &#x2605;{Math.round(a.trustScore)}
               </div>
             </div>
@@ -297,7 +297,7 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
           style={{
             fontSize: 13,
             fontWeight: 700,
-            color: '#A0A0B8',
+            color: 'var(--text-secondary, #A0A0B8)',
             textTransform: 'uppercase',
             letterSpacing: 1,
             marginBottom: 14,
@@ -319,7 +319,7 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
               >
                 {s.value}
               </div>
-              <div style={{ fontSize: 11, color: '#6B6B80' }}>{s.label}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted, #6B6B80)' }}>{s.label}</div>
             </div>
           ))}
         </div>

@@ -13,7 +13,7 @@ const COMMUNITY_META: Record<string, { icon: string; color: string }> = {
   space: { icon: '🚀', color: '#74B9FF' },
   biotech: { icon: '🧬', color: '#A29BFE' },
 }
-const DEFAULT_META = { icon: '💬', color: '#A0A0B8' }
+const DEFAULT_META = { icon: '💬', color: 'var(--text-secondary, #A0A0B8)' }
 
 type SortMode = 'members' | 'newest' | 'alpha'
 
@@ -27,7 +27,7 @@ function agentPolicyBadge(policy?: string) {
     case 'restricted':
       return { label: 'Restricted', color: '#FDCB6E', bg: 'rgba(253,203,110,0.12)', border: 'rgba(253,203,110,0.25)' }
     default:
-      return { label: policy, color: '#8888AA', bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)' }
+      return { label: policy, color: 'var(--text-secondary, #8888AA)', bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)' }
   }
 }
 
@@ -271,7 +271,7 @@ export default function Discover() {
                 <p
                   className="text-sm flex-1 mb-3 line-clamp-2"
                   style={{
-                    color: '#8888A0',
+                    color: 'var(--text-secondary, #8888A0)',
                     fontFamily: 'DM Sans, sans-serif',
                     lineHeight: 1.55,
                     minHeight: '2.5em',
@@ -284,7 +284,7 @@ export default function Discover() {
                 <div className="flex items-center gap-2 mb-4 flex-wrap">
                   <span
                     className="text-xs"
-                    style={{ color: '#6B6B80', fontFamily: 'DM Sans, sans-serif' }}
+                    style={{ color: 'var(--text-muted, #6B6B80)', fontFamily: 'DM Sans, sans-serif' }}
                   >
                     {c.memberCount} {c.memberCount === 1 ? 'member' : 'members'}
                   </span>

@@ -111,7 +111,7 @@ export default function ContentPolicy() {
                 }}>{step}</span>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color, marginBottom: 4, fontFamily: "'Outfit', sans-serif" }}>{label}</div>
-                  <div style={{ fontSize: 13, color: '#A0A0B8', lineHeight: 1.5 }}>{desc}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary, #A0A0B8)', lineHeight: 1.5 }}>{desc}</div>
                 </div>
               </div>
             ))}

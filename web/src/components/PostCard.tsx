@@ -63,7 +63,7 @@ const COMMUNITY_META: Record<string, { icon: string; color: string }> = {
   space: { icon: '\uD83D\uDE80', color: '#74B9FF' },
   biotech: { icon: '\uD83E\uDDEC', color: '#A29BFE' },
 }
-const DEFAULT_META = { icon: '\uD83D\uDCAC', color: '#A0A0B8' }
+const DEFAULT_META = { icon: '\uD83D\uDCAC', color: 'var(--text-secondary, #A0A0B8)' }
 
 function stripMarkdown(md: string): string {
   return md
@@ -202,8 +202,8 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             >
               {community.icon} a/{post.communitySlug}
             </span>
-            <span style={{ fontSize: 11, color: '#555568' }}>&middot;</span>
-            <span style={{ fontSize: 11, color: '#555568' }}>
+            <span style={{ fontSize: 11, color: 'var(--text-muted, #555568)' }}>&middot;</span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted, #555568)' }}>
               {relativeTime(post.createdAt)}
             </span>
             <PostTypeBadge type={post.postType} severity={(post.metadata as any)?.severity} />
@@ -254,7 +254,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             style={{
               fontSize: 16,
               fontWeight: 600,
-              color: '#F0F0F8',
+              color: 'var(--text-primary, #F0F0F8)',
               margin: '10px 0 6px',
               lineHeight: 1.4,
               fontFamily: "'DM Sans', sans-serif",
@@ -294,7 +294,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
               className="line-clamp-2"
               style={{
                 fontSize: 13,
-                color: '#8888A0',
+                color: 'var(--text-secondary, #8888A0)',
                 lineHeight: 1.55,
                 margin: '0 0 10px',
               }}
@@ -333,7 +333,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
                     key={t}
                     style={{
                       fontSize: 11,
-                      color: '#6B6B80',
+                      color: 'var(--text-muted, #6B6B80)',
                       padding: '2px 8px',
                       borderRadius: 4,
                       background: 'var(--bg-hover)',
@@ -350,11 +350,11 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
           {/* Bottom action row */}
           <div
             className="mt-2.5 flex items-center gap-4"
-            style={{ fontSize: 12, color: '#6B6B80' }}
+            style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)' }}
           >
             <button
               className="flex cursor-pointer items-center gap-1 border-none bg-transparent transition-colors hover:text-[#E0E0F0]"
-              style={{ fontSize: 12, color: '#6B6B80' }}
+              style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)' }}
               onClick={(e) => {
                 e.stopPropagation()
                 navigate(`/post/${post.id}`)
@@ -364,7 +364,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             </button>
             <button
               className="flex cursor-pointer items-center gap-1 border-none bg-transparent transition-colors hover:text-[#E0E0F0]"
-              style={{ fontSize: 12, color: '#6B6B80' }}
+              style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)' }}
               onClick={handleShareClick}
             >
               &#x1F517; Share
@@ -378,7 +378,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             </button>
             <button
               className="flex cursor-pointer items-center gap-1 border-none bg-transparent transition-colors hover:text-[#E0E0F0]"
-              style={{ fontSize: 12, color: '#6B6B80' }}
+              style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)' }}
               onClick={(e) => { e.stopPropagation(); setShowCrosspostModal(true) }}
             >
               &#x2197; Crosspost
@@ -413,7 +413,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {communities.length === 0 && (
-                <p style={{ fontSize: 12, color: '#6B6B80' }}>Loading communities...</p>
+                <p style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)' }}>Loading communities...</p>
               )}
               {communities.map((c) => (
                 <button
@@ -430,8 +430,8 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
                   }}
                 >
                   <span style={{ fontWeight: 600 }}>a/{c.slug}</span>
-                  {c.slug === post.communitySlug && <span style={{ fontSize: 11, color: '#6B6B80', marginLeft: 8 }}>(current)</span>}
-                  <div style={{ fontSize: 11, color: '#8888AA', marginTop: 2 }}>{c.name}</div>
+                  {c.slug === post.communitySlug && <span style={{ fontSize: 11, color: 'var(--text-muted, #6B6B80)', marginLeft: 8 }}>(current)</span>}
+                  <div style={{ fontSize: 11, color: 'var(--text-secondary, #8888AA)', marginTop: 2 }}>{c.name}</div>
                 </button>
               ))}
             </div>
@@ -440,7 +440,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
               style={{
                 marginTop: 16, width: '100%', padding: '8px 0', borderRadius: 8,
                 border: '1px solid var(--border)', background: 'transparent',
-                color: '#8888AA', fontSize: 13, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                color: 'var(--text-secondary, #8888AA)', fontSize: 13, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
               }}
             >
               Cancel
