@@ -130,40 +130,55 @@ func main() {
 	type communityDef struct {
 		name, slug, description string
 		policy                  models.AgentPolicy
+		creatorName             string // human or agent name
+		creatorIsAgent          bool
 	}
 	communityDefs := []communityDef{
-		{"Quantum Computing", "quantum", "Quantum computing research, error correction, and hardware breakthroughs", models.AgentPolicyOpen},
-		{"Climate Science", "climate", "Climate monitoring, satellite data, and environmental policy", models.AgentPolicyOpen},
-		{"Open Source AI", "osai", "Discuss open source AI models, tools, and agent interoperability", models.AgentPolicyOpen},
-		{"Cryptography", "crypto", "Applied cryptography, zero-knowledge proofs, and post-quantum algorithms", models.AgentPolicyVerified},
-		{"Space Exploration", "space", "Space missions, astrophysics, and planetary science", models.AgentPolicyOpen},
-		{"Biotech", "biotech", "Gene therapy, CRISPR, synthetic biology, and clinical trials", models.AgentPolicyOpen},
+		{"Quantum Computing", "quantum", "Quantum computing research, error correction, and hardware breakthroughs", models.AgentPolicyOpen, "Dr. Sarah Chen", false},
+		{"Climate Science", "climate", "Climate monitoring, satellite data, and environmental policy", models.AgentPolicyOpen, "climate-monitor-v3", true},
+		{"Open Source AI", "osai", "Discuss open source AI models, tools, and agent interoperability", models.AgentPolicyOpen, "arxiv-synthesizer", true},
+		{"Cryptography", "crypto", "Applied cryptography, zero-knowledge proofs, and post-quantum algorithms", models.AgentPolicyVerified, "Elena Rossi", false},
+		{"Space Exploration", "space", "Space missions, astrophysics, and planetary science", models.AgentPolicyOpen, "Marcus Webb", false},
+		{"Biotech", "biotech", "Gene therapy, CRISPR, synthetic biology, and clinical trials", models.AgentPolicyOpen, "deep-research-7b", true},
 	}
 
-	communityIDs := make(map[string]string) // slug → id
+	communityIDs := make(map[string]string)    // slug → id
+	communityCreators := make(map[string]string) // slug → creator participant ID
 	for _, c := range communityDefs {
+		var creatorID string
+		if c.creatorIsAgent {
+			creatorID = agentIDs[c.creatorName]
+		} else {
+			creatorID = humanIDs[c.creatorName]
+		}
+		if creatorID == "" {
+			creatorID = ownerID // fallback
+		}
+
 		comm, err := communities.Create(ctx, &models.Community{
 			Name:        c.name,
 			Slug:        c.slug,
 			Description: c.description,
 			AgentPolicy: c.policy,
-			CreatedBy:   ownerID,
+			CreatedBy:   creatorID,
 		})
 		if err != nil {
 			slog.Warn("community may already exist", "slug", c.slug, "error", err)
 			continue
 		}
 		communityIDs[c.slug] = comm.ID
-		slog.Info("created community", "slug", c.slug, "id", comm.ID)
+		communityCreators[c.slug] = creatorID
+		slog.Info("created community", "slug", c.slug, "creator", c.creatorName, "id", comm.ID)
 	}
 
-	// Add community creator as admin moderator for each community
-	for _, cID := range communityIDs {
-		if err := moderationRepo.AddModerator(ctx, cID, ownerID, "admin"); err != nil {
-			slog.Warn("failed to add creator as moderator", "community_id", cID, "error", err)
+	// Add each community creator as admin moderator
+	for slug, cID := range communityIDs {
+		creatorID := communityCreators[slug]
+		if err := moderationRepo.AddModerator(ctx, cID, creatorID, "admin"); err != nil {
+			slog.Warn("failed to add creator as moderator", "slug", slug, "error", err)
 		}
 	}
-	slog.Info("added community creator as admin moderator")
+	slog.Info("added community creators as admin moderators")
 
 	// Subscribe all participants to communities
 	allIDs := make([]string, 0)
