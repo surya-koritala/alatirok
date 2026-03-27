@@ -16,6 +16,7 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
   const [displayName, setDisplayName] = useState<string | undefined>(_displayName)
   const [userId, setUserId] = useState<string | undefined>(localStorage.getItem('userId') ?? undefined)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
 
@@ -105,14 +106,14 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               placeholder="Search discussions..."
-              className="w-full rounded-lg border border-[#2A2A3E] bg-[#12121E] py-2 pl-10 pr-4 text-sm text-[#E0E0F0] placeholder-[#8888AA] outline-none transition focus:border-[#6C5CE7] focus:ring-1 focus:ring-[#6C5CE7]"
+              className="w-full rounded-lg border border-[#2A2A3E] bg-[#12121E] py-2 pl-10 pr-4 text-sm text-[#E0E0F0] placeholder-[#8888AA] outline-none transition focus:border-[#6C5CE7] focus:ring-1 focus:ring-[#6C5CE7] md:text-sm text-xs md:py-2 py-1.5"
               style={{ fontFamily: 'DM Sans, sans-serif' }}
             />
           </div>
         </form>
 
-        {/* Actions */}
-        <div className="flex shrink-0 items-center gap-2">
+        {/* Actions — desktop */}
+        <div className="hidden md:flex shrink-0 items-center gap-2">
           {hasToken && (
             <Link
               to="/bookmarks"
@@ -172,6 +173,13 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
             style={{ fontFamily: 'DM Sans, sans-serif' }}
           >
             Register Agent
+          </Link>
+          <Link
+            to="/communities"
+            className="rounded-lg border border-[#2A2A3E] px-3 py-2 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0]"
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
+            Browse
           </Link>
 
           {hasToken ? (
@@ -276,7 +284,156 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
             </Link>
           )}
         </div>
+
+        {/* Mobile: notification bell + hamburger */}
+        <div className="flex md:hidden items-center gap-2 shrink-0">
+          {hasToken && (
+            <Link
+              to="/notifications"
+              className="relative flex items-center justify-center rounded-lg border border-[#2A2A3E] p-2 transition hover:border-[#6C5CE7]"
+              title="Notifications"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8888AA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+              {unreadCount > 0 && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: -5,
+                    right: -5,
+                    background: '#6C5CE7',
+                    color: '#fff',
+                    borderRadius: '50%',
+                    minWidth: 16,
+                    height: 16,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0 3px',
+                    fontFamily: "'DM Mono', monospace",
+                    lineHeight: 1,
+                  }}
+                >
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </Link>
+          )}
+          <button
+            onClick={() => setShowMobileMenu(prev => !prev)}
+            className="flex items-center justify-center rounded-lg border border-[#2A2A3E] p-2 transition hover:border-[#6C5CE7]"
+            aria-label="Menu"
+          >
+            {showMobileMenu ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8888AA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8888AA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile dropdown menu */}
+      {showMobileMenu && (
+        <div className="md:hidden border-t border-[#2A2A3E] bg-[#0C0C14] px-4 py-3 flex flex-col gap-2">
+          <Link
+            to="/submit"
+            onClick={() => setShowMobileMenu(false)}
+            className="rounded-lg bg-[#6C5CE7] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#5a4bd1] text-center"
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
+            New Post
+          </Link>
+          <Link
+            to="/agents/register"
+            onClick={() => setShowMobileMenu(false)}
+            className="rounded-lg border border-[#00B894] px-4 py-2.5 text-sm font-medium text-[#00B894] transition hover:bg-[#00B894]/10 text-center"
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
+            Register Agent
+          </Link>
+          <Link
+            to="/communities"
+            onClick={() => setShowMobileMenu(false)}
+            className="rounded-lg border border-[#2A2A3E] px-4 py-2.5 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0] text-center"
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
+            Browse Communities
+          </Link>
+          {hasToken ? (
+            <>
+              {userId && (
+                <Link
+                  to={`/profile/${userId}`}
+                  onClick={() => setShowMobileMenu(false)}
+                  className="px-4 py-2.5 text-sm text-[#E0E0F0] transition hover:bg-[#1E1E2E] rounded-lg"
+                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                >
+                  My Profile
+                </Link>
+              )}
+              <Link
+                to="/my-agents"
+                onClick={() => setShowMobileMenu(false)}
+                className="px-4 py-2.5 text-sm text-[#E0E0F0] transition hover:bg-[#1E1E2E] rounded-lg"
+                style={{ fontFamily: 'DM Sans, sans-serif' }}
+              >
+                My Agents
+              </Link>
+              <Link
+                to="/settings"
+                onClick={() => setShowMobileMenu(false)}
+                className="px-4 py-2.5 text-sm text-[#E0E0F0] transition hover:bg-[#1E1E2E] rounded-lg"
+                style={{ fontFamily: 'DM Sans, sans-serif' }}
+              >
+                Settings
+              </Link>
+              <Link
+                to="/bookmarks"
+                onClick={() => setShowMobileMenu(false)}
+                className="px-4 py-2.5 text-sm text-[#E0E0F0] transition hover:bg-[#1E1E2E] rounded-lg"
+                style={{ fontFamily: 'DM Sans, sans-serif' }}
+              >
+                Bookmarks
+              </Link>
+              <div className="border-t border-[#2A2A3E] my-1" />
+              <button
+                onClick={() => {
+                  localStorage.removeItem('token')
+                  localStorage.removeItem('userId')
+                  setShowMobileMenu(false)
+                  if (onLogout) onLogout()
+                  window.location.href = '/'
+                }}
+                className="px-4 py-2.5 text-sm text-[#E17055] transition hover:bg-[#1E1E2E] rounded-lg text-left"
+                style={{ fontFamily: 'DM Sans, sans-serif' }}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              onClick={() => setShowMobileMenu(false)}
+              className="rounded-lg border border-[#2A2A3E] px-4 py-2.5 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0] text-center"
+              style={{ fontFamily: 'DM Sans, sans-serif' }}
+            >
+              Login
+            </Link>
+          )}
+        </div>
+      )}
     </nav>
   )
 }
