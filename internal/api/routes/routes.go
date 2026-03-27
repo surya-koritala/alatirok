@@ -10,7 +10,11 @@ import (
 	"github.com/surya-koritala/alatirok/internal/repository"
 )
 
-func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
+func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, uploadsDir ...string) {
+	dir := "uploads"
+	if len(uploadsDir) > 0 && uploadsDir[0] != "" {
+		dir = uploadsDir[0]
+	}
 	// Repositories
 	participants := repository.NewParticipantRepo(pool)
 	communities := repository.NewCommunityRepo(pool)
@@ -46,7 +50,12 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	searchH := handlers.NewSearchHandler(search)
 	notifH := handlers.NewNotificationHandler(notifications, cfg)
 	profileH := handlers.NewProfileHandler(profiles, reputation, cfg)
+	commentBookmarks := repository.NewCommentBookmarkRepo(pool)
+
 	bookmarkH := handlers.NewBookmarkHandler(bookmarks)
+	commentBookmarkH := handlers.NewCommentBookmarkHandler(commentBookmarks)
+	crosspostH := handlers.NewCrosspostHandler(posts, cfg)
+	uploadH := handlers.NewUploadHandler(dir)
 	reportH := handlers.NewReportHandler(reports)
 	linkPreviewH := handlers.NewLinkPreviewHandler()
 	modH := handlers.NewModerationHandler(moderation, communities, reports, cfg)
@@ -91,6 +100,9 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	// Pin/unpin post (moderators only)
 	mux.Handle("POST /api/v1/posts/{id}/pin", requireAuth(http.HandlerFunc(postH.TogglePin)))
 
+	// Crosspost (agents + humans)
+	mux.Handle("POST /api/v1/posts/{id}/crosspost", requireAnyAuth(http.HandlerFunc(crosspostH.Crosspost)))
+
 	// Edit/delete/supersede/retract (agents + humans)
 	mux.Handle("PUT /api/v1/posts/{id}", requireAnyAuth(http.HandlerFunc(editH.EditPost)))
 	mux.Handle("DELETE /api/v1/posts/{id}", requireAnyAuth(http.HandlerFunc(editH.DeletePost)))
@@ -125,6 +137,10 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	mux.Handle("POST /api/v1/posts/{id}/bookmark", requireAnyAuth(http.HandlerFunc(bookmarkH.Toggle)))
 	mux.Handle("GET /api/v1/bookmarks", requireAnyAuth(http.HandlerFunc(bookmarkH.List)))
 
+	// Comment bookmark routes (agents + humans)
+	mux.Handle("POST /api/v1/comments/{id}/bookmark", requireAnyAuth(http.HandlerFunc(commentBookmarkH.Toggle)))
+	mux.Handle("GET /api/v1/bookmarks/comments", requireAnyAuth(http.HandlerFunc(commentBookmarkH.List)))
+
 	// Report routes (agents + humans can report, only mods resolve)
 	mux.Handle("POST /api/v1/reports", requireAnyAuth(http.HandlerFunc(reportH.Create)))
 	mux.Handle("PUT /api/v1/reports/{id}/resolve", requireAuth(http.HandlerFunc(reportH.Resolve)))
@@ -139,6 +155,12 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 
 	// Role check (public — returns "none" for unauthenticated)
 	mux.Handle("GET /api/v1/communities/{slug}/my-role", requireAnyAuth(http.HandlerFunc(modH.GetMyRole)))
+
+	// Image upload (auth required)
+	mux.Handle("POST /api/v1/upload", requireAnyAuth(http.HandlerFunc(uploadH.Upload)))
+
+	// Serve uploaded files statically
+	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir(dir))))
 
 	// Community settings update (JWT only — creator or admin)
 	mux.Handle("PUT /api/v1/communities/{slug}/settings", requireAuth(http.HandlerFunc(modH.UpdateSettings)))

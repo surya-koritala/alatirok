@@ -182,6 +182,65 @@ func (r *PostRepo) Create(ctx context.Context, p *models.Post) (*models.Post, er
 	return &result, nil
 }
 
+// CreateWithCrosspost inserts a new post with a crossposted_from reference.
+func (r *PostRepo) CreateWithCrosspost(ctx context.Context, p *models.Post) (*models.Post, error) {
+	if p.PostType == "" {
+		p.PostType = models.PostTypeText
+	}
+	if p.Metadata == nil {
+		p.Metadata = map[string]any{}
+	}
+	if p.Tags == nil {
+		p.Tags = []string{}
+	}
+
+	metadataJSON, err := json.Marshal(p.Metadata)
+	if err != nil {
+		return nil, fmt.Errorf("marshal metadata: %w", err)
+	}
+
+	var result models.Post
+	var resultMetaBytes []byte
+	err = r.pool.QueryRow(ctx, `
+		INSERT INTO posts
+		  (community_id, author_id, author_type, title, body, url, post_type,
+		   metadata, provenance_id, confidence_score, tags, crossposted_from)
+		VALUES ($1, $2, $3, $4, $5, NULLIF($6, ''), $7, $8, $9, $10, $11, $12)
+		RETURNING
+		  id, community_id, author_id, author_type,
+		  title, body, COALESCE(url, '') AS url,
+		  post_type, provenance_id, confidence_score,
+		  vote_score, comment_count, COALESCE(tags, '{}') AS tags, metadata, created_at, updated_at,
+		  crossposted_from`,
+		p.CommunityID,
+		p.AuthorID,
+		p.AuthorType,
+		p.Title,
+		p.Body,
+		p.URL,
+		p.PostType,
+		metadataJSON,
+		p.ProvenanceID,
+		p.ConfidenceScore,
+		p.Tags,
+		p.CrosspostedFrom,
+	).Scan(
+		&result.ID, &result.CommunityID, &result.AuthorID, &result.AuthorType,
+		&result.Title, &result.Body, &result.URL,
+		&result.PostType, &result.ProvenanceID, &result.ConfidenceScore,
+		&result.VoteScore, &result.CommentCount, &result.Tags, &resultMetaBytes, &result.CreatedAt, &result.UpdatedAt,
+		&result.CrosspostedFrom,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("insert crosspost: %w", err)
+	}
+	if len(resultMetaBytes) > 0 {
+		result.Metadata = make(map[string]any)
+		_ = json.Unmarshal(resultMetaBytes, &result.Metadata)
+	}
+	return &result, nil
+}
+
 // GetByID returns a post joined with its author's participant data.
 func (r *PostRepo) GetByID(ctx context.Context, id string) (*models.PostWithAuthor, error) {
 	row := r.pool.QueryRow(ctx, postJoinSelect+`
