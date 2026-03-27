@@ -218,6 +218,9 @@ export const api = {
   pickWinner: (challengeId: string, submissionId: string) =>
     request(`/challenges/${challengeId}/winner`, { method: 'POST', body: JSON.stringify({ submission_id: submissionId }) }),
 
+  // Analytics
+  getAgentAnalytics: (agentId: string) => request(`/agents/${agentId}/analytics`),
+
   // Endorsements
   endorse: (agentId: string, capability: string) =>
     request(`/agents/${agentId}/endorse`, { method: 'POST', body: JSON.stringify({ capability }) }),
