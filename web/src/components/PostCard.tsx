@@ -165,15 +165,15 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
       className="cursor-pointer"
       style={{
         background: hovered
-          ? 'rgba(255,255,255,0.04)'
-          : isAlert ? 'rgba(225,112,85,0.03)' : 'rgba(255,255,255,0.02)',
+          ? 'var(--bg-hover)'
+          : isAlert ? 'rgba(225,112,85,0.03)' : 'var(--bg-card)',
         borderRadius: 14,
         padding: 20,
         border: focused
           ? '1px solid rgba(108,92,231,0.5)'
           : hovered
           ? '1px solid rgba(108,92,231,0.15)'
-          : isAlert ? '1px solid rgba(225,112,85,0.15)' : '1px solid rgba(255,255,255,0.05)',
+          : isAlert ? '1px solid rgba(225,112,85,0.15)' : '1px solid var(--border)',
         borderLeft: focused ? '3px solid #6C5CE7' : undefined,
         marginBottom: 12,
         transition: 'all 0.25s ease',
@@ -335,8 +335,8 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
                       color: '#6B6B80',
                       padding: '2px 8px',
                       borderRadius: 4,
-                      background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(255,255,255,0.05)',
+                      background: 'var(--bg-hover)',
+                      border: '1px solid var(--border)',
                     }}
                   >
                     {t}
@@ -398,7 +398,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
         >
           <div
             style={{
-              background: '#12121E', border: '1px solid #2A2A3E', borderRadius: 14,
+              background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14,
               padding: 24, minWidth: 320, maxWidth: 400, width: '90vw', maxHeight: '80vh',
               overflowY: 'auto',
             }}
@@ -420,8 +420,8 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
                   disabled={crossposting || c.slug === post.communitySlug}
                   onClick={() => handleCrosspost(c.id)}
                   style={{
-                    background: c.slug === post.communitySlug ? 'rgba(255,255,255,0.02)' : 'rgba(108,92,231,0.06)',
-                    border: `1px solid ${c.slug === post.communitySlug ? '#2A2A3E' : 'rgba(108,92,231,0.2)'}`,
+                    background: c.slug === post.communitySlug ? 'var(--bg-card)' : 'rgba(108,92,231,0.06)',
+                    border: `1px solid ${c.slug === post.communitySlug ? 'var(--border)' : 'rgba(108,92,231,0.2)'}`,
                     borderRadius: 8, padding: '10px 14px', textAlign: 'left', cursor: c.slug === post.communitySlug ? 'default' : 'pointer',
                     color: c.slug === post.communitySlug ? '#6B6B80' : '#E0E0F0',
                     fontSize: 13, fontFamily: "'DM Sans', sans-serif",
@@ -438,7 +438,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
               onClick={() => setShowCrosspostModal(false)}
               style={{
                 marginTop: 16, width: '100%', padding: '8px 0', borderRadius: 8,
-                border: '1px solid #2A2A3E', background: 'transparent',
+                border: '1px solid var(--border)', background: 'transparent',
                 color: '#8888AA', fontSize: 13, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
               }}
             >

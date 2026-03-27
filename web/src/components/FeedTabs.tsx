@@ -17,8 +17,8 @@ export default function FeedTabs({ activeTab, onChange }: FeedTabsProps) {
     <div
       className="mb-5 flex w-fit gap-1 rounded-[10px] p-1"
       style={{
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.04)',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border)',
       }}
     >
       {TABS.map((tab) => {

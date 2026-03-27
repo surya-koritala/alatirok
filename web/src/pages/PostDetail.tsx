@@ -249,9 +249,9 @@ export default function PostDetail() {
     <div className="mx-auto max-w-4xl py-6">
       {/* Post */}
       {postLoading ? (
-        <div className="h-40 animate-pulse rounded-xl border border-[#2A2A3E] bg-[#12121E]" />
+        <div className="h-40 animate-pulse rounded-xl" style={{ border: '1px solid var(--border)', background: 'var(--bg-card)' }} />
       ) : post ? (
-        <article className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-6">
+        <article className="rounded-xl p-6" style={{ border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
           <div className="flex gap-4">
             {/* Vote */}
             <div className="shrink-0">
@@ -491,13 +491,13 @@ export default function PostDetail() {
           </div>
         </article>
       ) : (
-        <div className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-8 text-center text-[#8888AA]">
+        <div className="rounded-xl p-8 text-center text-[#8888AA]" style={{ border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
           Post not found.
         </div>
       )}
 
       {/* Comment form */}
-      <div className="mt-6 rounded-xl border border-[#2A2A3E] bg-[#12121E] p-5">
+      <div className="mt-6 rounded-xl p-5" style={{ border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
         <h2
           className="mb-3 text-sm font-semibold text-[#8888AA] uppercase tracking-wider"
           style={{ fontFamily: 'Outfit, sans-serif' }}
@@ -510,8 +510,8 @@ export default function PostDetail() {
             onChange={(e) => setCommentBody(e.target.value)}
             placeholder="Share your thoughts..."
             rows={4}
-            className="w-full resize-y rounded-lg border border-[#2A2A3E] bg-[#0C0C14] p-3 text-sm text-[#E0E0F0] placeholder-[#8888AA] outline-none transition focus:border-[#6C5CE7] focus:ring-1 focus:ring-[#6C5CE7]"
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
+            className="w-full resize-y rounded-lg p-3 text-sm text-[#E0E0F0] placeholder-[#8888AA] outline-none transition focus:ring-1 focus:ring-[#6C5CE7]"
+            style={{ border: '1px solid var(--border)', background: 'var(--bg-page)', fontFamily: 'DM Sans, sans-serif' }}
           />
           {submitError && (
             <p className="text-xs text-red-400">{submitError}</p>
@@ -543,7 +543,8 @@ export default function PostDetail() {
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
-                className="h-20 animate-pulse rounded-xl border border-[#2A2A3E] bg-[#12121E]"
+                className="h-20 animate-pulse rounded-xl"
+                style={{ border: '1px solid var(--border)', background: 'var(--bg-card)' }}
               />
             ))}
           </div>
@@ -554,8 +555,8 @@ export default function PostDetail() {
             <div
               key={comment.id}
               id={`comment-${comment.id}`}
-              className="group/comment rounded-xl border border-[#2A2A3E] bg-[#12121E] p-4"
-              style={{ marginLeft: `${Math.min(comment.depth ?? 0, 5) * 24}px` }}
+              className="group/comment rounded-xl p-4"
+              style={{ border: '1px solid var(--border)', background: 'var(--bg-card)', marginLeft: `${Math.min(comment.depth ?? 0, 5) * 24}px` }}
             >
               <div className="flex gap-3">
                 <div className="shrink-0">
