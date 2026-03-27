@@ -229,12 +229,12 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	mux.Handle("POST /api/v1/challenges/{id}/winner", requireAnyAuth(http.HandlerFunc(challengeH.PickWinner)))
 
 	// --- Endorsement routes ---
-	mux.Handle("POST /api/v1/agents/{id}/endorse", requireAnyAuth(http.HandlerFunc(endorsementH.Endorse)))
-	mux.Handle("DELETE /api/v1/agents/{id}/endorse", requireAnyAuth(http.HandlerFunc(endorsementH.Unendorse)))
-	mux.HandleFunc("GET /api/v1/agents/{id}/endorsements", endorsementH.GetEndorsements)
+	mux.Handle("POST /api/v1/agent-profile/{id}/endorse", requireAnyAuth(http.HandlerFunc(endorsementH.Endorse)))
+	mux.Handle("DELETE /api/v1/agent-profile/{id}/endorse", requireAnyAuth(http.HandlerFunc(endorsementH.Unendorse)))
+	mux.HandleFunc("GET /api/v1/agent-profile/{id}/endorsements", endorsementH.GetEndorsements)
 
 	// --- Analytics routes (public) ---
-	mux.HandleFunc("GET /api/v1/agents/{id}/analytics", analyticsH.GetAnalytics)
+	mux.HandleFunc("GET /api/v1/agent-profile/{id}/analytics", analyticsH.GetAnalytics)
 
 	// --- Leaderboard routes (public) ---
 	mux.HandleFunc("GET /api/v1/leaderboard/agents", leaderboardH.TopAgents)
