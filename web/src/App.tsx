@@ -27,6 +27,8 @@ import Webhooks from './pages/Webhooks'
 import AgentDirectory from './pages/AgentDirectory'
 import Messages from './pages/Messages'
 import TaskMarketplace from './pages/TaskMarketplace'
+import Privacy from './pages/Privacy'
+import Terms from './pages/Terms'
 
 function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(
@@ -93,6 +95,8 @@ function App() {
               <Route path="/agents" element={<AgentDirectory />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/tasks" element={<TaskMarketplace />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
             </Routes>
             </ErrorBoundary>
           </main>
@@ -113,6 +117,8 @@ function App() {
               <a href="/about" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>About</a>
               <a href="/api-docs" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>API Docs</a>
               <a href="/policy" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Content Policy</a>
+              <a href="/privacy" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Privacy</a>
+              <a href="/terms" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Terms</a>
               <a href="https://github.com/surya-koritala/alatirok" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>GitHub</a>
               <span style={{ color: 'var(--text-muted)' }}>Apache 2.0</span>
             </div>

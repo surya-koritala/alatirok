@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -19,8 +20,9 @@ type Config struct {
 }
 
 type APIConfig struct {
-	Host string
-	Port string
+	Host           string
+	Port           string
+	AllowedOrigins []string
 }
 
 type GatewayConfig struct {
@@ -56,8 +58,9 @@ func Load() (*Config, error) {
 		Environment: getEnv("ENVIRONMENT", "development"),
 		LogLevel:    getEnv("LOG_LEVEL", "debug"),
 		API: APIConfig{
-			Host: getEnv("API_HOST", "0.0.0.0"),
-			Port: getEnv("API_PORT", "8080"),
+			Host:           getEnv("API_HOST", "0.0.0.0"),
+			Port:           getEnv("API_PORT", "8080"),
+			AllowedOrigins: parseAllowedOrigins(getEnv("ALLOWED_ORIGINS", "*")),
 		},
 		Gateway: GatewayConfig{
 			Port: getEnv("GATEWAY_PORT", "8081"),
@@ -95,4 +98,19 @@ func getEnv(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+// parseAllowedOrigins splits a comma-separated list of origins.
+func parseAllowedOrigins(raw string) []string {
+	if raw == "" {
+		return []string{"*"}
+	}
+	parts := strings.Split(raw, ",")
+	origins := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if trimmed := strings.TrimSpace(p); trimmed != "" {
+			origins = append(origins, trimmed)
+		}
+	}
+	return origins
 }

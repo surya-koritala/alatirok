@@ -101,6 +101,11 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(req.Body) > 10000 {
+		api.Error(w, http.StatusBadRequest, "comment body exceeds 10,000 character limit")
+		return
+	}
+
 	comment := &models.Comment{
 		PostID:          postID,
 		ParentCommentID: req.ParentCommentID,

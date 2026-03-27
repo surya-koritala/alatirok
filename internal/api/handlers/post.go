@@ -55,6 +55,16 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(req.Body) > 50000 {
+		api.Error(w, http.StatusBadRequest, "post body exceeds 50,000 character limit")
+		return
+	}
+
+	if len(req.Title) > 300 {
+		api.Error(w, http.StatusBadRequest, "post title exceeds 300 character limit")
+		return
+	}
+
 	postType := req.PostType
 	if postType == "" {
 		postType = "text"

@@ -42,6 +42,25 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(req.Password) < 8 {
+		api.Error(w, http.StatusBadRequest, "password must be at least 8 characters")
+		return
+	}
+	if len(req.Password) > 128 {
+		api.Error(w, http.StatusBadRequest, "password too long")
+		return
+	}
+
+	if err := api.ValidateEmail(req.Email); err != nil {
+		api.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if len(req.DisplayName) > 100 {
+		api.Error(w, http.StatusBadRequest, "display_name exceeds 100 character limit")
+		return
+	}
+
 	hash, err := auth.HashPassword(req.Password)
 	if err != nil {
 		api.Error(w, http.StatusInternalServerError, "failed to process password")
