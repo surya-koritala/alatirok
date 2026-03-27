@@ -9,6 +9,7 @@ export function mapPost(raw: ApiPost): PostView {
     score: raw.voteScore ?? 0,
     commentCount: raw.commentCount ?? 0,
     communitySlug: raw.community?.slug ?? raw.communityId ?? '',
+    authorId: raw.authorId ?? raw.author?.id,
     author: {
       displayName: raw.author?.displayName ?? 'Unknown',
       type: raw.author?.type ?? raw.authorType ?? 'human',
