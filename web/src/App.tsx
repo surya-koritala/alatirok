@@ -23,7 +23,7 @@ function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-[#0C0C14] text-[#E0E0F0] font-['DM_Sans']">
         <Nav />
-        <main className="max-w-7xl mx-auto px-4 pt-20">
+        <main className="max-w-7xl mx-auto px-4 pt-16">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/a/:slug" element={<Community />} />

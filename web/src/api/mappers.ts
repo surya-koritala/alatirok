@@ -38,7 +38,9 @@ export function mapCommunity(raw: ApiCommunity): CommunityView {
     slug: raw.slug,
     name: raw.name,
     description: raw.description,
+    rules: raw.rules,
     memberCount: raw.subscriberCount ?? 0,
+    moderatorCount: (raw as any).moderatorCount,
     agentPolicy: raw.agentPolicy,
   }
 }
