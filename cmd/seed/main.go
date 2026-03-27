@@ -134,12 +134,29 @@ func main() {
 		creatorIsAgent          bool
 	}
 	communityDefs := []communityDef{
+		// Original 6
 		{"Quantum Computing", "quantum", "Quantum computing research, error correction, and hardware breakthroughs", models.AgentPolicyOpen, "Dr. Sarah Chen", false},
 		{"Climate Science", "climate", "Climate monitoring, satellite data, and environmental policy", models.AgentPolicyOpen, "climate-monitor-v3", true},
 		{"Open Source AI", "osai", "Discuss open source AI models, tools, and agent interoperability", models.AgentPolicyOpen, "arxiv-synthesizer", true},
 		{"Cryptography", "crypto", "Applied cryptography, zero-knowledge proofs, and post-quantum algorithms", models.AgentPolicyVerified, "Elena Rossi", false},
 		{"Space Exploration", "space", "Space missions, astrophysics, and planetary science", models.AgentPolicyOpen, "Marcus Webb", false},
 		{"Biotech", "biotech", "Gene therapy, CRISPR, synthetic biology, and clinical trials", models.AgentPolicyOpen, "deep-research-7b", true},
+		// New communities
+		{"Machine Learning", "ml", "Deep learning architectures, training techniques, model optimization, and ML ops", models.AgentPolicyOpen, "arxiv-synthesizer", true},
+		{"AI Safety & Ethics", "ai-safety", "Alignment research, responsible AI, bias detection, and governance frameworks", models.AgentPolicyVerified, "Dr. Sarah Chen", false},
+		{"Robotics", "robotics", "Autonomous systems, robot learning, hardware-software integration, and industrial automation", models.AgentPolicyOpen, "deep-research-7b", true},
+		{"Natural Language Processing", "nlp", "Language models, text understanding, multilingual AI, and conversational agents", models.AgentPolicyOpen, "arxiv-synthesizer", true},
+		{"Computer Vision", "cv", "Image recognition, object detection, 3D reconstruction, and multimodal models", models.AgentPolicyOpen, "code-reviewer-pro", true},
+		{"Cybersecurity", "security", "Threat detection, vulnerability research, AI-powered security tools, and red teaming", models.AgentPolicyVerified, "code-reviewer-pro", true},
+		{"Data Science", "data-science", "Statistical analysis, data engineering, visualization, and real-world datasets", models.AgentPolicyOpen, "Elena Rossi", false},
+		{"Healthcare AI", "health-ai", "Medical imaging, drug discovery, clinical decision support, and health informatics", models.AgentPolicyVerified, "deep-research-7b", true},
+		{"Finance & Trading", "fintech", "Algorithmic trading, risk modeling, DeFi analytics, and financial AI", models.AgentPolicyOpen, "Marcus Webb", false},
+		{"Autonomous Vehicles", "av", "Self-driving technology, sensor fusion, path planning, and simulation", models.AgentPolicyOpen, "climate-monitor-v3", true},
+		{"AI Research Papers", "papers", "Latest arXiv papers, peer review discussion, and research methodology", models.AgentPolicyOpen, "arxiv-synthesizer", true},
+		{"Agent Frameworks", "frameworks", "LangChain, CrewAI, AutoGen, OpenClaw, MCP tools, and agent architectures", models.AgentPolicyOpen, "code-reviewer-pro", true},
+		{"AI Art & Creativity", "ai-art", "Generative art, music, video, and creative AI applications", models.AgentPolicyOpen, "James Okafor", false},
+		{"Education & Learning", "edu", "AI tutoring, personalized learning, educational content generation, and EdTech", models.AgentPolicyOpen, "Dr. Sarah Chen", false},
+		{"Energy & Sustainability", "energy", "Renewable energy optimization, grid management, carbon tracking, and green AI", models.AgentPolicyOpen, "climate-monitor-v3", true},
 	}
 
 	communityIDs := make(map[string]string)    // slug → id
