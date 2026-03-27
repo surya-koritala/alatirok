@@ -12,34 +12,56 @@
 }
 
 [data-theme="light"] {
-  --bg-page: #F0F0F5;
-  --bg-card: #FFFFFF;
-  --bg-hover: #F5F5FA;
+  --bg-page: #FFFFFF;
+  --bg-card: #FAFAFA;
+  --bg-hover: #F0F0F5;
   --text-primary: #1A1A2E;
   --text-secondary: #555568;
   --text-muted: #8888AA;
-  --border: #E0E0E8;
+  --border: #E2E2EA;
 }
 
-/* Theme-aware base styles */
-[data-theme="light"] body {
-  background-color: var(--bg-page);
-  color: var(--text-primary);
-}
+/* Light theme overrides — white bg, same accent colors (purple #6C5CE7, green #00B894) */
+[data-theme="light"] body { background-color: #FFFFFF; color: #1A1A2E; }
 
-[data-theme="light"] .bg-\[\#0C0C14\] { background-color: var(--bg-page) !important; }
-[data-theme="light"] .bg-\[\#12121E\] { background-color: var(--bg-card) !important; }
-[data-theme="light"] .bg-\[\#1E1E2E\] { background-color: var(--bg-hover) !important; }
-[data-theme="light"] .border-\[\#2A2A3E\] { border-color: var(--border) !important; }
-[data-theme="light"] .text-\[\#E0E0F0\] { color: var(--text-primary) !important; }
-[data-theme="light"] .text-\[\#8888AA\] { color: var(--text-secondary) !important; }
-[data-theme="light"] .text-\[\#6B6B80\] { color: var(--text-muted) !important; }
-[data-theme="light"] nav { background-color: rgba(240,240,245,0.95) !important; border-color: var(--border) !important; }
-[data-theme="light"] nav input { background-color: #fff !important; border-color: var(--border) !important; color: var(--text-primary) !important; }
-[data-theme="light"] .text-\[\#C0C0D8\] { color: #333350 !important; }
+/* Backgrounds */
+[data-theme="light"] .bg-\[\#0C0C14\] { background-color: #FFFFFF !important; }
+[data-theme="light"] .bg-\[\#12121E\] { background-color: #FAFAFA !important; }
+[data-theme="light"] .bg-\[\#1A1A2E\] { background-color: #F0F0F5 !important; }
+[data-theme="light"] .bg-\[\#1E1E2E\] { background-color: #F0F0F5 !important; }
+
+/* Borders */
+[data-theme="light"] .border-\[\#2A2A3E\] { border-color: #E2E2EA !important; }
+
+/* Text */
+[data-theme="light"] .text-\[\#E0E0F0\] { color: #1A1A2E !important; }
+[data-theme="light"] .text-\[\#E8E8F0\] { color: #1A1A2E !important; }
 [data-theme="light"] .text-\[\#F0F0F8\] { color: #111128 !important; }
+[data-theme="light"] .text-\[\#C0C0D8\] { color: #333350 !important; }
 [data-theme="light"] .text-\[\#A0A0B8\] { color: #44445A !important; }
+[data-theme="light"] .text-\[\#8888AA\] { color: #555568 !important; }
+[data-theme="light"] .text-\[\#6B6B80\] { color: #777790 !important; }
+[data-theme="light"] .text-\[\#555568\] { color: #777790 !important; }
 [data-theme="light"] .placeholder-\[\#8888AA\]::placeholder { color: #9999BB !important; }
+[data-theme="light"] .placeholder-\[\#555568\]::placeholder { color: #9999BB !important; }
+
+/* Nav */
+[data-theme="light"] nav { background-color: rgba(255,255,255,0.95) !important; border-color: #E2E2EA !important; }
+[data-theme="light"] nav input { background-color: #F5F5FA !important; border-color: #E2E2EA !important; color: #1A1A2E !important; }
+
+/* Cards and inline styles with rgba backgrounds */
+[data-theme="light"] [style*="rgba(255,255,255,0.02)"] { background-color: #FAFAFA !important; }
+[data-theme="light"] [style*="rgba(255,255,255,0.03)"] { background-color: #F5F5FA !important; }
+[data-theme="light"] [style*="rgba(255,255,255,0.04)"] { background-color: #F0F0F5 !important; }
+
+/* Markdown in light mode */
+[data-theme="light"] .markdown-body code { background: rgba(108,92,231,0.08); color: #D63031; }
+[data-theme="light"] .markdown-body pre { background: #F5F5FA; border-color: #E2E2EA; }
+[data-theme="light"] .markdown-body pre code { color: #1A1A2E; }
+[data-theme="light"] .markdown-body blockquote { background: rgba(108,92,231,0.04); color: #555568; }
+[data-theme="light"] .markdown-body th { background: rgba(108,92,231,0.06); }
+[data-theme="light"] .markdown-body th, [data-theme="light"] .markdown-body td { border-color: #E2E2EA; }
+[data-theme="light"] .markdown-body hr { border-color: #E2E2EA; }
 
 /* Markdown body styles */
 .markdown-body { overflow-wrap: break-word; word-break: break-word; min-width: 0; }
