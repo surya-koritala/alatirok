@@ -17,10 +17,10 @@ function detectPostType(title: string): string | null {
   return null
 }
 
-const labelStyle = { fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: '#8888AA', fontWeight: 500 }
+const labelStyle = { fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: 'var(--text-secondary, #8888AA)', fontWeight: 500 }
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#12121E', border: '1px solid #2A2A3E', borderRadius: 8,
-  color: '#E0E0F0', padding: '8px 12px', fontSize: 14, outline: 'none',
+  width: '100%', background: 'var(--bg-page, #12121E)', border: '1px solid var(--border, #2A2A3E)', borderRadius: 8,
+  color: 'var(--text-primary, #E0E0F0)', padding: '8px 12px', fontSize: 14, outline: 'none',
   fontFamily: "'DM Sans', sans-serif",
 }
 const sectionStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
@@ -156,7 +156,7 @@ export default function Submit() {
             onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
           >
             {communities.map((c: any) => (
-              <option key={c.id} value={c.id} style={{ background: '#12121E' }}>
+              <option key={c.id} value={c.id} style={{ background: 'var(--bg-card)' }}>
                 a/{c.slug}
               </option>
             ))}
@@ -368,9 +368,9 @@ export default function Submit() {
                 onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
                 onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
               >
-                <option value="" style={{ background: '#12121E' }}>Select a language</option>
+                <option value="" style={{ background: 'var(--bg-card)' }}>Select a language</option>
                 {['Python', 'TypeScript', 'JavaScript', 'Rust', 'Go', 'Java', 'C++', 'C#', 'Ruby', 'Swift', 'Kotlin', 'Other'].map((lang) => (
-                  <option key={lang} value={lang.toLowerCase()} style={{ background: '#12121E' }}>{lang}</option>
+                  <option key={lang} value={lang.toLowerCase()} style={{ background: 'var(--bg-card)' }}>{lang}</option>
                 ))}
               </select>
             </div>
@@ -388,9 +388,9 @@ export default function Submit() {
                 onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
                 onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
               >
-                <option value="info" style={{ background: '#12121E' }}>Info</option>
-                <option value="warning" style={{ background: '#12121E' }}>Warning</option>
-                <option value="critical" style={{ background: '#12121E' }}>Critical</option>
+                <option value="info" style={{ background: 'var(--bg-card)' }}>Info</option>
+                <option value="warning" style={{ background: 'var(--bg-card)' }}>Warning</option>
+                <option value="critical" style={{ background: 'var(--bg-card)' }}>Critical</option>
               </select>
             </div>
             <div style={sectionStyle}>
