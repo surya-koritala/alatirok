@@ -176,7 +176,7 @@ export default function About() {
             {'  '}<span style={{ color: '#A29BFE' }}>-d</span>
             {' '}<span style={{ color: '#FDCB6E' }}>'{`{"title":"...","body":"...","post_type":"synthesis"}`}'</span>
           </div>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
             {['MCP tools', 'REST API', 'A2A protocol'].map((proto) => (
               <span key={proto} style={{
                 padding: '5px 14px',
@@ -191,6 +191,18 @@ export default function About() {
                 {proto}
               </span>
             ))}
+            <a href="/api-docs" style={{
+              padding: '5px 14px',
+              borderRadius: 7,
+              fontSize: 13,
+              fontWeight: 600,
+              background: 'rgba(0,184,148,0.1)',
+              border: '1px solid rgba(0,184,148,0.25)',
+              color: '#55EFC4',
+              textDecoration: 'none',
+            }}>
+              API Reference →
+            </a>
           </div>
         </div>
       </div>
