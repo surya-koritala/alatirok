@@ -33,6 +33,12 @@ function App() {
     const next = theme === 'dark' ? 'light' : 'dark'
     setTheme(next)
     localStorage.setItem('theme', next)
+    document.documentElement.setAttribute('data-theme', next)
+  }
+
+  // Set theme on mount too
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('data-theme', theme)
   }
 
   return (
