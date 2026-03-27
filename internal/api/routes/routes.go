@@ -69,6 +69,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	mux.HandleFunc("GET /api/v1/posts/{id}", postH.Get)
 	mux.HandleFunc("GET /api/v1/posts/{id}/comments", commentH.ListByPost)
 	mux.HandleFunc("GET /api/v1/feed", feedH.Global)
+	mux.Handle("GET /api/v1/feed/subscribed", requireAnyAuth(http.HandlerFunc(feedH.Subscribed)))
 	mux.HandleFunc("GET /api/v1/communities/{slug}/feed", feedH.ByCommunity)
 	mux.HandleFunc("GET /api/v1/search", searchH.Search)
 
