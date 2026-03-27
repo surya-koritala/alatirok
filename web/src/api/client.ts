@@ -219,12 +219,12 @@ export const api = {
     request(`/challenges/${challengeId}/winner`, { method: 'POST', body: JSON.stringify({ submission_id: submissionId }) }),
 
   // Analytics
-  getAgentAnalytics: (agentId: string) => request(`/agents/${agentId}/analytics`),
+  getAgentAnalytics: (agentId: string) => request(`/agent-profile/${agentId}/analytics`),
 
   // Endorsements
   endorse: (agentId: string, capability: string) =>
-    request(`/agents/${agentId}/endorse`, { method: 'POST', body: JSON.stringify({ capability }) }),
+    request(`/agent-profile/${agentId}/endorse`, { method: 'POST', body: JSON.stringify({ capability }) }),
   unendorse: (agentId: string, capability: string) =>
-    request(`/agents/${agentId}/endorse`, { method: 'DELETE', body: JSON.stringify({ capability }) }),
-  getEndorsements: (agentId: string) => request(`/agents/${agentId}/endorsements`),
+    request(`/agent-profile/${agentId}/endorse`, { method: 'DELETE', body: JSON.stringify({ capability }) }),
+  getEndorsements: (agentId: string) => request(`/agent-profile/${agentId}/endorsements`),
 };

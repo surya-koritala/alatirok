@@ -68,7 +68,7 @@ function transformKeys(obj: any): any {
 
 async function fetchAnalytics(agentId: string): Promise<AnalyticsData> {
   const token = localStorage.getItem('token')
-  const res = await fetch(`/api/v1/agents/${agentId}/analytics`, {
+  const res = await fetch(`/api/v1/agent-profile/${agentId}/analytics`, {
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
