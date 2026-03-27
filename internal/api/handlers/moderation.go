@@ -1,0 +1,200 @@
+package handlers
+
+import (
+	"errors"
+	"net/http"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/surya-koritala/alatirok/internal/api"
+	"github.com/surya-koritala/alatirok/internal/api/middleware"
+	"github.com/surya-koritala/alatirok/internal/config"
+	"github.com/surya-koritala/alatirok/internal/repository"
+)
+
+// ModerationHandler handles community moderation endpoints.
+type ModerationHandler struct {
+	moderation  *repository.ModerationRepo
+	communities *repository.CommunityRepo
+	reports     *repository.ReportRepo
+	cfg         *config.Config
+}
+
+// NewModerationHandler creates a new ModerationHandler.
+func NewModerationHandler(
+	moderation *repository.ModerationRepo,
+	communities *repository.CommunityRepo,
+	reports *repository.ReportRepo,
+	cfg *config.Config,
+) *ModerationHandler {
+	return &ModerationHandler{
+		moderation:  moderation,
+		communities: communities,
+		reports:     reports,
+		cfg:         cfg,
+	}
+}
+
+// Dashboard handles GET /api/v1/communities/{slug}/moderation.
+// Returns moderator list and pending reports for the community.
+func (h *ModerationHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
+	claims := middleware.GetClaims(r.Context())
+	if claims == nil {
+		api.Error(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	slug := r.PathValue("slug")
+	if slug == "" {
+		api.Error(w, http.StatusBadRequest, "slug is required")
+		return
+	}
+
+	community, err := h.communities.GetBySlug(r.Context(), slug)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			api.Error(w, http.StatusNotFound, "community not found")
+			return
+		}
+		api.Error(w, http.StatusInternalServerError, "failed to get community")
+		return
+	}
+
+	// Check caller is creator or moderator
+	isMod, err := h.moderation.IsModerator(r.Context(), community.ID, claims.ParticipantID)
+	if err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to check moderator status")
+		return
+	}
+	if community.CreatedBy != claims.ParticipantID && !isMod {
+		api.Error(w, http.StatusForbidden, "not authorized to view moderation dashboard")
+		return
+	}
+
+	mods, err := h.moderation.ListModerators(r.Context(), community.ID)
+	if err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to list moderators")
+		return
+	}
+	if mods == nil {
+		mods = []map[string]any{}
+	}
+
+	pendingReports, err := h.moderation.GetPendingReports(r.Context(), community.ID, 50)
+	if err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to get pending reports")
+		return
+	}
+	if pendingReports == nil {
+		pendingReports = []map[string]any{}
+	}
+
+	api.JSON(w, http.StatusOK, map[string]any{
+		"community":       community,
+		"moderators":      mods,
+		"pending_reports": pendingReports,
+	})
+}
+
+// AddModerator handles POST /api/v1/communities/{slug}/moderators.
+// Body: { participant_id, role }
+func (h *ModerationHandler) AddModerator(w http.ResponseWriter, r *http.Request) {
+	claims := middleware.GetClaims(r.Context())
+	if claims == nil {
+		api.Error(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	slug := r.PathValue("slug")
+	if slug == "" {
+		api.Error(w, http.StatusBadRequest, "slug is required")
+		return
+	}
+
+	community, err := h.communities.GetBySlug(r.Context(), slug)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			api.Error(w, http.StatusNotFound, "community not found")
+			return
+		}
+		api.Error(w, http.StatusInternalServerError, "failed to get community")
+		return
+	}
+
+	// Only creator or existing admin mods can add moderators
+	isMod, err := h.moderation.IsModerator(r.Context(), community.ID, claims.ParticipantID)
+	if err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to check moderator status")
+		return
+	}
+	if community.CreatedBy != claims.ParticipantID && !isMod {
+		api.Error(w, http.StatusForbidden, "not authorized to add moderators")
+		return
+	}
+
+	var req struct {
+		ParticipantID string `json:"participant_id"`
+		Role          string `json:"role"`
+	}
+	if err := api.Decode(r, &req); err != nil {
+		api.Error(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if req.ParticipantID == "" {
+		api.Error(w, http.StatusBadRequest, "participant_id is required")
+		return
+	}
+	if req.Role == "" {
+		req.Role = "moderator"
+	}
+
+	if err := h.moderation.AddModerator(r.Context(), community.ID, req.ParticipantID, req.Role); err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to add moderator")
+		return
+	}
+
+	api.JSON(w, http.StatusCreated, map[string]string{"status": "added"})
+}
+
+// RemoveModerator handles DELETE /api/v1/communities/{slug}/moderators/{id}.
+func (h *ModerationHandler) RemoveModerator(w http.ResponseWriter, r *http.Request) {
+	claims := middleware.GetClaims(r.Context())
+	if claims == nil {
+		api.Error(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	slug := r.PathValue("slug")
+	modID := r.PathValue("id")
+	if slug == "" || modID == "" {
+		api.Error(w, http.StatusBadRequest, "slug and moderator id are required")
+		return
+	}
+
+	community, err := h.communities.GetBySlug(r.Context(), slug)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			api.Error(w, http.StatusNotFound, "community not found")
+			return
+		}
+		api.Error(w, http.StatusInternalServerError, "failed to get community")
+		return
+	}
+
+	// Only creator or existing moderators can remove
+	isMod, err := h.moderation.IsModerator(r.Context(), community.ID, claims.ParticipantID)
+	if err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to check moderator status")
+		return
+	}
+	if community.CreatedBy != claims.ParticipantID && !isMod {
+		api.Error(w, http.StatusForbidden, "not authorized to remove moderators")
+		return
+	}
+
+	if err := h.moderation.RemoveModerator(r.Context(), community.ID, modID); err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to remove moderator")
+		return
+	}
+
+	api.JSON(w, http.StatusOK, map[string]string{"status": "removed"})
+}

@@ -91,4 +91,25 @@ export const api = {
     request(`/comments/${commentId}/reactions`, { method: "POST", body: JSON.stringify({ type }) }),
   getReactions: (commentId: string) =>
     request(`/comments/${commentId}/reactions`),
+  getCommunityModeration: (slug: string) =>
+    request(`/communities/${slug}/moderation`),
+  addModerator: (slug: string, data: { participant_id: string; role: string }) =>
+    request(`/communities/${slug}/moderators`, { method: "POST", body: JSON.stringify(data) }),
+  removeModerator: (slug: string, modId: string) =>
+    request(`/communities/${slug}/moderators/${modId}`, { method: "DELETE" }),
+  resolveReport: (reportId: string, status: string) =>
+    request(`/reports/${reportId}/resolve`, { method: "PUT", body: JSON.stringify({ status }) }),
+  createCommunity: (data: {
+    name: string;
+    slug: string;
+    description?: string;
+    rules?: string;
+    agent_policy?: string;
+    allowed_post_types?: string[];
+    require_tags?: boolean;
+    min_body_length?: number;
+  }) => request("/communities", { method: "POST", body: JSON.stringify(data) }),
+  getReputationHistory: (id: string) => request(`/profiles/${id}/reputation`),
+  pinPost: (postId: string, pin: boolean) =>
+    request(`/posts/${postId}/pin`, { method: "POST", body: JSON.stringify({ pin }) }),
 };

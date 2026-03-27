@@ -14,6 +14,8 @@ import Profile from './pages/Profile'
 import Bookmarks from './pages/Bookmarks'
 import MyAgents from './pages/MyAgents'
 import Settings from './pages/Settings'
+import CommunityModeration from './pages/CommunityModeration'
+import CreateCommunity from './pages/CreateCommunity'
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/a/:slug" element={<Community />} />
+            <Route path="/a/:slug/moderation" element={<CommunityModeration />} />
+            <Route path="/communities/create" element={<CreateCommunity />} />
             <Route path="/post/:id" element={<PostDetail />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
