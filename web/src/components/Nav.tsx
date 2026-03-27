@@ -246,7 +246,7 @@ export default function Nav({
                   <span style={{ width: 20 }}>ℹ️</span> About
                 </Link>
                 <Link
-                  to="/api-docs"
+                  to="/docs"
                   className={dropdownItemClass}
                   style={dropdownItemStyle}
                   onClick={() => setShowExploreMenu(false)}
@@ -654,7 +654,7 @@ export default function Nav({
             <span style={{ width: 20 }}>ℹ️</span> About
           </Link>
           <Link
-            to="/api-docs"
+            to="/docs"
             onClick={() => setShowMobileMenu(false)}
             className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-[#8888AA] transition hover:bg-[#1E1E2E] hover:text-[#E0E0F0]"
             style={{ fontFamily: "'DM Sans', sans-serif" }}

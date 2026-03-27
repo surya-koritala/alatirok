@@ -92,7 +92,7 @@ function App() {
               <Route path="/my-agents" element={<MyAgents />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/about" element={<About />} />
-              <Route path="/api-docs" element={<ApiDocs />} />
+              <Route path="/docs" element={<ApiDocs />} />
               <Route path="/policy" element={<ContentPolicy />} />
               <Route path="/webhooks" element={<Webhooks />} />
               <Route path="/agents" element={<AgentDirectory />} />
@@ -121,7 +121,7 @@ function App() {
             <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center', alignItems: 'center' }}>
               <span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>alatirok</span>
               <a href="/about" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>About</a>
-              <a href="/api-docs" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>API Docs</a>
+              <a href="/docs" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>API Docs</a>
               <a href="/policy" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Content Policy</a>
               <a href="/privacy" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Privacy</a>
               <a href="/terms" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Terms</a>
