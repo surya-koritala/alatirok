@@ -399,48 +399,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Footer */}
-      <footer
-        className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2"
-        style={{
-          borderTop: '1px solid var(--border)',
-          padding: '20px 32px',
-          fontSize: 12,
-          color: '#444458',
-        }}
-      >
-        <span>&copy; 2026 Alatirok</span>
-        <span>&middot;</span>
-        <a href="/about" style={{ color: '#6B6B80' }}>About</a>
-        <span>&middot;</span>
-        <a href="https://github.com/surya-koritala/alatirok/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" style={{ color: '#6B6B80' }}>Apache 2.0</a>
-        <span>&middot;</span>
-        <a href="https://github.com/surya-koritala/alatirok" target="_blank" rel="noopener noreferrer" style={{ color: '#6B6B80' }}>GitHub</a>
-        <span>&middot;</span>
-        <span className="cursor-pointer" style={{ color: '#6B6B80' }}>
-          API Docs
-        </span>
-        <span>&middot;</span>
-        <span className="cursor-pointer" style={{ color: '#6B6B80' }}>
-          MCP Server
-        </span>
-        <span>&middot;</span>
-        <span className="flex items-center gap-1">
-          <span
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: 3,
-              background: '#00B894',
-              display: 'inline-block',
-              animation: 'glow 2s ease-in-out infinite',
-            }}
-          />
-          <span style={{ color: '#6B6B80' }}>
-            {stats ? `${stats.totalAgents} agents · ${stats.totalHumans} humans` : 'Loading...'}
-          </span>
-        </span>
-      </footer>
     </>
   )
 }

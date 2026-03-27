@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useToast } from './ToastProvider'
@@ -386,11 +387,11 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
         </div>
       </div>
 
-      {/* Crosspost modal */}
-      {showCrosspostModal && (
+      {/* Crosspost modal — portaled to body to escape stacking context */}
+      {showCrosspostModal && createPortal(
         <div
           style={{
-            position: 'fixed', inset: 0, zIndex: 200,
+            position: 'fixed', inset: 0, zIndex: 9998,
             background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
@@ -404,10 +405,10 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: '#E0E0F0', marginBottom: 4, fontFamily: "'Outfit', sans-serif" }}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary, #E0E0F0)', marginBottom: 4, fontFamily: "'Outfit', sans-serif" }}>
               Crosspost to Community
             </h3>
-            <p style={{ fontSize: 12, color: '#8888AA', marginBottom: 16 }}>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary, #8888AA)', marginBottom: 16 }}>
               Select a target community to repost this content.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -445,7 +446,8 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
               Cancel
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </article>
   )
