@@ -191,10 +191,140 @@ func (h *ModerationHandler) RemoveModerator(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// Protect creator from removal
+	if community.CreatedBy == modID {
+		api.Error(w, http.StatusForbidden, "cannot remove the community creator")
+		return
+	}
+
 	if err := h.moderation.RemoveModerator(r.Context(), community.ID, modID); err != nil {
 		api.Error(w, http.StatusInternalServerError, "failed to remove moderator")
 		return
 	}
 
 	api.JSON(w, http.StatusOK, map[string]string{"status": "removed"})
+}
+
+// GetMyRole returns the current user's role in a community (creator/admin/moderator/member/none).
+// Public endpoint — returns "none" for unauthenticated requests.
+func (h *ModerationHandler) GetMyRole(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	claims := middleware.GetClaims(r.Context())
+
+	if claims == nil {
+		api.JSON(w, http.StatusOK, map[string]string{"role": "none"})
+		return
+	}
+
+	community, err := h.communities.GetBySlug(r.Context(), slug)
+	if err != nil {
+		api.Error(w, http.StatusNotFound, "community not found")
+		return
+	}
+
+	// Check if creator
+	if community.CreatedBy == claims.ParticipantID {
+		api.JSON(w, http.StatusOK, map[string]string{"role": "creator"})
+		return
+	}
+
+	// Check moderator role
+	isMod, _ := h.moderation.IsModerator(r.Context(), community.ID, claims.ParticipantID)
+	if isMod {
+		// Get specific role (admin vs moderator)
+		mods, _ := h.moderation.ListModerators(r.Context(), community.ID)
+		for _, m := range mods {
+			if m["id"] == claims.ParticipantID {
+				api.JSON(w, http.StatusOK, map[string]string{"role": m["role"].(string)})
+				return
+			}
+		}
+		api.JSON(w, http.StatusOK, map[string]string{"role": "moderator"})
+		return
+	}
+
+	api.JSON(w, http.StatusOK, map[string]string{"role": "member"})
+}
+
+// UpdateSettings handles PUT /api/v1/communities/{slug}/settings.
+// Allows creator or admin to update community settings.
+func (h *ModerationHandler) UpdateSettings(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	claims := middleware.GetClaims(r.Context())
+	if claims == nil {
+		api.Error(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	community, err := h.communities.GetBySlug(r.Context(), slug)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			api.Error(w, http.StatusNotFound, "community not found")
+			return
+		}
+		api.Error(w, http.StatusInternalServerError, "failed to get community")
+		return
+	}
+
+	// Only creator or admin moderator can update settings
+	isCreator := community.CreatedBy == claims.ParticipantID
+	if !isCreator {
+		isAdmin := false
+		isMod, _ := h.moderation.IsModerator(r.Context(), community.ID, claims.ParticipantID)
+		if isMod {
+			mods, _ := h.moderation.ListModerators(r.Context(), community.ID)
+			for _, m := range mods {
+				if m["id"] == claims.ParticipantID && m["role"] == "admin" {
+					isAdmin = true
+					break
+				}
+			}
+		}
+		if !isAdmin {
+			api.Error(w, http.StatusForbidden, "only creator or admin can update settings")
+			return
+		}
+	}
+
+	var req struct {
+		Description      *string  `json:"description"`
+		Rules            *string  `json:"rules"`
+		AgentPolicy      *string  `json:"agent_policy"`
+		AllowedPostTypes []string `json:"allowed_post_types"`
+		RequireTags      *bool    `json:"require_tags"`
+		MinBodyLength    *int     `json:"min_body_length"`
+	}
+	if err := api.Decode(r, &req); err != nil {
+		api.Error(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+
+	updates := map[string]any{}
+	if req.Description != nil {
+		updates["description"] = *req.Description
+	}
+	if req.Rules != nil {
+		updates["rules"] = *req.Rules
+	}
+	if req.AgentPolicy != nil {
+		updates["agent_policy"] = *req.AgentPolicy
+	}
+	if req.RequireTags != nil {
+		updates["require_tags"] = *req.RequireTags
+	}
+	if req.MinBodyLength != nil {
+		updates["min_body_length"] = *req.MinBodyLength
+	}
+
+	if len(updates) == 0 {
+		api.JSON(w, http.StatusOK, map[string]string{"status": "no changes"})
+		return
+	}
+
+	if err := h.communities.UpdateSettings(r.Context(), community.ID, updates); err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to update settings")
+		return
+	}
+
+	api.JSON(w, http.StatusOK, map[string]string{"status": "updated"})
 }

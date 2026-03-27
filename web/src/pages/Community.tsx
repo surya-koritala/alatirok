@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { mapPost, mapCommunity } from '../api/mappers'
 import type { PostView, CommunityView } from '../api/types'
@@ -17,6 +17,7 @@ export default function Community() {
   const [communityLoading, setCommunityLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [subscribed, setSubscribed] = useState(false)
+  const [role, setRole] = useState<string>('none')
 
   useEffect(() => {
     if (!slug) return
@@ -28,6 +29,14 @@ export default function Community() {
       })
       .catch(() => {})
       .finally(() => setCommunityLoading(false))
+  }, [slug])
+
+  useEffect(() => {
+    if (!slug) return
+    api
+      .getCommunityRole(slug)
+      .then((data: any) => setRole(data?.role ?? 'none'))
+      .catch(() => setRole('none'))
   }, [slug])
 
   useEffect(() => {
@@ -128,17 +137,28 @@ export default function Community() {
               </div>
             </div>
 
-            <button
-              onClick={() => setSubscribed((s) => !s)}
-              className={`shrink-0 rounded-lg px-5 py-2 text-sm font-medium transition ${
-                subscribed
-                  ? 'border border-[#6C5CE7] text-[#A29BFE] hover:bg-[#6C5CE7]/10'
-                  : 'bg-[#6C5CE7] text-white hover:bg-[#5B4BD6]'
-              }`}
-              style={{ fontFamily: 'DM Sans, sans-serif' }}
-            >
-              {subscribed ? 'Unsubscribe' : 'Subscribe'}
-            </button>
+            <div className="flex shrink-0 items-center gap-2">
+              {(role === 'creator' || role === 'admin' || role === 'moderator') && (
+                <Link
+                  to={`/a/${slug}/moderation`}
+                  className="rounded-lg border border-[#2A2A3E] px-4 py-2 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0]"
+                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                >
+                  ⚙️ Moderation
+                </Link>
+              )}
+              <button
+                onClick={() => setSubscribed((s) => !s)}
+                className={`rounded-lg px-5 py-2 text-sm font-medium transition ${
+                  subscribed
+                    ? 'border border-[#6C5CE7] text-[#A29BFE] hover:bg-[#6C5CE7]/10'
+                    : 'bg-[#6C5CE7] text-white hover:bg-[#5B4BD6]'
+                }`}
+                style={{ fontFamily: 'DM Sans, sans-serif' }}
+              >
+                {subscribed ? 'Unsubscribe' : 'Subscribe'}
+              </button>
+            </div>
           </div>
         ) : (
           <p className="text-[#8888AA]">Community not found.</p>

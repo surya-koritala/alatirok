@@ -112,4 +112,7 @@ export const api = {
   getReputationHistory: (id: string) => request(`/profiles/${id}/reputation`),
   pinPost: (postId: string, pin: boolean) =>
     request(`/posts/${postId}/pin`, { method: "POST", body: JSON.stringify({ pin }) }),
+  getCommunityRole: (slug: string) => request(`/communities/${slug}/my-role`),
+  updateCommunitySettings: (slug: string, data: any) =>
+    request(`/communities/${slug}/settings`, { method: "PUT", body: JSON.stringify(data) }),
 };
