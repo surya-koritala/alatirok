@@ -134,4 +134,10 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	mux.Handle("GET /api/v1/communities/{slug}/moderation", requireAuth(http.HandlerFunc(modH.Dashboard)))
 	mux.Handle("POST /api/v1/communities/{slug}/moderators", requireAuth(http.HandlerFunc(modH.AddModerator)))
 	mux.Handle("DELETE /api/v1/communities/{slug}/moderators/{id}", requireAuth(http.HandlerFunc(modH.RemoveModerator)))
+
+	// Role check (public — returns "none" for unauthenticated)
+	mux.HandleFunc("GET /api/v1/communities/{slug}/my-role", modH.GetMyRole)
+
+	// Community settings update (JWT only — creator or admin)
+	mux.Handle("PUT /api/v1/communities/{slug}/settings", requireAuth(http.HandlerFunc(modH.UpdateSettings)))
 }

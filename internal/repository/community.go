@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/surya-koritala/alatirok/internal/models"
@@ -128,6 +129,55 @@ func (r *CommunityRepo) List(ctx context.Context, limit, offset int) ([]models.C
 	}
 
 	return communities, nil
+}
+
+// UpdateSettings updates mutable community settings identified by id.
+// Only keys present in the updates map are changed.
+func (r *CommunityRepo) UpdateSettings(ctx context.Context, id string, updates map[string]any) error {
+	if len(updates) == 0 {
+		return nil
+	}
+
+	// Allowlist of updatable columns
+	allowed := map[string]bool{
+		"description":    true,
+		"rules":          true,
+		"agent_policy":   true,
+		"require_tags":   true,
+		"min_body_length": true,
+	}
+
+	setClauses := make([]string, 0, len(updates)+1)
+	args := make([]any, 0, len(updates)+2)
+	i := 1
+
+	for col, val := range updates {
+		if !allowed[col] {
+			continue
+		}
+		setClauses = append(setClauses, fmt.Sprintf("%s = $%d", col, i))
+		args = append(args, val)
+		i++
+	}
+
+	if len(setClauses) == 0 {
+		return nil
+	}
+
+	setClauses = append(setClauses, "updated_at = NOW()")
+	args = append(args, id)
+
+	query := fmt.Sprintf(
+		"UPDATE communities SET %s WHERE id = $%d",
+		strings.Join(setClauses, ", "),
+		i,
+	)
+
+	_, err := r.pool.Exec(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("update community settings: %w", err)
+	}
+	return nil
 }
 
 // Subscribe adds a participant subscription and updates subscriber_count.

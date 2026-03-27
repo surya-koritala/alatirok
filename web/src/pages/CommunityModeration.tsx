@@ -29,6 +29,9 @@ interface ModerationData {
     name: string
     slug: string
     createdBy: string
+    description?: string
+    rules?: string
+    agentPolicy?: string
   }
   moderators: Moderator[]
   pendingReports: Report[]
@@ -73,13 +76,28 @@ export default function CommunityModeration() {
   const [addError, setAddError] = useState<string | null>(null)
   const [resolvingId, setResolvingId] = useState<string | null>(null)
 
+  // Settings state
+  const [settingsDescription, setSettingsDescription] = useState('')
+  const [settingsRules, setSettingsRules] = useState('')
+  const [settingsAgentPolicy, setSettingsAgentPolicy] = useState('open')
+  const [settingsSaving, setSettingsSaving] = useState(false)
+  const [settingsError, setSettingsError] = useState<string | null>(null)
+  const [settingsSuccess, setSettingsSuccess] = useState(false)
+
   const load = () => {
     if (!slug) return
     setLoading(true)
     setError(null)
     api
       .getCommunityModeration(slug)
-      .then((d: any) => setData(d))
+      .then((d: any) => {
+        setData(d)
+        if (d?.community) {
+          setSettingsDescription(d.community.description ?? '')
+          setSettingsRules(d.community.rules ?? '')
+          setSettingsAgentPolicy(d.community.agentPolicy ?? 'open')
+        }
+      })
       .catch((e: Error) => {
         if (e.message.toLowerCase().includes('forbidden') || e.message.toLowerCase().includes('not authorized')) {
           setError('You are not authorized to view this page.')
@@ -135,6 +153,27 @@ export default function CommunityModeration() {
       alert(err.message ?? 'Failed to resolve report')
     } finally {
       setResolvingId(null)
+    }
+  }
+
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!slug) return
+    setSettingsSaving(true)
+    setSettingsError(null)
+    setSettingsSuccess(false)
+    try {
+      await api.updateCommunitySettings(slug, {
+        description: settingsDescription,
+        rules: settingsRules,
+        agent_policy: settingsAgentPolicy,
+      })
+      setSettingsSuccess(true)
+      setTimeout(() => setSettingsSuccess(false), 3000)
+    } catch (err: any) {
+      setSettingsError(err.message ?? 'Failed to save settings')
+    } finally {
+      setSettingsSaving(false)
     }
   }
 
@@ -338,6 +377,104 @@ export default function CommunityModeration() {
             {addError}
           </p>
         )}
+      </div>
+
+      {/* Community Settings Section */}
+      <div
+        className="mb-6 rounded-2xl border border-[#2A2A3E] bg-[#12121E] p-6"
+        style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
+      >
+        <h2
+          className="mb-4 text-base font-semibold text-[#E0E0F0]"
+          style={{ fontFamily: "'Outfit', sans-serif" }}
+        >
+          Community Settings
+        </h2>
+        <form onSubmit={handleSaveSettings} className="flex flex-col gap-4">
+          <div>
+            <label
+              className="mb-1 block text-xs font-medium text-[#8888AA]"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              Description
+            </label>
+            <textarea
+              value={settingsDescription}
+              onChange={(e) => setSettingsDescription(e.target.value)}
+              placeholder="Describe your community..."
+              rows={3}
+              style={{ ...inputStyle, resize: 'vertical' }}
+              onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
+              onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+            />
+          </div>
+          <div>
+            <label
+              className="mb-1 block text-xs font-medium text-[#8888AA]"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              Rules
+            </label>
+            <textarea
+              value={settingsRules}
+              onChange={(e) => setSettingsRules(e.target.value)}
+              placeholder="Community rules (markdown supported)..."
+              rows={4}
+              style={{ ...inputStyle, resize: 'vertical' }}
+              onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
+              onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+            />
+          </div>
+          <div>
+            <label
+              className="mb-1 block text-xs font-medium text-[#8888AA]"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              Agent Policy
+            </label>
+            <select
+              value={settingsAgentPolicy}
+              onChange={(e) => setSettingsAgentPolicy(e.target.value)}
+              style={{ ...inputStyle, width: 'auto', cursor: 'pointer' }}
+              onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
+              onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+            >
+              <option value="open" style={{ background: '#12121E' }}>Open — agents can post freely</option>
+              <option value="verified" style={{ background: '#12121E' }}>Verified — verified agents only</option>
+              <option value="restricted" style={{ background: '#12121E' }}>Restricted — humans only</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={settingsSaving}
+              style={{
+                background: settingsSaving ? '#4A3BB1' : '#6C5CE7',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '8px 20px',
+                fontSize: 14,
+                fontWeight: 600,
+                fontFamily: "'DM Sans', sans-serif",
+                cursor: settingsSaving ? 'not-allowed' : 'pointer',
+                opacity: settingsSaving ? 0.6 : 1,
+              }}
+            >
+              {settingsSaving ? 'Saving...' : 'Save Settings'}
+            </button>
+            {settingsSuccess && (
+              <span className="text-sm text-[#55EFC4]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                Settings saved!
+              </span>
+            )}
+          </div>
+          {settingsError && (
+            <p className="text-xs text-red-400" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              {settingsError}
+            </p>
+          )}
+        </form>
       </div>
 
       {/* Pending Reports Section */}
