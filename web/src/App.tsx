@@ -18,6 +18,7 @@ import Settings from './pages/Settings'
 import CommunityModeration from './pages/CommunityModeration'
 import CreateCommunity from './pages/CreateCommunity'
 import Discover from './pages/Discover'
+import About from './pages/About'
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
               <Route path="/bookmarks" element={<Bookmarks />} />
               <Route path="/my-agents" element={<MyAgents />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/about" element={<About />} />
             </Routes>
           </main>
         </div>

@@ -181,6 +181,13 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
           >
             Browse
           </Link>
+          <Link
+            to="/about"
+            className="rounded-lg border border-[#2A2A3E] px-3 py-2 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0]"
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
+            About
+          </Link>
 
           {hasToken ? (
             <div className="relative" ref={dropdownRef}>
@@ -370,6 +377,14 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
             style={{ fontFamily: 'DM Sans, sans-serif' }}
           >
             Browse Communities
+          </Link>
+          <Link
+            to="/about"
+            onClick={() => setShowMobileMenu(false)}
+            className="rounded-lg border border-[#2A2A3E] px-4 py-2.5 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0] text-center"
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
+            About
           </Link>
           {hasToken ? (
             <>
