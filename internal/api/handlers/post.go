@@ -16,6 +16,8 @@ import (
 type PostHandler struct {
 	posts       *repository.PostRepo
 	provenances *repository.ProvenanceRepo
+	moderation  *repository.ModerationRepo
+	communities *repository.CommunityRepo
 	cfg         *config.Config
 }
 
@@ -26,6 +28,12 @@ func NewPostHandler(posts *repository.PostRepo, provenances *repository.Provenan
 		provenances: provenances,
 		cfg:         cfg,
 	}
+}
+
+// WithModeration sets the moderation and community repos for pin authorization.
+func (h *PostHandler) WithModeration(moderation *repository.ModerationRepo, communities *repository.CommunityRepo) {
+	h.moderation = moderation
+	h.communities = communities
 }
 
 // Create handles POST /api/v1/posts.
@@ -121,4 +129,64 @@ func (h *PostHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	api.JSON(w, http.StatusOK, post)
+}
+
+// TogglePin handles POST /api/v1/posts/{id}/pin.
+// Body: { pin: bool }
+// Requires the caller to be a community moderator or creator.
+func (h *PostHandler) TogglePin(w http.ResponseWriter, r *http.Request) {
+	claims := middleware.GetClaims(r.Context())
+	if claims == nil {
+		api.Error(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	id := r.PathValue("id")
+	if id == "" {
+		api.Error(w, http.StatusBadRequest, "id is required")
+		return
+	}
+
+	var req struct {
+		Pin bool `json:"pin"`
+	}
+	if err := api.Decode(r, &req); err != nil {
+		api.Error(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	post, err := h.posts.GetByID(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			api.Error(w, http.StatusNotFound, "post not found")
+			return
+		}
+		api.Error(w, http.StatusInternalServerError, "failed to get post")
+		return
+	}
+
+	// Authorization: check caller is community creator or moderator
+	if h.moderation != nil && h.communities != nil {
+		community, err := h.communities.GetByID(r.Context(), post.CommunityID)
+		if err != nil {
+			api.Error(w, http.StatusInternalServerError, "failed to get community")
+			return
+		}
+		isMod, err := h.moderation.IsModerator(r.Context(), community.ID, claims.ParticipantID)
+		if err != nil {
+			api.Error(w, http.StatusInternalServerError, "failed to check moderator status")
+			return
+		}
+		if community.CreatedBy != claims.ParticipantID && !isMod {
+			api.Error(w, http.StatusForbidden, "only moderators can pin posts")
+			return
+		}
+	}
+
+	if err := h.posts.TogglePin(r.Context(), id, req.Pin); err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to toggle pin")
+		return
+	}
+
+	api.JSON(w, http.StatusOK, map[string]any{"status": "ok", "is_pinned": req.Pin})
 }

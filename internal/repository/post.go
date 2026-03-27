@@ -57,6 +57,7 @@ func scanPostWithAuthor(row interface {
 		&p.PostType, &p.ProvenanceID, &p.ConfidenceScore,
 		&p.VoteScore, &p.CommentCount, &p.Tags, &metadataBytes, &p.CreatedAt, &p.UpdatedAt,
 		&p.DeletedAt, &p.SupersededBy, &p.IsRetracted, &p.RetractionNotice,
+		&p.IsPinned, &p.PinnedAt,
 		&p.Author.DisplayName, &p.Author.AvatarURL,
 		&p.Author.TrustScore, &p.Author.ReputationScore,
 		&p.Author.Type, &p.Author.IsVerified,
@@ -110,6 +111,7 @@ const postJoinSelect = `
 		p.post_type, p.provenance_id, p.confidence_score,
 		p.vote_score, p.comment_count, COALESCE(p.tags, '{}') AS tags, p.metadata, p.created_at, p.updated_at,
 		p.deleted_at, p.superseded_by, p.is_retracted, p.retraction_notice,
+		p.is_pinned, p.pinned_at,
 		part.display_name, COALESCE(part.avatar_url, '') AS avatar_url,
 		part.trust_score, part.reputation_score,
 		part.type, part.is_verified,
@@ -222,7 +224,7 @@ func (r *PostRepo) ListByCommunity(ctx context.Context, communityID string, sort
 
 	rows, err := r.pool.Query(ctx, postJoinSelect+`
 	WHERE `+strings.Join(whereClauses, " AND ")+`
-	ORDER BY `+orderBy+`
+	ORDER BY p.is_pinned DESC, `+orderBy+`
 	LIMIT `+limitParam+` OFFSET `+offsetParam,
 		queryArgs...,
 	)
@@ -271,6 +273,16 @@ func (r *PostRepo) Supersede(ctx context.Context, oldID, newID string) error {
 // Retract marks a post as retracted with a notice.
 func (r *PostRepo) Retract(ctx context.Context, id, notice string) error {
 	_, err := r.pool.Exec(ctx, `UPDATE posts SET is_retracted = TRUE, retraction_notice = $1 WHERE id = $2`, notice, id)
+	return err
+}
+
+// TogglePin pins or unpins a post.
+func (r *PostRepo) TogglePin(ctx context.Context, postID string, pin bool) error {
+	if pin {
+		_, err := r.pool.Exec(ctx, `UPDATE posts SET is_pinned = TRUE, pinned_at = NOW() WHERE id = $1`, postID)
+		return err
+	}
+	_, err := r.pool.Exec(ctx, `UPDATE posts SET is_pinned = FALSE, pinned_at = NULL WHERE id = $1`, postID)
 	return err
 }
 

@@ -52,6 +52,8 @@ type Post struct {
 	VoteScore        int             `json:"vote_score" db:"vote_score"`
 	CommentCount     int             `json:"comment_count" db:"comment_count"`
 	Tags             []string        `json:"tags" db:"tags"`
+	IsPinned         bool            `json:"is_pinned" db:"is_pinned"`
+	PinnedAt         *time.Time      `json:"pinned_at,omitempty" db:"pinned_at"`
 	DeletedAt        *time.Time      `json:"deleted_at,omitempty" db:"deleted_at"`
 	SupersededBy     *string         `json:"superseded_by,omitempty" db:"superseded_by"`
 	IsRetracted      bool            `json:"is_retracted" db:"is_retracted"`

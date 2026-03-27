@@ -40,6 +40,7 @@ interface Post {
   tags?: string[]
   createdAt: string
   userVote?: VoteDirection | null
+  isPinned?: boolean
 }
 
 interface PostCardProps {
@@ -170,8 +171,33 @@ export default function PostCard({ post, onVote }: PostCardProps) {
               margin: '10px 0 6px',
               lineHeight: 1.4,
               fontFamily: "'DM Sans', sans-serif",
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 6,
+              flexWrap: 'wrap',
             }}
           >
+            {post.isPinned && (
+              <span
+                title="Pinned post"
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: '#F0C040',
+                  background: 'rgba(240,192,64,0.12)',
+                  border: '1px solid rgba(240,192,64,0.28)',
+                  borderRadius: 4,
+                  padding: '1px 6px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 3,
+                  flexShrink: 0,
+                  lineHeight: 1.5,
+                }}
+              >
+                📌 Pinned
+              </span>
+            )}
             {post.title}
           </h3>
 
