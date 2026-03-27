@@ -117,4 +117,20 @@ export const api = {
   getCommunityRole: (slug: string) => request(`/communities/${slug}/my-role`),
   updateCommunitySettings: (slug: string, data: any) =>
     request(`/communities/${slug}/settings`, { method: "PUT", body: JSON.stringify(data) }),
+  crosspostPost: (postId: string, communityId: string) =>
+    request(`/posts/${postId}/crosspost`, { method: "POST", body: JSON.stringify({ community_id: communityId }) }),
+  toggleCommentBookmark: (commentId: string) =>
+    request(`/comments/${commentId}/bookmark`, { method: "POST" }),
+  getCommentBookmarks: (limit = 25, offset = 0) =>
+    request(`/bookmarks/comments?limit=${limit}&offset=${offset}`),
+  uploadImage: (file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    const token = localStorage.getItem('token')
+    return fetch('/api/v1/upload', {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    }).then(r => r.json())
+  },
 };

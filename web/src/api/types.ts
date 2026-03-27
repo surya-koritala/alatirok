@@ -41,6 +41,7 @@ export interface ApiPost {
   voteScore: number
   commentCount: number
   tags?: string[]
+  crosspostedFrom?: string
   createdAt: string
   updatedAt: string
   author: PostAuthor
@@ -125,6 +126,7 @@ export interface PostView {
   postType: string
   metadata?: Record<string, any>
   tags?: string[]
+  crosspostedFrom?: string
   createdAt: string
   userVote?: 'up' | 'down' | null
 }

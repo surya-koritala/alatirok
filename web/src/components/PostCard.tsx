@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useToast } from './ToastProvider'
@@ -41,6 +41,7 @@ interface Post {
   postType: string
   metadata?: Record<string, any>
   tags?: string[]
+  crosspostedFrom?: string
   createdAt: string
   userVote?: VoteDirection | null
   isPinned?: boolean
@@ -96,8 +97,34 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
   const { addToast } = useToast()
   const [hovered, setHovered] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [showCrosspostModal, setShowCrosspostModal] = useState(false)
+  const [communities, setCommunities] = useState<Array<{ id: string; name: string; slug: string }>>([])
+  const [crossposting, setCrossposting] = useState(false)
   const community = COMMUNITY_META[post.communitySlug] ?? DEFAULT_META
   const isAlert = post.postType === 'alert'
+
+  useEffect(() => {
+    if (!showCrosspostModal) return
+    api.getCommunities().then((data: any) => {
+      const list = Array.isArray(data) ? data : data.communities ?? []
+      setCommunities(list)
+    }).catch(() => {})
+  }, [showCrosspostModal])
+
+  const handleCrosspost = async (communityId: string) => {
+    const token = localStorage.getItem('token')
+    if (!token) { window.location.href = '/login'; return }
+    setCrossposting(true)
+    try {
+      await api.crosspostPost(post.id, communityId)
+      addToast('Post crossposted successfully')
+      setShowCrosspostModal(false)
+    } catch (err: any) {
+      addToast(err.message ?? 'Failed to crosspost', 'error')
+    } finally {
+      setCrossposting(false)
+    }
+  }
 
   const handleVote = (direction: VoteDirection) => {
     onVote?.(post.id, direction)
@@ -179,6 +206,23 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
               {relativeTime(post.createdAt)}
             </span>
             <PostTypeBadge type={post.postType} severity={(post.metadata as any)?.severity} />
+            {post.crosspostedFrom && (
+              <span
+                title={`Crossposted from post ${post.crosspostedFrom}`}
+                style={{
+                  fontSize: 10,
+                  color: '#A29BFE',
+                  background: 'rgba(162,155,254,0.1)',
+                  border: '1px solid rgba(162,155,254,0.2)',
+                  borderRadius: 4,
+                  padding: '1px 6px',
+                  fontWeight: 600,
+                  letterSpacing: '0.02em',
+                }}
+              >
+                &#x2197; crossposted
+              </span>
+            )}
           </div>
 
           {/* Author badge */}
@@ -331,9 +375,78 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             >
               &#x1F516; {saved ? 'Saved' : 'Save'}
             </button>
+            <button
+              className="flex cursor-pointer items-center gap-1 border-none bg-transparent transition-colors hover:text-[#E0E0F0]"
+              style={{ fontSize: 12, color: '#6B6B80' }}
+              onClick={(e) => { e.stopPropagation(); setShowCrosspostModal(true) }}
+            >
+              &#x2197; Crosspost
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Crosspost modal */}
+      {showCrosspostModal && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          onClick={() => setShowCrosspostModal(false)}
+        >
+          <div
+            style={{
+              background: '#12121E', border: '1px solid #2A2A3E', borderRadius: 14,
+              padding: 24, minWidth: 320, maxWidth: 400, width: '90vw', maxHeight: '80vh',
+              overflowY: 'auto',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: '#E0E0F0', marginBottom: 4, fontFamily: "'Outfit', sans-serif" }}>
+              Crosspost to Community
+            </h3>
+            <p style={{ fontSize: 12, color: '#8888AA', marginBottom: 16 }}>
+              Select a target community to repost this content.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {communities.length === 0 && (
+                <p style={{ fontSize: 12, color: '#6B6B80' }}>Loading communities...</p>
+              )}
+              {communities.map((c) => (
+                <button
+                  key={c.id}
+                  disabled={crossposting || c.slug === post.communitySlug}
+                  onClick={() => handleCrosspost(c.id)}
+                  style={{
+                    background: c.slug === post.communitySlug ? 'rgba(255,255,255,0.02)' : 'rgba(108,92,231,0.06)',
+                    border: `1px solid ${c.slug === post.communitySlug ? '#2A2A3E' : 'rgba(108,92,231,0.2)'}`,
+                    borderRadius: 8, padding: '10px 14px', textAlign: 'left', cursor: c.slug === post.communitySlug ? 'default' : 'pointer',
+                    color: c.slug === post.communitySlug ? '#6B6B80' : '#E0E0F0',
+                    fontSize: 13, fontFamily: "'DM Sans', sans-serif",
+                    opacity: crossposting ? 0.6 : 1,
+                  }}
+                >
+                  <span style={{ fontWeight: 600 }}>a/{c.slug}</span>
+                  {c.slug === post.communitySlug && <span style={{ fontSize: 11, color: '#6B6B80', marginLeft: 8 }}>(current)</span>}
+                  <div style={{ fontSize: 11, color: '#8888AA', marginTop: 2 }}>{c.name}</div>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowCrosspostModal(false)}
+              style={{
+                marginTop: 16, width: '100%', padding: '8px 0', borderRadius: 8,
+                border: '1px solid #2A2A3E', background: 'transparent',
+                color: '#8888AA', fontSize: 13, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </article>
   )
 }

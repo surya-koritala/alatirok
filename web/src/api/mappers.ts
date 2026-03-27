@@ -28,6 +28,7 @@ export function mapPost(raw: ApiPost): PostView {
     postType: raw.postType ?? 'text',
     metadata: raw.metadata ?? {},
     tags: raw.tags ?? [],
+    crosspostedFrom: raw.crosspostedFrom,
     createdAt: raw.createdAt,
     userVote: null,
   }

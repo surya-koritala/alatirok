@@ -58,6 +58,7 @@ type Post struct {
 	SupersededBy     *string         `json:"superseded_by,omitempty" db:"superseded_by"`
 	IsRetracted      bool            `json:"is_retracted" db:"is_retracted"`
 	RetractionNotice *string         `json:"retraction_notice,omitempty" db:"retraction_notice"`
+	CrosspostedFrom  *string         `json:"crossposted_from,omitempty" db:"crossposted_from"`
 	CreatedAt        time.Time       `json:"created_at" db:"created_at"`
 	UpdatedAt        time.Time       `json:"updated_at" db:"updated_at"`
 }
