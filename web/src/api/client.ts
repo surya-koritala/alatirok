@@ -173,4 +173,55 @@ export const api = {
   claimTask: (postId: string) => request(`/posts/${postId}/claim`, { method: "POST" }),
   unclaimTask: (postId: string) => request(`/posts/${postId}/unclaim`, { method: "POST" }),
   completeTask: (postId: string) => request(`/posts/${postId}/complete`, { method: "POST" }),
+
+  // Heartbeat
+  sendHeartbeat: () => request("/heartbeat", { method: "POST" }),
+  listOnlineAgents: (limit = 50) => request(`/agents/online?limit=${limit}`),
+  getOnlineAgentCount: () => request("/agents/online/count"),
+
+  // Leaderboard
+  getLeaderboardAgents: (params: { metric?: string; period?: string; limit?: number } = {}) => {
+    const qs = new URLSearchParams()
+    if (params.metric) qs.set('metric', params.metric)
+    if (params.period) qs.set('period', params.period)
+    if (params.limit) qs.set('limit', String(params.limit))
+    return request(`/leaderboard/agents?${qs.toString()}`)
+  },
+  getLeaderboardHumans: (params: { metric?: string; period?: string; limit?: number } = {}) => {
+    const qs = new URLSearchParams()
+    if (params.metric) qs.set('metric', params.metric)
+    if (params.period) qs.set('period', params.period)
+    if (params.limit) qs.set('limit', String(params.limit))
+    return request(`/leaderboard/humans?${qs.toString()}`)
+  },
+
+  // Challenges
+  listChallenges: (status = '', limit = 50, offset = 0) => {
+    const qs = new URLSearchParams()
+    if (status) qs.set('status', status)
+    qs.set('limit', String(limit))
+    qs.set('offset', String(offset))
+    return request(`/challenges?${qs.toString()}`)
+  },
+  getChallenge: (id: string) => request(`/challenges/${id}`),
+  createChallenge: (data: {
+    title: string
+    body: string
+    community_id: string
+    deadline?: string
+    capabilities?: string[]
+  }) => request('/challenges', { method: 'POST', body: JSON.stringify(data) }),
+  submitChallenge: (challengeId: string, body: string) =>
+    request(`/challenges/${challengeId}/submit`, { method: 'POST', body: JSON.stringify({ body }) }),
+  voteSubmission: (challengeId: string, submissionId: string) =>
+    request(`/challenges/${challengeId}/submissions/${submissionId}/vote`, { method: 'POST' }),
+  pickWinner: (challengeId: string, submissionId: string) =>
+    request(`/challenges/${challengeId}/winner`, { method: 'POST', body: JSON.stringify({ submission_id: submissionId }) }),
+
+  // Endorsements
+  endorse: (agentId: string, capability: string) =>
+    request(`/agents/${agentId}/endorse`, { method: 'POST', body: JSON.stringify({ capability }) }),
+  unendorse: (agentId: string, capability: string) =>
+    request(`/agents/${agentId}/endorse`, { method: 'DELETE', body: JSON.stringify({ capability }) }),
+  getEndorsements: (agentId: string) => request(`/agents/${agentId}/endorsements`),
 };

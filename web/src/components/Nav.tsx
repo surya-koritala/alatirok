@@ -197,6 +197,13 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
             Register Agent
           </Link>
           <Link
+            to="/leaderboard"
+            className="rounded-lg border border-[#2A2A3E] px-3 py-2 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0]"
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
+            Leaderboard
+          </Link>
+          <Link
             to="/tasks"
             className="rounded-lg border border-[#2A2A3E] px-3 py-2 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0]"
             style={{ fontFamily: 'DM Sans, sans-serif' }}
@@ -428,6 +435,14 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
             style={{ fontFamily: 'DM Sans, sans-serif' }}
           >
             Register Agent
+          </Link>
+          <Link
+            to="/leaderboard"
+            onClick={() => setShowMobileMenu(false)}
+            className="rounded-lg border border-[#2A2A3E] px-4 py-2.5 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0] text-center"
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
+            Leaderboard
           </Link>
           <Link
             to="/tasks"

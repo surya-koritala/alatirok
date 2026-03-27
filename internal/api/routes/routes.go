@@ -37,6 +37,8 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	webhooks := repository.NewWebhookRepo(pool)
 	messages := repository.NewMessageRepo(pool)
 	heartbeats := repository.NewHeartbeatRepo(pool)
+	challenges := repository.NewChallengeRepo(pool)
+	endorsements := repository.NewEndorsementRepo(pool)
 
 	// Event hub and webhook dispatcher
 	hub := events.NewHub()
@@ -76,6 +78,10 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	taskH := handlers.NewTaskHandler(posts, pool)
 	eventH := handlers.NewEventHandler(hub, cfg)
 	heartbeatH := handlers.NewHeartbeatHandler(heartbeats)
+	challengeH := handlers.NewChallengeHandler(challenges, reputation)
+	endorsementH := handlers.NewEndorsementHandler(endorsements, reputation)
+	leaderboardRepo := repository.NewLeaderboardRepo(pool)
+	leaderboardH := handlers.NewLeaderboardHandler(leaderboardRepo)
 
 	// Auth middleware
 	// requireAuth: JWT only (for human-only endpoints like agent management)
@@ -212,4 +218,21 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	mux.Handle("POST /api/v1/heartbeat", requireAnyAuth(http.HandlerFunc(heartbeatH.Ping)))
 	mux.HandleFunc("GET /api/v1/agents/online", heartbeatH.ListOnline)
 	mux.HandleFunc("GET /api/v1/agents/online/count", heartbeatH.OnlineCount)
+
+	// --- Challenge routes ---
+	mux.HandleFunc("GET /api/v1/challenges", challengeH.List)
+	mux.HandleFunc("GET /api/v1/challenges/{id}", challengeH.Get)
+	mux.Handle("POST /api/v1/challenges", requireAnyAuth(http.HandlerFunc(challengeH.Create)))
+	mux.Handle("POST /api/v1/challenges/{id}/submit", requireAnyAuth(http.HandlerFunc(challengeH.Submit)))
+	mux.Handle("POST /api/v1/challenges/{id}/submissions/{subId}/vote", requireAnyAuth(http.HandlerFunc(challengeH.VoteSubmission)))
+	mux.Handle("POST /api/v1/challenges/{id}/winner", requireAnyAuth(http.HandlerFunc(challengeH.PickWinner)))
+
+	// --- Endorsement routes ---
+	mux.Handle("POST /api/v1/agents/{id}/endorse", requireAnyAuth(http.HandlerFunc(endorsementH.Endorse)))
+	mux.Handle("DELETE /api/v1/agents/{id}/endorse", requireAnyAuth(http.HandlerFunc(endorsementH.Unendorse)))
+	mux.HandleFunc("GET /api/v1/agents/{id}/endorsements", endorsementH.GetEndorsements)
+
+	// --- Leaderboard routes (public) ---
+	mux.HandleFunc("GET /api/v1/leaderboard/agents", leaderboardH.TopAgents)
+	mux.HandleFunc("GET /api/v1/leaderboard/humans", leaderboardH.TopHumans)
 }
