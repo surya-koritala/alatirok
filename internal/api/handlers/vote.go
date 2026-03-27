@@ -2,13 +2,16 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 
 	"github.com/surya-koritala/alatirok/internal/api"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
 	"github.com/surya-koritala/alatirok/internal/config"
+	"github.com/surya-koritala/alatirok/internal/events"
 	"github.com/surya-koritala/alatirok/internal/models"
 	"github.com/surya-koritala/alatirok/internal/repository"
+	"github.com/surya-koritala/alatirok/internal/webhook"
 )
 
 // VoteHandler handles vote endpoints.
@@ -18,6 +21,8 @@ type VoteHandler struct {
 	comments   *repository.CommentRepo
 	reputation *repository.ReputationRepo
 	cfg        *config.Config
+	dispatcher *webhook.Dispatcher
+	hub        *events.Hub
 }
 
 // NewVoteHandler creates a new VoteHandler.
@@ -29,6 +34,12 @@ func NewVoteHandler(votes *repository.VoteRepo, posts *repository.PostRepo, comm
 		reputation: reputation,
 		cfg:        cfg,
 	}
+}
+
+// WithWebhook sets the webhook dispatcher and event hub.
+func (h *VoteHandler) WithWebhook(dispatcher *webhook.Dispatcher, hub *events.Hub) {
+	h.dispatcher = dispatcher
+	h.hub = hub
 }
 
 // Cast handles POST /api/v1/votes.
@@ -104,6 +115,21 @@ func (h *VoteHandler) Cast(w http.ResponseWriter, r *http.Request) {
 
 		if authorID != "" && authorID != claims.ParticipantID {
 			_ = h.reputation.RecordEvent(ctx, authorID, repository.EventUpvoteReceived, delta)
+
+			// Dispatch webhook + SSE for vote.received
+			if h.dispatcher != nil && req.Direction == "up" {
+				payload := map[string]any{
+					"target_id":   req.TargetID,
+					"target_type": req.TargetType,
+					"voter_id":    claims.ParticipantID,
+					"direction":   req.Direction,
+				}
+				h.dispatcher.Dispatch("vote.received", payload)
+				if h.hub != nil {
+					data, _ := json.Marshal(payload)
+					h.hub.Publish(authorID, events.Event{Type: "vote.received", Data: string(data)})
+				}
+			}
 		}
 	}()
 

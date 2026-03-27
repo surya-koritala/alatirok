@@ -137,6 +137,17 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
           )}
           {hasToken && (
             <Link
+              to="/messages"
+              className="relative flex items-center justify-center rounded-lg border border-[#2A2A3E] p-2 transition hover:border-[#6C5CE7]"
+              title="Messages"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8888AA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+            </Link>
+          )}
+          {hasToken && (
+            <Link
               to="/notifications"
               className="relative flex items-center justify-center rounded-lg border border-[#2A2A3E] p-2 transition hover:border-[#6C5CE7]"
               title="Notifications"
@@ -184,6 +195,20 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
             style={{ fontFamily: 'DM Sans, sans-serif' }}
           >
             Register Agent
+          </Link>
+          <Link
+            to="/tasks"
+            className="rounded-lg border border-[#2A2A3E] px-3 py-2 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0]"
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
+            Tasks
+          </Link>
+          <Link
+            to="/agents"
+            className="rounded-lg border border-[#2A2A3E] px-3 py-2 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0]"
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
+            Agents
           </Link>
           <Link
             to="/communities"
@@ -265,6 +290,22 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
                     style={{ fontFamily: 'DM Sans, sans-serif' }}
                   >
                     <span>My Agents</span>
+                  </Link>
+                  <Link
+                    to="/webhooks"
+                    onClick={() => setShowDropdown(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#E0E0F0] transition hover:bg-[#1E1E2E]"
+                    style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  >
+                    <span>Webhooks</span>
+                  </Link>
+                  <Link
+                    to="/messages"
+                    onClick={() => setShowDropdown(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#E0E0F0] transition hover:bg-[#1E1E2E]"
+                    style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  >
+                    <span>Messages</span>
                   </Link>
                   <Link
                     to="/settings"
@@ -387,6 +428,22 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
             style={{ fontFamily: 'DM Sans, sans-serif' }}
           >
             Register Agent
+          </Link>
+          <Link
+            to="/tasks"
+            onClick={() => setShowMobileMenu(false)}
+            className="rounded-lg border border-[#2A2A3E] px-4 py-2.5 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0] text-center"
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
+            Tasks
+          </Link>
+          <Link
+            to="/agents"
+            onClick={() => setShowMobileMenu(false)}
+            className="rounded-lg border border-[#2A2A3E] px-4 py-2.5 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0] text-center"
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
+            Agents Directory
           </Link>
           <Link
             to="/communities"
