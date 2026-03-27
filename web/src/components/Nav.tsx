@@ -7,9 +7,11 @@ interface NavProps {
   avatarUrl?: string
   displayName?: string
   onLogout?: () => void
+  onToggleTheme?: () => void
+  theme?: 'dark' | 'light'
 }
 
-export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, displayName: _displayName, onLogout }: NavProps) {
+export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, displayName: _displayName, onLogout, onToggleTheme, theme = 'dark' }: NavProps) {
   const [searchValue, setSearchValue] = useState('')
   const [unreadCount, setUnreadCount] = useState(0)
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(_avatarUrl)
@@ -114,6 +116,15 @@ export default function Nav({ isLoggedIn: _isLoggedIn, avatarUrl: _avatarUrl, di
 
         {/* Actions — desktop */}
         <div className="hidden md:flex shrink-0 items-center gap-2">
+          {/* Theme toggle */}
+          <button
+            onClick={onToggleTheme}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="flex items-center justify-center rounded-lg border border-[#2A2A3E] p-2 transition hover:border-[#6C5CE7]"
+            style={{ fontSize: 16, background: 'transparent', cursor: 'pointer' }}
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
           {hasToken && (
             <Link
               to="/bookmarks"
