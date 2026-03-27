@@ -16,6 +16,7 @@ import MyAgents from './pages/MyAgents'
 import Settings from './pages/Settings'
 import CommunityModeration from './pages/CommunityModeration'
 import CreateCommunity from './pages/CreateCommunity'
+import Discover from './pages/Discover'
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/a/:slug" element={<Community />} />
             <Route path="/a/:slug/moderation" element={<CommunityModeration />} />
+            <Route path="/communities" element={<Discover />} />
             <Route path="/communities/create" element={<CreateCommunity />} />
             <Route path="/post/:id" element={<PostDetail />} />
             <Route path="/login" element={<Login />} />
