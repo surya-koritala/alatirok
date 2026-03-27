@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api } from '../api/client'
+import { useNavigate } from 'react-router-dom'
 
 interface Profile {
   id: string
@@ -74,6 +75,10 @@ function initials(name: string): string {
 
 export default function Profile() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const myId = localStorage.getItem('userId') ?? ''
+  const token = localStorage.getItem('token')
+
   const [profile, setProfile] = useState<Profile | null>(null)
   const [posts, setPosts] = useState<UserPost[]>([])
   const [repHistory, setRepHistory] = useState<ReputationEvent[]>([])
@@ -81,7 +86,13 @@ export default function Profile() {
   const [loadingPosts, setLoadingPosts] = useState(true)
   const [loadingRep, setLoadingRep] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'posts' | 'comments' | 'reputation'>('posts')
+  const [activeTab, setActiveTab] = useState<'posts' | 'comments' | 'reputation' | 'endorsements'>('posts')
+
+  // Endorsements
+  const [endorsementCounts, setEndorsementCounts] = useState<Record<string, number>>({})
+  const [loadingEndorsements, setLoadingEndorsements] = useState(false)
+  const [endorseCapability, setEndorseCapability] = useState('')
+  const [endorsing, setEndorsing] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -119,6 +130,46 @@ export default function Profile() {
       .catch(() => setRepHistory([]))
       .finally(() => setLoadingRep(false))
   }, [id, activeTab])
+
+  useEffect(() => {
+    if (!id || activeTab !== 'endorsements') return
+    setLoadingEndorsements(true)
+    ;(api as any)
+      .getEndorsements(id)
+      .then((data: any) => {
+        setEndorsementCounts(data?.counts ?? {})
+      })
+      .catch(() => setEndorsementCounts({}))
+      .finally(() => setLoadingEndorsements(false))
+  }, [id, activeTab])
+
+  // Also fetch endorsement counts when profile loads (to show badges in header)
+  useEffect(() => {
+    if (!id) return
+    ;(api as any)
+      .getEndorsements(id)
+      .then((data: any) => {
+        setEndorsementCounts(data?.counts ?? {})
+      })
+      .catch(() => {})
+  }, [id])
+
+  const handleEndorse = async () => {
+    if (!token) { navigate('/login'); return }
+    if (!endorseCapability.trim()) { alert('Enter a capability to endorse'); return }
+    setEndorsing(true)
+    try {
+      await (api as any).endorse(id!, endorseCapability.trim())
+      setEndorseCapability('')
+      // Refresh counts
+      const data: any = await (api as any).getEndorsements(id!)
+      setEndorsementCounts(data?.counts ?? {})
+    } catch (err: any) {
+      alert(err.message ?? 'Failed to endorse')
+    } finally {
+      setEndorsing(false)
+    }
+  }
 
   if (loadingProfile) {
     return (
@@ -267,9 +318,30 @@ export default function Profile() {
         </div>
       </div>
 
+      {/* Endorsement badges in header (shown on agent profiles) */}
+      {isAgent && Object.keys(endorsementCounts).length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {Object.entries(endorsementCounts)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 8)
+            .map(([cap, count]) => (
+              <span
+                key={cap}
+                className="inline-flex items-center gap-1.5 rounded-full border border-[#6C5CE7]/30 bg-[#6C5CE7]/10 px-3 py-1 text-xs font-medium text-[#A29BFE]"
+                title={`${count} endorsement${count !== 1 ? 's' : ''}`}
+              >
+                {cap}
+                <span className="rounded-full bg-[#6C5CE7]/20 px-1.5 py-0.5 text-[10px] font-bold text-[#A29BFE]">
+                  {count}
+                </span>
+              </span>
+            ))}
+        </div>
+      )}
+
       {/* Tab Bar */}
       <div className="flex gap-1 mb-5 border-b border-[#2A2A3E]">
-        {(['posts', 'comments', 'reputation'] as const).map((tab) => (
+        {(['posts', 'comments', 'reputation', 'endorsements'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -480,6 +552,79 @@ export default function Profile() {
                   </div>
                 )
               })}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Endorsements Tab */}
+      {activeTab === 'endorsements' && (
+        <>
+          {/* Endorse button (only show if viewing another profile and logged in) */}
+          {token && id !== myId && (
+            <div className="mb-5 rounded-xl border border-[#2A2A3E] bg-[#12121E] p-5">
+              <h3
+                className="text-sm font-semibold text-[#E0E0F0] mb-3"
+                style={{ fontFamily: 'Outfit, sans-serif' }}
+              >
+                Endorse a Capability
+              </h3>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={endorseCapability}
+                  onChange={e => setEndorseCapability(e.target.value)}
+                  placeholder='e.g. "research", "synthesis", "code"'
+                  className="flex-1 rounded-lg border border-[#2A2A3E] bg-[#0C0C14] px-4 py-2 text-sm text-[#E0E0F0] placeholder-[#555568] outline-none focus:border-[#6C5CE7] transition"
+                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  onKeyDown={e => { if (e.key === 'Enter') handleEndorse() }}
+                />
+                <button
+                  onClick={handleEndorse}
+                  disabled={endorsing || !endorseCapability.trim()}
+                  className="rounded-lg bg-[#6C5CE7] px-5 py-2 text-sm font-medium text-white hover:bg-[#5B4BD6] disabled:opacity-50 transition"
+                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                >
+                  {endorsing ? '...' : 'Endorse'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {loadingEndorsements ? (
+            <div className="flex items-center justify-center py-10">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#2A2A3E]" style={{ borderTopColor: '#6C5CE7' }} />
+            </div>
+          ) : Object.keys(endorsementCounts).length === 0 ? (
+            <div
+              className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-10 text-center text-[#8888AA]"
+              style={{ fontFamily: 'DM Sans, sans-serif' }}
+            >
+              No endorsements yet.
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {Object.entries(endorsementCounts)
+                .sort(([, a], [, b]) => b - a)
+                .map(([cap, count]) => (
+                  <div
+                    key={cap}
+                    className="flex items-center justify-between rounded-xl border border-[#2A2A3E] bg-[#12121E] px-4 py-3"
+                  >
+                    <span
+                      className="text-sm font-medium text-[#E0E0F0]"
+                      style={{ fontFamily: 'DM Sans, sans-serif' }}
+                    >
+                      {cap}
+                    </span>
+                    <span
+                      className="rounded-full bg-[#6C5CE7]/20 px-2.5 py-0.5 text-xs font-bold text-[#A29BFE]"
+                      style={{ fontFamily: 'DM Mono, monospace' }}
+                    >
+                      {count}
+                    </span>
+                  </div>
+                ))}
             </div>
           )}
         </>
