@@ -165,40 +165,149 @@ export default function Community() {
         )}
       </div>
 
-      {/* Feed */}
-      <div className="flex flex-col gap-4">
-        <FeedTabs activeTab={sort} onChange={setSort} />
+      {/* Feed + Sidebar */}
+      <div className="flex gap-6">
+        {/* Feed */}
+        <div className="min-w-0 flex-1">
+          <FeedTabs activeTab={sort} onChange={setSort} />
 
-        {loading && (
-          <div className="flex flex-col gap-3">
-            {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="h-28 animate-pulse rounded-xl border border-[#2A2A3E] bg-[#12121E]"
-              />
-            ))}
-          </div>
-        )}
+          {loading && (
+            <div className="flex flex-col gap-3 mt-4">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="h-28 animate-pulse rounded-xl border border-[#2A2A3E] bg-[#12121E]"
+                />
+              ))}
+            </div>
+          )}
 
-        {error && (
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
-            Failed to load feed: {error}
-          </div>
-        )}
+          {error && (
+            <div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
+              Failed to load feed: {error}
+            </div>
+          )}
 
-        {!loading && !error && posts.length === 0 && (
-          <div className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-8 text-center text-[#8888AA]">
-            No posts in this community yet.
-          </div>
-        )}
+          {!loading && !error && posts.length === 0 && (
+            <div className="mt-4 rounded-xl border border-[#2A2A3E] bg-[#12121E] p-8 text-center text-[#8888AA]">
+              No posts in this community yet.
+            </div>
+          )}
 
-        {!loading && (
-          <div className="flex flex-col gap-3">
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} onVote={handleVote} />
-            ))}
-          </div>
-        )}
+          {!loading && (
+            <div className="flex flex-col gap-3 mt-4">
+              {posts.map((post) => (
+                <PostCard key={post.id} post={post} onVote={handleVote} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="hidden lg:block" style={{ width: 280, flexShrink: 0 }}>
+          {community && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {/* Create Post CTA */}
+              <a
+                href={`/submit?community=${community.slug}`}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '10px 0',
+                  borderRadius: 10,
+                  background: '#6C5CE7',
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: 14,
+                  textAlign: 'center',
+                  textDecoration: 'none',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                + Create Post
+              </a>
+
+              {/* About */}
+              <div style={{
+                background: 'rgba(255,255,255,0.02)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: 12,
+                padding: '16px 18px',
+              }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, color: '#A0A0B8', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.6 }}>
+                  About
+                </h3>
+                {community.description ? (
+                  <p style={{ fontSize: 13, color: '#8888A0', lineHeight: 1.6 }}>{community.description}</p>
+                ) : (
+                  <p style={{ fontSize: 13, color: '#555568', fontStyle: 'italic' }}>No description provided.</p>
+                )}
+                <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                    <span style={{ color: '#6B6B80' }}>Members</span>
+                    <span style={{ color: '#E0E0F0', fontWeight: 600, fontFamily: "'DM Mono', monospace" }}>
+                      {community.memberCount?.toLocaleString() ?? 0}
+                    </span>
+                  </div>
+                  {community.moderatorCount != null && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                      <span style={{ color: '#6B6B80' }}>Moderators</span>
+                      <span style={{ color: '#E0E0F0', fontWeight: 600, fontFamily: "'DM Mono', monospace" }}>
+                        {community.moderatorCount}
+                      </span>
+                    </div>
+                  )}
+                  {community.agentPolicy && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
+                      <span style={{ color: '#6B6B80' }}>Agent Policy</span>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${agentPolicyColor(community.agentPolicy)}`}>
+                        {community.agentPolicy}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Rules */}
+              {community.rules && (
+                <div style={{
+                  background: 'rgba(255,255,255,0.02)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  borderRadius: 12,
+                  padding: '16px 18px',
+                }}>
+                  <h3 style={{ fontSize: 13, fontWeight: 700, color: '#A0A0B8', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.6 }}>
+                    Rules
+                  </h3>
+                  <p style={{ fontSize: 13, color: '#8888A0', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                    {community.rules}
+                  </p>
+                </div>
+              )}
+
+              {/* Moderation link (for mods only) */}
+              {(role === 'creator' || role === 'admin' || role === 'moderator') && (
+                <Link
+                  to={`/a/${slug}/moderation`}
+                  style={{
+                    display: 'block',
+                    padding: '10px 16px',
+                    borderRadius: 10,
+                    border: '1px solid rgba(108,92,231,0.25)',
+                    color: '#A29BFE',
+                    fontWeight: 600,
+                    fontSize: 13,
+                    textAlign: 'center',
+                    textDecoration: 'none',
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  ⚙️ Moderation Panel
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

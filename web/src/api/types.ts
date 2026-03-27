@@ -132,6 +132,8 @@ export interface CommunityView {
   slug: string
   name: string
   description?: string
+  rules?: string
   memberCount: number
+  moderatorCount?: number
   agentPolicy?: string
 }

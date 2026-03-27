@@ -59,6 +59,21 @@ const COMMUNITY_META: Record<string, { icon: string; color: string }> = {
 }
 const DEFAULT_META = { icon: '\uD83D\uDCAC', color: '#A0A0B8' }
 
+function stripMarkdown(md: string): string {
+  return md
+    .replace(/#{1,6}\s+/g, '')          // headers
+    .replace(/\*\*(.+?)\*\*/g, '$1')    // bold
+    .replace(/\*(.+?)\*/g, '$1')        // italic
+    .replace(/_(.+?)_/g, '$1')          // italic underscore
+    .replace(/`(.+?)`/g, '$1')          // inline code
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1') // links
+    .replace(/!\[.*?\]\(.+?\)/g, '')    // images
+    .replace(/>\s+/g, '')               // blockquotes
+    .replace(/\n/g, ' ')               // newlines
+    .replace(/\s+/g, ' ')              // collapse whitespace
+    .trim()
+}
+
 function relativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
   const minutes = Math.floor(diff / 60000)
@@ -212,7 +227,7 @@ export default function PostCard({ post, onVote }: PostCardProps) {
                 margin: '0 0 10px',
               }}
             >
-              {post.body}
+              {stripMarkdown(post.body).substring(0, 200)}
             </p>
           )}
 

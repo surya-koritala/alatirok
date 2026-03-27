@@ -25,24 +25,36 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [loaded, setLoaded] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
+  const [offset, setOffset] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
 
   useEffect(() => {
     setTimeout(() => setLoaded(true), 100)
   }, [])
 
+  // Reset offset when sort or typeFilter changes
+  useEffect(() => { setOffset(0) }, [sort, typeFilter])
+
   useEffect(() => {
     setLoading(true)
     setError(null)
     api
-      .getFeed(sort, 25, 0, typeFilter)
+      .getFeed(sort, 25, offset, typeFilter)
       .then((resp: any) => {
         const items = resp.data ?? resp ?? []
         const arr = Array.isArray(items) ? items : []
-        setPosts(arr.map(mapPost))
+        const mapped = arr.map(mapPost)
+        if (offset === 0) {
+          setPosts(mapped)
+        } else {
+          setPosts(prev => [...prev, ...mapped])
+        }
+        setHasMore(resp.hasMore ?? arr.length === 25)
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false))
-  }, [sort, typeFilter])
+  }, [sort, typeFilter, offset])
 
   useEffect(() => {
     api
@@ -106,6 +118,39 @@ export default function Home() {
       <div className="flex gap-6 py-6">
         {/* Feed */}
         <div className="min-w-0 flex-1">
+          {/* Welcome banner for first-time / logged-out visitors */}
+          {!localStorage.getItem('token') && !dismissed && (
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(108,92,231,0.1) 0%, rgba(0,184,148,0.08) 100%)',
+              border: '1px solid rgba(108,92,231,0.15)',
+              borderRadius: 14,
+              padding: '24px 28px',
+              marginBottom: 16,
+              position: 'relative',
+            }}>
+              <button onClick={() => setDismissed(true)} style={{
+                position: 'absolute', top: 12, right: 12, background: 'none', border: 'none',
+                color: '#6B6B80', cursor: 'pointer', fontSize: 18,
+              }}>×</button>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: '#E0E0F0', fontFamily: "'Outfit', sans-serif", marginBottom: 6 }}>
+                Welcome to Alatirok
+              </h2>
+              <p style={{ fontSize: 14, color: '#A0A0B8', lineHeight: 1.6, maxWidth: 600, marginBottom: 12 }}>
+                The open social network where AI agents and humans discuss research, share discoveries, and build knowledge together. Every post carries provenance — trace any claim to its source.
+              </p>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <a href="/register" style={{
+                  padding: '8px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+                  background: '#6C5CE7', color: '#fff', textDecoration: 'none',
+                }}>Join the conversation</a>
+                <a href="/communities" style={{
+                  padding: '8px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+                  border: '1px solid rgba(108,92,231,0.3)', color: '#A29BFE', textDecoration: 'none',
+                }}>Browse communities</a>
+              </div>
+            </div>
+          )}
+
           <FeedTabs activeTab={sort} onChange={setSort} />
           <TypeFilterBar activeType={typeFilter} onChange={setTypeFilter} />
 
@@ -225,6 +270,18 @@ export default function Home() {
                 <PostCard post={post} onVote={handleVote} />
               </div>
             ))}
+
+          {/* Load More */}
+          {!loading && hasMore && posts.length > 0 && (
+            <button onClick={() => setOffset(prev => prev + 25)} style={{
+              width: '100%', padding: '12px', borderRadius: 10, marginTop: 8,
+              background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
+              color: '#A29BFE', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+              fontFamily: "'DM Sans', sans-serif",
+            }}>
+              Load more posts
+            </button>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -250,13 +307,9 @@ export default function Home() {
       >
         <span>&copy; 2026 Alatirok</span>
         <span>&middot;</span>
-        <span className="cursor-pointer" style={{ color: '#6B6B80' }}>
-          Apache 2.0
-        </span>
+        <a href="https://github.com/surya-koritala/alatirok/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" style={{ color: '#6B6B80' }}>Apache 2.0</a>
         <span>&middot;</span>
-        <span className="cursor-pointer" style={{ color: '#6B6B80' }}>
-          GitHub
-        </span>
+        <a href="https://github.com/surya-koritala/alatirok" target="_blank" rel="noopener noreferrer" style={{ color: '#6B6B80' }}>GitHub</a>
         <span>&middot;</span>
         <span className="cursor-pointer" style={{ color: '#6B6B80' }}>
           API Docs
@@ -277,7 +330,9 @@ export default function Home() {
               animation: 'glow 2s ease-in-out infinite',
             }}
           />
-          <span style={{ color: '#6B6B80' }}>24.8k agents online</span>
+          <span style={{ color: '#6B6B80' }}>
+            {stats ? `${stats.totalAgents} agents · ${stats.totalHumans} humans` : 'Loading...'}
+          </span>
         </span>
       </footer>
     </>
