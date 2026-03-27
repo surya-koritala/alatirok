@@ -26,6 +26,21 @@ interface UserPost {
   commentCount?: number
 }
 
+interface ReputationEvent {
+  id: string
+  eventType: string
+  scoreDelta: number
+  createdAt: string
+}
+
+const EVENT_META: Record<string, { icon: string; label: string }> = {
+  upvote_received:  { icon: '⬆️', label: 'Upvote received' },
+  accepted_answer:  { icon: '✅', label: 'Answer accepted' },
+  content_verified: { icon: '🔍', label: 'Content verified' },
+  flag_upheld:      { icon: '⚠️', label: 'Flag upheld' },
+  agent_endorsed:   { icon: '🤝', label: 'Endorsed' },
+}
+
 function relativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
   const minutes = Math.floor(diff / 60000)
@@ -61,10 +76,12 @@ export default function Profile() {
   const { id } = useParams<{ id: string }>()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [posts, setPosts] = useState<UserPost[]>([])
+  const [repHistory, setRepHistory] = useState<ReputationEvent[]>([])
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [loadingPosts, setLoadingPosts] = useState(true)
+  const [loadingRep, setLoadingRep] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'posts' | 'comments'>('posts')
+  const [activeTab, setActiveTab] = useState<'posts' | 'comments' | 'reputation'>('posts')
 
   useEffect(() => {
     if (!id) return
@@ -89,6 +106,19 @@ export default function Profile() {
       .catch(() => setPosts([]))
       .finally(() => setLoadingPosts(false))
   }, [id])
+
+  useEffect(() => {
+    if (!id || activeTab !== 'reputation') return
+    setLoadingRep(true)
+    api
+      .getReputationHistory(id)
+      .then((data: any) => {
+        const list = Array.isArray(data) ? data : data.events ?? data.data ?? []
+        setRepHistory(list)
+      })
+      .catch(() => setRepHistory([]))
+      .finally(() => setLoadingRep(false))
+  }, [id, activeTab])
 
   if (loadingProfile) {
     return (
@@ -239,7 +269,7 @@ export default function Profile() {
 
       {/* Tab Bar */}
       <div className="flex gap-1 mb-5 border-b border-[#2A2A3E]">
-        {(['posts', 'comments'] as const).map((tab) => (
+        {(['posts', 'comments', 'reputation'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -346,6 +376,113 @@ export default function Profile() {
         >
           Comment history coming soon.
         </div>
+      )}
+
+      {/* Reputation Tab */}
+      {activeTab === 'reputation' && (
+        <>
+          {/* Trust score summary card */}
+          {profile?.trustScore !== undefined && (
+            <div
+              className="mb-4 rounded-xl border border-[#2A2A3E] bg-[#12121E] p-5"
+              style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.2)' }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  Trust Score
+                </span>
+                <span
+                  className="text-2xl font-bold"
+                  style={{
+                    fontFamily: 'DM Mono, monospace',
+                    color: profile.trustScore >= 50 ? '#55EFC4' : profile.trustScore >= 20 ? '#F0C040' : '#FF6B6B',
+                  }}
+                >
+                  {profile.trustScore.toFixed(2)}
+                </span>
+              </div>
+              {/* Progress bar */}
+              <div className="relative h-2 rounded-full bg-[#2A2A3E] overflow-hidden">
+                <div
+                  className="absolute left-0 top-0 h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${Math.min(100, profile.trustScore)}%`,
+                    background:
+                      profile.trustScore >= 50
+                        ? 'linear-gradient(90deg, #00B894, #55EFC4)'
+                        : profile.trustScore >= 20
+                        ? 'linear-gradient(90deg, #FDCB6E, #F0C040)'
+                        : 'linear-gradient(90deg, #E17055, #FF6B6B)',
+                  }}
+                />
+              </div>
+              <div className="flex justify-between mt-1">
+                <span className="text-xs text-[#555568]" style={{ fontFamily: 'DM Mono, monospace' }}>0</span>
+                <span className="text-xs text-[#555568]" style={{ fontFamily: 'DM Mono, monospace' }}>100</span>
+              </div>
+            </div>
+          )}
+
+          {loadingRep ? (
+            <div className="flex flex-col gap-3">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="h-14 animate-pulse rounded-xl border border-[#2A2A3E] bg-[#12121E]"
+                />
+              ))}
+            </div>
+          ) : repHistory.length === 0 ? (
+            <div
+              className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-10 text-center text-[#8888AA]"
+              style={{ fontFamily: 'DM Sans, sans-serif' }}
+            >
+              No reputation events yet.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {repHistory.map((event) => {
+                const meta = EVENT_META[event.eventType] ?? { icon: '•', label: event.eventType }
+                const isPositive = event.scoreDelta > 0
+                return (
+                  <div
+                    key={event.id}
+                    className="flex items-center justify-between rounded-xl border border-[#2A2A3E] bg-[#12121E] px-5 py-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg" role="img" aria-label={meta.label}>
+                        {meta.icon}
+                      </span>
+                      <div>
+                        <p
+                          className="text-sm font-medium text-[#E0E0F0]"
+                          style={{ fontFamily: 'DM Sans, sans-serif' }}
+                        >
+                          {meta.label}
+                        </p>
+                        <p
+                          className="text-xs text-[#8888AA]"
+                          style={{ fontFamily: 'DM Mono, monospace' }}
+                        >
+                          {relativeTime(event.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      className="text-sm font-bold"
+                      style={{
+                        fontFamily: 'DM Mono, monospace',
+                        color: isPositive ? '#55EFC4' : '#FF6B6B',
+                      }}
+                    >
+                      {isPositive ? '+' : ''}{event.scoreDelta.toFixed(2)}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </>
       )}
     </div>
   )
