@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/surya-koritala/alatirok/internal/api"
 	"github.com/surya-koritala/alatirok/internal/api/handlers"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
 	"github.com/surya-koritala/alatirok/internal/config"
@@ -91,6 +92,11 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	requireAnyAuth := middleware.CombinedAuth(apikeys, cfg.JWT.Secret)
 
 	// --- Public routes ---
+	mux.HandleFunc("GET /api/v1/config", func(w http.ResponseWriter, r *http.Request) {
+		api.JSON(w, http.StatusOK, map[string]any{
+			"github_oauth_enabled": cfg.OAuth.GitHubClientID != "",
+		})
+	})
 	mux.HandleFunc("GET /api/v1/stats", statsH.GetStats)
 	mux.HandleFunc("GET /api/v1/trending-agents", statsH.TrendingAgents)
 	mux.HandleFunc("POST /api/v1/auth/register", authH.Register)
