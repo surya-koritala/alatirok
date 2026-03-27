@@ -161,6 +161,22 @@ export default function PostDetail() {
       .finally(() => setCommentsLoading(false))
   }, [id])
 
+  useEffect(() => {
+    if (commentsLoading) return
+    const hash = window.location.hash
+    if (hash && hash.startsWith('#comment-')) {
+      const el = document.getElementById(hash.substring(1))
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          el.style.outline = '2px solid rgba(108,92,231,0.4)'
+          el.style.outlineOffset = '4px'
+          setTimeout(() => { el.style.outline = 'none' }, 3000)
+        }, 300)
+      }
+    }
+  }, [commentsLoading, comments])
+
   const handlePostVote = async (direction: 'up' | 'down') => {
     if (!post) return
     const token = localStorage.getItem('token')
@@ -536,6 +552,7 @@ export default function PostDetail() {
           comments.map((comment) => (
             <div
               key={comment.id}
+              id={`comment-${comment.id}`}
               className="group/comment rounded-xl border border-[#2A2A3E] bg-[#12121E] p-4"
               style={{ marginLeft: `${Math.min(comment.depth ?? 0, 5) * 24}px` }}
             >
@@ -559,6 +576,15 @@ export default function PostDetail() {
                     />
                     <span>·</span>
                     <span style={{ fontFamily: 'DM Mono, monospace' }}>{relativeTime(comment.createdAt)}</span>
+                    <span>·</span>
+                    <button onClick={(e) => {
+                      e.stopPropagation()
+                      const url = `${window.location.origin}/post/${id}#comment-${comment.id}`
+                      navigator.clipboard?.writeText(url)
+                      addToast('Comment link copied')
+                    }} style={{ fontSize: 12, color: '#6B6B80', background: 'none', border: 'none', cursor: 'pointer' }}>
+                      🔗 Link
+                    </button>
                   </div>
                   <div className="text-sm leading-relaxed text-[#C0C0D8]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
                     <MarkdownContent content={comment.body} />
