@@ -7,7 +7,9 @@ import (
 	"github.com/surya-koritala/alatirok/internal/api/handlers"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
 	"github.com/surya-koritala/alatirok/internal/config"
+	"github.com/surya-koritala/alatirok/internal/events"
 	"github.com/surya-koritala/alatirok/internal/repository"
+	"github.com/surya-koritala/alatirok/internal/webhook"
 )
 
 func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, uploadsDir ...string) {
@@ -32,6 +34,12 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	reports := repository.NewReportRepo(pool)
 	reputation := repository.NewReputationRepo(pool)
 	moderation := repository.NewModerationRepo(pool)
+	webhooks := repository.NewWebhookRepo(pool)
+	messages := repository.NewMessageRepo(pool)
+
+	// Event hub and webhook dispatcher
+	hub := events.NewHub()
+	dispatcher := webhook.NewDispatcher(webhooks)
 
 	// Handlers
 	authH := handlers.NewAuthHandler(participants, cfg)
@@ -41,7 +49,9 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	postH.WithModeration(moderation, communities)
 	commentH := handlers.NewCommentHandler(comments, provenances, notifications, cfg)
 	commentH.WithParticipants(participants)
+	commentH.WithWebhook(dispatcher, hub)
 	voteH := handlers.NewVoteHandler(votes, posts, comments, reputation, cfg)
+	voteH.WithWebhook(dispatcher, hub)
 	agentH := handlers.NewAgentHandler(participants, apikeys, cfg)
 	feedH := handlers.NewFeedHandler(posts, communities, cfg)
 	editH := handlers.NewEditHandler(posts, comments, revisions, cfg)
@@ -59,6 +69,11 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	reportH := handlers.NewReportHandler(reports)
 	linkPreviewH := handlers.NewLinkPreviewHandler()
 	modH := handlers.NewModerationHandler(moderation, communities, reports, cfg)
+	webhookH := handlers.NewWebhookHandler(webhooks, dispatcher)
+	agentDirH := handlers.NewAgentDirectoryHandler(pool)
+	messageH := handlers.NewMessageHandler(messages)
+	taskH := handlers.NewTaskHandler(posts, pool)
+	eventH := handlers.NewEventHandler(hub, cfg)
 
 	// Auth middleware
 	// requireAuth: JWT only (for human-only endpoints like agent management)
@@ -164,4 +179,30 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 
 	// Community settings update (JWT only — creator or admin)
 	mux.Handle("PUT /api/v1/communities/{slug}/settings", requireAuth(http.HandlerFunc(modH.UpdateSettings)))
+
+	// --- Agent Directory (public) ---
+	mux.HandleFunc("GET /api/v1/agents/directory", agentDirH.List)
+	mux.HandleFunc("GET /api/v1/agents/directory/{id}", agentDirH.GetAgent)
+
+	// --- Webhook routes (agents + humans) ---
+	mux.Handle("POST /api/v1/webhooks", requireAnyAuth(http.HandlerFunc(webhookH.Create)))
+	mux.Handle("GET /api/v1/webhooks", requireAnyAuth(http.HandlerFunc(webhookH.List)))
+	mux.Handle("DELETE /api/v1/webhooks/{id}", requireAnyAuth(http.HandlerFunc(webhookH.Delete)))
+	mux.Handle("GET /api/v1/webhooks/{id}/deliveries", requireAnyAuth(http.HandlerFunc(webhookH.ListDeliveries)))
+	mux.Handle("POST /api/v1/webhooks/{id}/test", requireAnyAuth(http.HandlerFunc(webhookH.Test)))
+
+	// --- Message routes (agents + humans) ---
+	mux.Handle("POST /api/v1/messages", requireAnyAuth(http.HandlerFunc(messageH.Send)))
+	mux.Handle("GET /api/v1/messages/conversations", requireAnyAuth(http.HandlerFunc(messageH.ListConversations)))
+	mux.Handle("GET /api/v1/messages/conversations/{id}", requireAnyAuth(http.HandlerFunc(messageH.GetConversation)))
+	mux.Handle("PUT /api/v1/messages/conversations/{id}/read", requireAnyAuth(http.HandlerFunc(messageH.MarkRead)))
+
+	// --- Task marketplace ---
+	mux.HandleFunc("GET /api/v1/tasks", taskH.List)
+	mux.Handle("POST /api/v1/posts/{id}/claim", requireAnyAuth(http.HandlerFunc(taskH.Claim)))
+	mux.Handle("POST /api/v1/posts/{id}/unclaim", requireAnyAuth(http.HandlerFunc(taskH.Unclaim)))
+	mux.Handle("POST /api/v1/posts/{id}/complete", requireAnyAuth(http.HandlerFunc(taskH.Complete)))
+
+	// --- SSE event stream ---
+	mux.Handle("GET /api/v1/events/stream", requireAnyAuth(http.HandlerFunc(eventH.Stream)))
 }

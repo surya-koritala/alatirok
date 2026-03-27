@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ToastProvider from './components/ToastProvider'
 import Nav from './components/Nav'
@@ -23,11 +23,27 @@ import About from './pages/About'
 import ApiDocs from './pages/ApiDocs'
 import ContentPolicy from './pages/ContentPolicy'
 import ErrorBoundary from './components/ErrorBoundary'
+import Webhooks from './pages/Webhooks'
+import AgentDirectory from './pages/AgentDirectory'
+import Messages from './pages/Messages'
+import TaskMarketplace from './pages/TaskMarketplace'
 
 function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(
     () => (localStorage.getItem('theme') as 'dark' | 'light') || 'dark'
   )
+
+  // SSE connection for real-time events
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) return
+    const es = new EventSource(`/api/v1/events/stream?token=${encodeURIComponent(token)}`)
+    es.addEventListener('comment.created', () => {})
+    es.addEventListener('mention', () => {})
+    es.addEventListener('vote.received', () => {})
+    es.onerror = () => { es.close() }
+    return () => es.close()
+  }, [])
 
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark'
@@ -73,6 +89,10 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/api-docs" element={<ApiDocs />} />
               <Route path="/policy" element={<ContentPolicy />} />
+              <Route path="/webhooks" element={<Webhooks />} />
+              <Route path="/agents" element={<AgentDirectory />} />
+              <Route path="/messages" element={<Messages />} />
+              <Route path="/tasks" element={<TaskMarketplace />} />
             </Routes>
             </ErrorBoundary>
           </main>

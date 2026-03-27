@@ -2,18 +2,30 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"regexp"
 
 	"github.com/surya-koritala/alatirok/internal/api"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
 	"github.com/surya-koritala/alatirok/internal/config"
+	"github.com/surya-koritala/alatirok/internal/events"
 	"github.com/surya-koritala/alatirok/internal/models"
 	"github.com/surya-koritala/alatirok/internal/repository"
+	"github.com/surya-koritala/alatirok/internal/webhook"
 )
 
 // mentionRe matches @username tokens in comment bodies.
 var mentionRe = regexp.MustCompile(`@([\w.\- ]+)`)
+
+// truncate returns the first n runes of s, appending "..." if truncated.
+func truncate(s string, n int) string {
+	runes := []rune(s)
+	if len(runes) <= n {
+		return s
+	}
+	return string(runes[:n]) + "..."
+}
 
 // parseMentions extracts @mention names from a comment body.
 func parseMentions(body string) []string {
@@ -39,6 +51,8 @@ type CommentHandler struct {
 	notifications *repository.NotificationRepo
 	participants  *repository.ParticipantRepo
 	cfg           *config.Config
+	dispatcher    *webhook.Dispatcher
+	hub           *events.Hub
 }
 
 // NewCommentHandler creates a new CommentHandler.
@@ -54,6 +68,12 @@ func NewCommentHandler(comments *repository.CommentRepo, provenances *repository
 // WithParticipants sets the participant repo for @mention lookups.
 func (h *CommentHandler) WithParticipants(participants *repository.ParticipantRepo) {
 	h.participants = participants
+}
+
+// WithWebhook sets the webhook dispatcher and event hub.
+func (h *CommentHandler) WithWebhook(dispatcher *webhook.Dispatcher, hub *events.Hub) {
+	h.dispatcher = dispatcher
+	h.hub = hub
 }
 
 // Create handles POST /api/v1/posts/{id}/comments.
@@ -99,16 +119,32 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 	// Notify post author about the new comment (if commenter is not the post author).
 	// We look up the post's author_id directly; failure is non-fatal.
 	go func() {
+		ctx := context.Background()
 		var postAuthorID string
-		err := h.comments.Pool().QueryRow(r.Context(),
+		err := h.comments.Pool().QueryRow(ctx,
 			`SELECT author_id FROM posts WHERE id = $1`, postID).Scan(&postAuthorID)
 		if err != nil || postAuthorID == claims.ParticipantID {
 			return
 		}
 		actorID := claims.ParticipantID
 		commentID := result.ID
-		_ = h.notifications.Create(r.Context(), postAuthorID, "post_comment", &actorID, &postID, &commentID,
+		_ = h.notifications.Create(ctx, postAuthorID, "post_comment", &actorID, &postID, &commentID,
 			"Someone commented on your post")
+
+		// Dispatch webhook + SSE for comment.created
+		if h.dispatcher != nil {
+			payload := map[string]any{
+				"comment_id":  commentID,
+				"post_id":     postID,
+				"author_id":   claims.ParticipantID,
+				"body_excerpt": truncate(req.Body, 200),
+			}
+			h.dispatcher.Dispatch("comment.created", payload)
+			if h.hub != nil {
+				data, _ := json.Marshal(payload)
+				h.hub.Publish(postAuthorID, events.Event{Type: "comment.created", Data: string(data)})
+			}
+		}
 	}()
 
 	// Parse @mentions and notify mentioned participants asynchronously.
@@ -129,6 +165,20 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 				cID := commentID
 				_ = h.notifications.Create(ctx, p.ID, "mention", &actorID, &postIDCopy, &cID,
 					"You were mentioned in a comment")
+
+				// Dispatch webhook + SSE for mention
+				if h.dispatcher != nil {
+					payload := map[string]any{
+						"comment_id": cID,
+						"post_id":    postIDCopy,
+						"mentioned_by": commenterID,
+					}
+					h.dispatcher.Dispatch("mention", payload)
+					if h.hub != nil {
+						data, _ := json.Marshal(payload)
+						h.hub.Publish(p.ID, events.Event{Type: "mention", Data: string(data)})
+					}
+				}
 			}
 		}()
 	}

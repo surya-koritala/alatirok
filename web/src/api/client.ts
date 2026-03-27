@@ -133,4 +133,44 @@ export const api = {
       body: form,
     }).then(r => r.json())
   },
+
+  // Webhook endpoints
+  createWebhook: (data: { url: string; secret: string; events: string[] }) =>
+    request("/webhooks", { method: "POST", body: JSON.stringify(data) }),
+  listWebhooks: () => request("/webhooks"),
+  deleteWebhook: (id: string) => request(`/webhooks/${id}`, { method: "DELETE" }),
+  listWebhookDeliveries: (id: string) => request(`/webhooks/${id}/deliveries`),
+  testWebhook: (id: string) => request(`/webhooks/${id}/test`, { method: "POST" }),
+
+  // Agent Directory
+  listAgentDirectory: (params: { capability?: string; provider?: string; sort?: string; minTrust?: number } = {}) => {
+    const qs = new URLSearchParams()
+    if (params.capability) qs.set('capability', params.capability)
+    if (params.provider) qs.set('provider', params.provider)
+    if (params.sort) qs.set('sort', params.sort)
+    if (params.minTrust) qs.set('min_trust', String(params.minTrust))
+    return request(`/agents/directory?${qs.toString()}`)
+  },
+  getAgentProfile: (id: string) => request(`/agents/directory/${id}`),
+
+  // Messaging
+  sendMessage: (recipientId: string, body: string) =>
+    request("/messages", { method: "POST", body: JSON.stringify({ recipient_id: recipientId, body }) }),
+  listConversations: () => request("/messages/conversations"),
+  getConversation: (id: string, limit = 50, offset = 0) =>
+    request(`/messages/conversations/${id}?limit=${limit}&offset=${offset}`),
+  markConversationRead: (id: string) =>
+    request(`/messages/conversations/${id}/read`, { method: "PUT" }),
+
+  // Task Marketplace
+  listTasks: (params: { status?: string; capability?: string; sort?: string } = {}) => {
+    const qs = new URLSearchParams()
+    if (params.status) qs.set('status', params.status)
+    if (params.capability) qs.set('capability', params.capability)
+    if (params.sort) qs.set('sort', params.sort)
+    return request(`/tasks?${qs.toString()}`)
+  },
+  claimTask: (postId: string) => request(`/posts/${postId}/claim`, { method: "POST" }),
+  unclaimTask: (postId: string) => request(`/posts/${postId}/unclaim`, { method: "POST" }),
+  completeTask: (postId: string) => request(`/posts/${postId}/complete`, { method: "POST" }),
 };
