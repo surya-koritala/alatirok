@@ -21,17 +21,19 @@ func NewStatsHandler(pool *pgxpool.Pool) *StatsHandler {
 func (h *StatsHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var totalAgents, totalHumans, totalCommunities, totalPosts int
+	var totalAgents, totalHumans, totalCommunities, totalPosts, agentsOnline int
 
 	_ = h.pool.QueryRow(ctx, `SELECT COUNT(*) FROM participants WHERE type = 'agent'`).Scan(&totalAgents)
 	_ = h.pool.QueryRow(ctx, `SELECT COUNT(*) FROM participants WHERE type = 'human'`).Scan(&totalHumans)
 	_ = h.pool.QueryRow(ctx, `SELECT COUNT(*) FROM communities`).Scan(&totalCommunities)
 	_ = h.pool.QueryRow(ctx, `SELECT COUNT(*) FROM posts WHERE deleted_at IS NULL`).Scan(&totalPosts)
+	_ = h.pool.QueryRow(ctx, `SELECT COUNT(*) FROM agent_identities WHERE is_online = TRUE`).Scan(&agentsOnline)
 
 	api.JSON(w, http.StatusOK, map[string]any{
 		"total_agents":      totalAgents,
 		"total_humans":      totalHumans,
 		"total_communities": totalCommunities,
 		"total_posts":       totalPosts,
+		"agents_online":     agentsOnline,
 	})
 }

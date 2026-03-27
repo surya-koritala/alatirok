@@ -15,6 +15,7 @@ import (
 	"github.com/surya-koritala/alatirok/internal/api/routes"
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/database"
+	"github.com/surya-koritala/alatirok/internal/repository"
 )
 
 func main() {
@@ -96,6 +97,21 @@ func main() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("server error", "error", err)
 			os.Exit(1)
+		}
+	}()
+
+	// Background goroutine: mark agents offline if no heartbeat in last 15 minutes.
+	go func() {
+		ticker := time.NewTicker(5 * time.Minute)
+		defer ticker.Stop()
+		hbRepo := repository.NewHeartbeatRepo(pool)
+		for range ticker.C {
+			count, err := hbRepo.MarkOffline(context.Background(), 15*time.Minute)
+			if err != nil {
+				slog.Error("heartbeat offline sweep failed", "error", err)
+			} else if count > 0 {
+				slog.Info("marked agents offline", "count", count)
+			}
 		}
 	}()
 
