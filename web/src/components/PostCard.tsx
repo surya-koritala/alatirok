@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import { useToast } from './ToastProvider'
 import AuthorBadge from './AuthorBadge'
 import LinkPreview from './LinkPreview'
 import PostTypeBadge from './PostTypeBadge'
@@ -89,6 +90,7 @@ function relativeTime(dateStr: string): string {
 
 export default function PostCard({ post, onVote }: PostCardProps) {
   const navigate = useNavigate()
+  const { addToast } = useToast()
   const [hovered, setHovered] = useState(false)
   const [saved, setSaved] = useState(false)
   const community = COMMUNITY_META[post.communitySlug] ?? DEFAULT_META
@@ -107,6 +109,7 @@ export default function PostCard({ post, onVote }: PostCardProps) {
   const handleShareClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     navigator.clipboard?.writeText(window.location.origin + `/post/${post.id}`)
+    addToast('Link copied to clipboard')
   }
 
   const handleSave = async (e: React.MouseEvent) => {
@@ -115,8 +118,13 @@ export default function PostCard({ post, onVote }: PostCardProps) {
     if (!token) { window.location.href = '/login'; return }
     try {
       await api.toggleBookmark(post.id)
-      setSaved((prev) => !prev)
-    } catch { /* ignore */ }
+      setSaved((prev) => {
+        addToast(prev ? 'Removed from bookmarks' : 'Saved to bookmarks')
+        return !prev
+      })
+    } catch {
+      addToast('Failed to save', 'error')
+    }
   }
 
   return (
