@@ -44,7 +44,7 @@ function slugify(name: string): string {
 const labelStyle: React.CSSProperties = {
   fontFamily: "'DM Sans', sans-serif",
   fontSize: 12,
-  color: '#8888AA',
+  color: 'var(--text-secondary)',
   fontWeight: 500,
   marginBottom: 6,
   display: 'block',
@@ -52,10 +52,10 @@ const labelStyle: React.CSSProperties = {
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  background: '#12121E',
-  border: '1px solid #2A2A3E',
+  background: 'var(--bg-card)',
+  border: '1px solid var(--border)',
   borderRadius: 8,
-  color: '#E0E0F0',
+  color: 'var(--text-primary)',
   padding: '9px 12px',
   fontSize: 14,
   outline: 'none',
@@ -140,7 +140,7 @@ export default function CreateCommunity() {
           fontFamily: "'Outfit', sans-serif",
           fontSize: 26,
           fontWeight: 700,
-          color: '#E0E0F0',
+          color: 'var(--text-primary)',
           marginBottom: 8,
         }}
       >
@@ -150,7 +150,7 @@ export default function CreateCommunity() {
         style={{
           fontFamily: "'DM Sans', sans-serif",
           fontSize: 14,
-          color: '#8888AA',
+          color: 'var(--text-secondary)',
           marginBottom: 28,
         }}
       >
@@ -169,7 +169,7 @@ export default function CreateCommunity() {
             maxLength={80}
             style={inputStyle}
             onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-            onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+            onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
           />
         </div>
 
@@ -177,7 +177,7 @@ export default function CreateCommunity() {
         <div style={sectionStyle}>
           <label style={labelStyle}>
             Slug *{' '}
-            <span style={{ color: '#555568', fontWeight: 400 }}>
+            <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>
               — the URL identifier (a/{slug || '...'})
             </span>
           </label>
@@ -204,7 +204,7 @@ export default function CreateCommunity() {
               maxLength={48}
               style={{ ...inputStyle, paddingLeft: 32, fontFamily: "'DM Mono', monospace" }}
               onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
             />
           </div>
         </div>
@@ -245,11 +245,11 @@ export default function CreateCommunity() {
                   borderRadius: 10,
                   border: agentPolicy === p.value
                     ? '2px solid #6C5CE7'
-                    : '1px solid #2A2A3E',
+                    : '1px solid var(--border)',
                   background: agentPolicy === p.value
                     ? 'rgba(108,92,231,0.12)'
-                    : '#12121E',
-                  color: agentPolicy === p.value ? '#A29BFE' : '#8888AA',
+                    : 'var(--bg-card)',
+                  color: agentPolicy === p.value ? '#A29BFE' : 'var(--text-secondary)',
                   cursor: 'pointer',
                   textAlign: 'left',
                   transition: 'all 0.15s ease',
@@ -269,7 +269,7 @@ export default function CreateCommunity() {
                   style={{
                     fontFamily: "'DM Sans', sans-serif",
                     fontSize: 11,
-                    color: agentPolicy === p.value ? '#A29BFE' : '#555568',
+                    color: agentPolicy === p.value ? '#A29BFE' : 'var(--text-muted)',
                     lineHeight: 1.4,
                   }}
                 >
@@ -284,7 +284,7 @@ export default function CreateCommunity() {
         <div style={sectionStyle}>
           <label style={labelStyle}>
             Allowed Post Types{' '}
-            <span style={{ color: '#555568', fontWeight: 400 }}>
+            <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>
               ({allowedPostTypes.length} selected)
             </span>
           </label>
@@ -306,8 +306,8 @@ export default function CreateCommunity() {
                     gap: 10,
                     padding: '10px 12px',
                     borderRadius: 8,
-                    border: checked ? '1px solid rgba(108,92,231,0.4)' : '1px solid #2A2A3E',
-                    background: checked ? 'rgba(108,92,231,0.08)' : '#12121E',
+                    border: checked ? '1px solid rgba(108,92,231,0.4)' : '1px solid var(--border)',
+                    background: checked ? 'rgba(108,92,231,0.08)' : 'var(--bg-card)',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
@@ -324,7 +324,7 @@ export default function CreateCommunity() {
                         fontFamily: "'DM Sans', sans-serif",
                         fontSize: 13,
                         fontWeight: 600,
-                        color: checked ? '#A29BFE' : '#E0E0F0',
+                        color: checked ? '#A29BFE' : 'var(--text-primary)',
                       }}
                     >
                       {pt.label}
@@ -333,7 +333,7 @@ export default function CreateCommunity() {
                       style={{
                         fontFamily: "'DM Sans', sans-serif",
                         fontSize: 11,
-                        color: '#555568',
+                        color: 'var(--text-muted)',
                         lineHeight: 1.4,
                       }}
                     >
@@ -356,8 +356,8 @@ export default function CreateCommunity() {
               gap: 10,
               padding: '10px 14px',
               borderRadius: 8,
-              border: requireTags ? '1px solid rgba(108,92,231,0.4)' : '1px solid #2A2A3E',
-              background: requireTags ? 'rgba(108,92,231,0.08)' : '#12121E',
+              border: requireTags ? '1px solid rgba(108,92,231,0.4)' : '1px solid var(--border)',
+              background: requireTags ? 'rgba(108,92,231,0.08)' : 'var(--bg-card)',
               cursor: 'pointer',
               flex: '0 0 auto',
               transition: 'all 0.15s ease',
@@ -375,12 +375,12 @@ export default function CreateCommunity() {
                   fontFamily: "'DM Sans', sans-serif",
                   fontSize: 13,
                   fontWeight: 600,
-                  color: requireTags ? '#A29BFE' : '#E0E0F0',
+                  color: requireTags ? '#A29BFE' : 'var(--text-primary)',
                 }}
               >
                 Require Tags
               </div>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: '#555568' }}>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: 'var(--text-muted)' }}>
                 Posts must include at least one tag
               </div>
             </div>
@@ -397,9 +397,9 @@ export default function CreateCommunity() {
               onChange={(e) => setMinBodyLength(Math.max(0, parseInt(e.target.value) || 0))}
               style={{ ...inputStyle, fontFamily: "'DM Mono', monospace" }}
               onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
             />
-            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: '#555568' }}>
+            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: 'var(--text-muted)' }}>
               Minimum characters required in post body (0 = no minimum)
             </span>
           </div>
@@ -429,8 +429,8 @@ export default function CreateCommunity() {
             onClick={() => navigate(-1)}
             style={{
               background: 'transparent',
-              color: '#8888AA',
-              border: '1px solid #2A2A3E',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border)',
               borderRadius: 8,
               padding: '10px 22px',
               fontSize: 14,
@@ -441,11 +441,11 @@ export default function CreateCommunity() {
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = '#6C5CE7'
-              e.currentTarget.style.color = '#E0E0F0'
+              e.currentTarget.style.color = 'var(--text-primary)'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#2A2A3E'
-              e.currentTarget.style.color = '#8888AA'
+              e.currentTarget.style.borderColor = 'var(--border)'
+              e.currentTarget.style.color = 'var(--text-secondary)'
             }}
           >
             Cancel

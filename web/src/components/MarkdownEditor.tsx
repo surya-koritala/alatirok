@@ -45,7 +45,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, minHeight
 
   return (
     <div>
-      <div className="flex items-center gap-1 rounded-t-lg border border-b-0 border-[#2A2A3E] bg-[#0C0C14] px-2 py-1.5">
+      <div className="flex items-center gap-1 rounded-t-lg px-2 py-1.5" style={{ border: '1px solid var(--border)', borderBottom: 'none', background: 'var(--bg-page)' }}>
         <button type="button" onClick={() => setShowPreview(false)}
           className="rounded px-2 py-1 text-xs font-medium"
           style={{ color: !showPreview ? '#A29BFE' : '#6B6B80', background: !showPreview ? 'rgba(108,92,231,0.15)' : 'transparent' }}
@@ -54,25 +54,30 @@ export default function MarkdownEditor({ value, onChange, placeholder, minHeight
           className="rounded px-2 py-1 text-xs font-medium"
           style={{ color: showPreview ? '#A29BFE' : '#6B6B80', background: showPreview ? 'rgba(108,92,231,0.15)' : 'transparent' }}
         >Preview</button>
-        <div className="mx-2 h-4 w-px bg-[#2A2A3E]" />
+        <div className="mx-2 h-4 w-px" style={{ background: 'var(--border)' }} />
         {[
           { label: 'B', md: '**', title: 'Bold' },
           { label: 'I', md: '_', title: 'Italic' },
           { label: '`', md: '`', title: 'Code' },
         ].map((btn) => (
           <button key={btn.label} type="button" title={btn.title}
-            className="rounded px-1.5 py-1 text-xs text-[#6B6B80] hover:bg-[#12121E] hover:text-[#E0E0F0]"
-            style={{ fontFamily: "'DM Mono', monospace" }}
+            className="rounded px-1.5 py-1 text-xs"
+            style={{ color: 'var(--text-muted)', fontFamily: "'DM Mono', monospace" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.color = 'var(--text-primary)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
             onClick={() => onChange(value + btn.md + btn.md)}
           >{btn.label}</button>
         ))}
-        <div className="mx-2 h-4 w-px bg-[#2A2A3E]" />
+        <div className="mx-2 h-4 w-px" style={{ background: 'var(--border)' }} />
         {/* Image upload button */}
         <button
           type="button"
           title="Upload image (jpg, png, gif, webp)"
           disabled={uploading}
-          className="rounded px-1.5 py-1 text-xs text-[#6B6B80] hover:bg-[#12121E] hover:text-[#E0E0F0] disabled:opacity-50"
+          className="rounded px-1.5 py-1 text-xs disabled:opacity-50"
+          style={{ color: 'var(--text-muted)' }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.color = 'var(--text-primary)' }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
           onClick={() => fileInputRef.current?.click()}
         >
           {uploading ? '⏳' : '📷'}
@@ -89,17 +94,19 @@ export default function MarkdownEditor({ value, onChange, placeholder, minHeight
         />
       </div>
       {showPreview ? (
-        <div className="rounded-b-lg border border-[#2A2A3E] bg-[#12121E] p-4 text-sm text-[#E0E0F0]"
-          style={{ minHeight, fontFamily: "'DM Sans', sans-serif" }}>
-          {value ? <MarkdownContent content={value} /> : <span className="text-[#6B6B80]">Nothing to preview</span>}
+        <div className="rounded-b-lg p-4 text-sm"
+          style={{ minHeight, fontFamily: "'DM Sans', sans-serif", border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
+          {value ? <MarkdownContent content={value} /> : <span style={{ color: 'var(--text-muted)' }}>Nothing to preview</span>}
         </div>
       ) : (
         <textarea
           ref={textareaRef}
           value={value} onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder ?? 'Write using Markdown...'}
-          className="w-full rounded-b-lg border border-[#2A2A3E] bg-[#12121E] p-4 text-sm text-[#E0E0F0] placeholder-[#555568] outline-none focus:border-[#6C5CE7]"
-          style={{ minHeight, fontFamily: "'DM Mono', monospace", resize: 'vertical' }}
+          className="w-full rounded-b-lg p-4 text-sm placeholder-[#555568] outline-none"
+          style={{ minHeight, fontFamily: "'DM Mono', monospace", resize: 'vertical', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}
+          onFocus={(e) => (e.currentTarget.style.borderColor = '#6C5CE7')}
+          onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
           onKeyDown={(e) => {
             if (e.key === 'Tab') {
               e.preventDefault()
