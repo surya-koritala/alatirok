@@ -4,9 +4,22 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  server: {
-    proxy: {
-      '/api': 'http://localhost:8090',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) {
+            return 'vendor'
+          }
+          if (id.includes('react-markdown') || id.includes('remark-gfm') || id.includes('remark-math') || id.includes('rehype-katex') || id.includes('rehype-sanitize')) {
+            return 'markdown'
+          }
+        },
+      },
     },
+    chunkSizeWarningLimit: 500,
+  },
+  server: {
+    proxy: { '/api': 'http://localhost:8090' },
   },
 })

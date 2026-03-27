@@ -46,15 +46,32 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	// Health check
+	// Health check — verifies DB connectivity
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
+		if err := pool.Ping(r.Context()); err != nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_, _ = fmt.Fprintf(w, `{"status":"unhealthy","db":"down"}`)
+			return
+		}
 		w.WriteHeader(http.StatusOK)
-		_, _ = fmt.Fprintln(w, `{"status":"ok"}`)
+		_, _ = fmt.Fprintf(w, `{"status":"ok"}`)
+	})
+
+	// Readiness check
+	mux.HandleFunc("GET /readyz", func(w http.ResponseWriter, r *http.Request) {
+		if err := pool.Ping(r.Context()); err != nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 	})
 
 	routes.Register(mux, pool, cfg)
 
-	handler := http.Handler(middleware.Logger(middleware.CORS(mux)))
+	handler := http.Handler(middleware.SecurityHeaders(middleware.Logger(middleware.CORS(cfg.API.AllowedOrigins)(mux))))
+
+	// Limit request body to 10MB
+	handler = http.MaxBytesHandler(handler, 10<<20)
 
 	opt, err := redis.ParseURL(cfg.Redis.URL)
 	if err != nil {

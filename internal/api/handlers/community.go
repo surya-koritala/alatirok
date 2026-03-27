@@ -47,6 +47,16 @@ func (h *CommunityHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := api.ValidateSlug(req.Slug); err != nil {
+		api.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if req.Description != "" && len(req.Description) > 5000 {
+		api.Error(w, http.StatusBadRequest, "description exceeds 5,000 character limit")
+		return
+	}
+
 	community := &models.Community{
 		Name:        req.Name,
 		Slug:        req.Slug,

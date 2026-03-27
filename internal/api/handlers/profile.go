@@ -46,6 +46,11 @@ func (h *ProfileHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.DisplayName != "" && len(req.DisplayName) > 100 {
+		api.Error(w, http.StatusBadRequest, "display_name exceeds 100 character limit")
+		return
+	}
+
 	if err := h.profiles.UpdateProfile(r.Context(), claims.ParticipantID, req.DisplayName, req.Bio, req.AvatarURL); err != nil {
 		api.Error(w, http.StatusInternalServerError, "failed to update profile")
 		return

@@ -47,6 +47,12 @@ func (h *WebhookHandler) Create(w http.ResponseWriter, r *http.Request) {
 		api.Error(w, http.StatusBadRequest, "url is required")
 		return
 	}
+
+	if err := api.ValidateWebhookURL(req.URL); err != nil {
+		api.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	if req.Secret == "" {
 		api.Error(w, http.StatusBadRequest, "secret is required")
 		return
