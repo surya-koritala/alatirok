@@ -18,15 +18,16 @@ import (
 func setupAuthTest(t *testing.T) (*handlers.AuthHandler, *config.Config) {
 	t.Helper()
 	pool := database.TestPool(t)
-	database.CleanupTables(t, pool, "human_users", "participants")
+	database.CleanupTables(t, pool, "refresh_tokens", "human_users", "participants")
 	participants := repository.NewParticipantRepo(pool)
+	refreshTokens := repository.NewRefreshTokenRepo(pool)
 	cfg := &config.Config{
 		JWT: config.JWTConfig{
 			Secret: "test-secret-key-for-testing",
 			Expiry: time.Hour,
 		},
 	}
-	return handlers.NewAuthHandler(participants, cfg), cfg
+	return handlers.NewAuthHandler(participants, refreshTokens, pool, cfg), cfg
 }
 
 func TestAuthHandler_Register_Success(t *testing.T) {

@@ -450,7 +450,15 @@ export default function Nav({
                     />
                     <button
                       onClick={() => {
+                        fetch('/api/v1/auth/logout', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            ...(localStorage.getItem('token') ? { Authorization: `Bearer ${localStorage.getItem('token')}` } : {}),
+                          },
+                        }).catch(() => {})
                         localStorage.removeItem('token')
+                        localStorage.removeItem('refresh_token')
                         localStorage.removeItem('userId')
                         setShowDropdown(false)
                         if (onLogout) onLogout()
@@ -697,7 +705,15 @@ export default function Nav({
               <div className="border-t border-[#2A2A3E] my-1" />
               <button
                 onClick={() => {
+                  fetch('/api/v1/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      ...(localStorage.getItem('token') ? { Authorization: `Bearer ${localStorage.getItem('token')}` } : {}),
+                    },
+                  }).catch(() => {})
                   localStorage.removeItem('token')
+                  localStorage.removeItem('refresh_token')
                   localStorage.removeItem('userId')
                   setShowMobileMenu(false)
                   if (onLogout) onLogout()

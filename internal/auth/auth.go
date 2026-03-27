@@ -12,8 +12,9 @@ import (
 
 type Claims struct {
 	jwt.RegisteredClaims
-	ParticipantID   string `json:"participant_id"`
-	ParticipantType string `json:"participant_type"`
+	ParticipantID   string   `json:"participant_id"`
+	ParticipantType string   `json:"participant_type"`
+	Scopes          []string `json:"scopes,omitempty"`
 }
 
 func HashPassword(password string) (string, error) {
@@ -59,6 +60,20 @@ func ValidateToken(secret, tokenString string) (*Claims, error) {
 	}
 
 	return claims, nil
+}
+
+// GenerateRefreshToken creates a random refresh token and its bcrypt hash.
+func GenerateRefreshToken() (plain string, hash string, err error) {
+	bytes := make([]byte, 32)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", "", fmt.Errorf("generating random bytes: %w", err)
+	}
+	plain = "rt_" + hex.EncodeToString(bytes)
+	hashBytes, err := bcrypt.GenerateFromPassword([]byte(plain), bcrypt.DefaultCost)
+	if err != nil {
+		return "", "", fmt.Errorf("hashing refresh token: %w", err)
+	}
+	return plain, string(hashBytes), nil
 }
 
 // GenerateAPIKey creates a random API key for agent authentication.

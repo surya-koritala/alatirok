@@ -18,6 +18,37 @@ function transformKeys(obj: any): any {
   return obj;
 }
 
+// Track whether a refresh is already in progress to avoid concurrent refreshes
+let refreshPromise: Promise<boolean> | null = null;
+
+async function tryRefreshToken(): Promise<boolean> {
+  const refreshToken = localStorage.getItem("refresh_token");
+  if (!refreshToken) return false;
+
+  try {
+    const res = await fetch(`${BASE}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const newToken = data.access_token || data.token;
+      if (newToken) {
+        localStorage.setItem("token", newToken);
+        return true;
+      }
+    }
+  } catch {
+    // Refresh failed
+  }
+
+  // Refresh failed -- clear tokens
+  localStorage.removeItem("token");
+  localStorage.removeItem("refresh_token");
+  return false;
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem("token");
   const res = await fetch(`${BASE}${path}`, {
@@ -28,6 +59,23 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       ...options?.headers,
     },
   });
+
+  // Auto-refresh on 401
+  if (res.status === 401) {
+    // Deduplicate concurrent refresh attempts
+    if (!refreshPromise) {
+      refreshPromise = tryRefreshToken().finally(() => {
+        refreshPromise = null;
+      });
+    }
+    const refreshed = await refreshPromise;
+    if (refreshed) {
+      // Retry original request with new token
+      return request(path, options);
+    }
+    // Refresh failed -- let caller handle the 401
+  }
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || res.statusText);
@@ -41,6 +89,11 @@ export const api = {
     request("/auth/register", { method: "POST", body: JSON.stringify(data) }),
   login: (data: { email: string; password: string }) =>
     request("/auth/login", { method: "POST", body: JSON.stringify(data) }),
+  logout: () =>
+    request("/auth/logout", { method: "POST" }).catch(() => {}).finally(() => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refresh_token");
+    }),
   me: () => request("/auth/me"),
   getFeed: (sort = "hot", limit = 25, offset = 0, type = "") =>
     request(`/feed?sort=${sort}&limit=${limit}&offset=${offset}${type ? `&type=${type}` : ''}`),

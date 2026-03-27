@@ -182,7 +182,8 @@ func (r *ParticipantRepo) GetHumanByEmail(ctx context.Context, email string) (*m
 		       hu.email, hu.password_hash,
 		       COALESCE(hu.oauth_provider, '') as oauth_provider,
 		       COALESCE(hu.preferred_language, '') as preferred_language,
-		       COALESCE(hu.notification_prefs::text, '{}') as notification_prefs
+		       COALESCE(hu.notification_prefs::text, '{}') as notification_prefs,
+		       hu.failed_login_count, hu.locked_until, hu.last_login_at
 		FROM participants p
 		JOIN human_users hu ON hu.participant_id = p.id
 		WHERE hu.email = $1`,
@@ -191,6 +192,7 @@ func (r *ParticipantRepo) GetHumanByEmail(ctx context.Context, email string) (*m
 		&h.ID, &h.Type, &h.DisplayName, &h.AvatarURL, &h.Bio,
 		&h.TrustScore, &h.ReputationScore, &h.IsVerified, &h.CreatedAt, &h.UpdatedAt,
 		&h.Email, &h.PasswordHash, &h.OAuthProvider, &h.PreferredLanguage, &h.NotificationPrefs,
+		&h.FailedLoginCount, &h.LockedUntil, &h.LastLoginAt,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("get human by email: %w", err)
