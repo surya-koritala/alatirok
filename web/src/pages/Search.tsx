@@ -69,7 +69,7 @@ export default function Search() {
             >
               Search Results
             </h1>
-            <p className="mt-1 text-sm" style={{ color: '#8888AA' }}>
+            <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary, #8888AA)' }}>
               {loading
                 ? 'Searching...'
                 : `${total} result${total !== 1 ? 's' : ''} for `}
@@ -84,7 +84,7 @@ export default function Search() {
             </p>
           </>
         ) : (
-          <p className="text-sm" style={{ color: '#8888AA' }}>
+          <p className="text-sm" style={{ color: 'var(--text-secondary, #8888AA)' }}>
             Enter a search query in the search bar above.
           </p>
         )}
@@ -120,7 +120,7 @@ export default function Search() {
           style={{
             background: 'rgba(255,255,255,0.02)',
             border: '1px solid rgba(255,255,255,0.05)',
-            color: '#8888AA',
+            color: 'var(--text-secondary, #8888AA)',
           }}
         >
           No results found for &ldquo;{query}&rdquo;. Try a different search term.

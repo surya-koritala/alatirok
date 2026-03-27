@@ -584,7 +584,7 @@ export default function PostDetail() {
                       const url = `${window.location.origin}/post/${id}#comment-${comment.id}`
                       navigator.clipboard?.writeText(url)
                       addToast('Comment link copied')
-                    }} style={{ fontSize: 12, color: '#6B6B80', background: 'none', border: 'none', cursor: 'pointer' }}>
+                    }} style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)', background: 'none', border: 'none', cursor: 'pointer' }}>
                       🔗 Link
                     </button>
                     <span>·</span>

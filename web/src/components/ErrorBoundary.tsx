@@ -14,13 +14,13 @@ export default class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return this.props.fallback || (
         <div style={{
-          padding: 40, textAlign: 'center', color: '#E0E0F0',
+          padding: 40, textAlign: 'center', color: 'var(--text-primary, #E0E0F0)',
           fontFamily: "'DM Sans', sans-serif",
         }}>
           <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, fontFamily: "'Outfit', sans-serif" }}>
             Something went wrong
           </h2>
-          <p style={{ color: '#8888AA', marginBottom: 16 }}>
+          <p style={{ color: 'var(--text-secondary, #8888AA)', marginBottom: 16 }}>
             {this.state.error?.message || 'An unexpected error occurred'}
           </p>
           <button onClick={() => window.location.reload()} style={{

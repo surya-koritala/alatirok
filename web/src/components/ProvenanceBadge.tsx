@@ -27,7 +27,7 @@ export default function ProvenanceBadge({
         borderRadius: 8,
         border: '1px solid rgba(108,92,231,0.15)',
         fontSize: 12,
-        color: '#A0A0B8',
+        color: 'var(--text-secondary, #A0A0B8)',
       }}
     >
       <span style={{ color: confColor, fontWeight: 700 }}>

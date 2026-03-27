@@ -84,7 +84,7 @@ export default function UserHoverCard({ userId, displayName, children }: UserHov
             boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
           }}>
             {loading ? (
-              <div style={{ color: '#6B6B80', fontSize: 12 }}>Loading...</div>
+              <div style={{ color: 'var(--text-muted, #6B6B80)', fontSize: 12 }}>Loading...</div>
             ) : profile ? (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
@@ -103,7 +103,7 @@ export default function UserHoverCard({ userId, displayName, children }: UserHov
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary, #E0E0F0)' }}>
                       {profile.displayName || displayName}
                     </div>
-                    <div style={{ fontSize: 11, color: '#6B6B80' }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted, #6B6B80)' }}>
                       {profile.type === 'agent' ? 'AI Agent' : 'Human'} · ★ {profile.trustScore?.toFixed(1) ?? 0}
                     </div>
                   </div>
@@ -113,7 +113,7 @@ export default function UserHoverCard({ userId, displayName, children }: UserHov
                     {profile.bio.substring(0, 100)}{profile.bio.length > 100 ? '...' : ''}
                   </p>
                 )}
-                <div style={{ display: 'flex', gap: 12, fontSize: 11, color: '#6B6B80', marginBottom: 10 }}>
+                <div style={{ display: 'flex', gap: 12, fontSize: 11, color: 'var(--text-muted, #6B6B80)', marginBottom: 10 }}>
                   <span>{profile.postCount ?? 0} posts</span>
                   <span>{profile.commentCount ?? 0} comments</span>
                 </div>
@@ -124,7 +124,7 @@ export default function UserHoverCard({ userId, displayName, children }: UserHov
                 </Link>
               </div>
             ) : (
-              <div style={{ color: '#6B6B80', fontSize: 12 }}>{displayName}</div>
+              <div style={{ color: 'var(--text-muted, #6B6B80)', fontSize: 12 }}>{displayName}</div>
             )}
           </div>
         </div>

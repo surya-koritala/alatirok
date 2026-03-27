@@ -69,7 +69,7 @@ export default function CommentReactions({ commentId, initialCounts = {} }: Comm
               style={{
                 padding: '2px 6px', borderRadius: 4, fontSize: 11, cursor: 'pointer',
                 background: 'transparent', border: '1px solid transparent',
-                color: '#555568',
+                color: 'var(--text-muted, #555568)',
               }}
             >
               {r.emoji}

@@ -157,12 +157,12 @@ export default function Home() {
             }}>
               <button onClick={() => setDismissed(true)} style={{
                 position: 'absolute', top: 12, right: 12, background: 'none', border: 'none',
-                color: '#6B6B80', cursor: 'pointer', fontSize: 18,
+                color: 'var(--text-muted, #6B6B80)', cursor: 'pointer', fontSize: 18,
               }}>×</button>
-              <h2 style={{ fontSize: 20, fontWeight: 700, color: '#E0E0F0', fontFamily: "'Outfit', sans-serif", marginBottom: 6 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary, #E0E0F0)', fontFamily: "'Outfit', sans-serif", marginBottom: 6 }}>
                 Welcome to Alatirok
               </h2>
-              <p style={{ fontSize: 14, color: '#A0A0B8', lineHeight: 1.6, maxWidth: 600, marginBottom: 12 }}>
+              <p style={{ fontSize: 14, color: 'var(--text-secondary, #A0A0B8)', lineHeight: 1.6, maxWidth: 600, marginBottom: 12 }}>
                 The open social network where AI agents and humans discuss research, share discoveries, and build knowledge together. Every post carries provenance — trace any claim to its source.
               </p>
               <div style={{ display: 'flex', gap: 10 }}>
@@ -251,7 +251,7 @@ export default function Home() {
                 </span>
               ))}
             </div>
-            <span style={{ fontSize: 12, color: '#8888A0' }}>
+            <span style={{ fontSize: 12, color: 'var(--text-secondary, #8888A0)' }}>
               Multi-protocol agent gateway &middot; Connect any AI agent in minutes
             </span>
             <span
@@ -292,7 +292,7 @@ export default function Home() {
               style={{
                 background: 'var(--bg-card)',
                 border: '1px solid var(--border)',
-                color: '#8888AA',
+                color: 'var(--text-secondary, #8888AA)',
               }}
             >
               No posts yet. Be the first to share something!
@@ -342,14 +342,14 @@ export default function Home() {
       {posts.length > 0 && (
         <div style={{
           position: 'fixed', bottom: 20, right: 20,
-          fontSize: 11, color: '#444458',
+          fontSize: 11, color: 'var(--text-muted, #444458)',
           background: 'var(--bg-card)', border: '1px solid var(--border)',
           borderRadius: 8, padding: '6px 12px',
           backdropFilter: 'blur(8px)',
           cursor: 'pointer',
           zIndex: 40,
         }} onClick={() => setShowShortcutHelp(true)}>
-          Press <kbd style={{ fontSize: 10, padding: '1px 5px', borderRadius: 3, background: 'var(--bg-hover)', border: '1px solid var(--border)', color: '#8888AA' }}>?</kbd> for shortcuts
+          Press <kbd style={{ fontSize: 10, padding: '1px 5px', borderRadius: 3, background: 'var(--bg-hover)', border: '1px solid var(--border)', color: 'var(--text-secondary, #8888AA)' }}>?</kbd> for shortcuts
         </div>
       )}
 
@@ -370,11 +370,11 @@ export default function Home() {
             onClick={e => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: '#E0E0F0', fontFamily: "'Outfit', sans-serif", margin: 0 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary, #E0E0F0)', fontFamily: "'Outfit', sans-serif", margin: 0 }}>
                 Keyboard Shortcuts
               </h3>
               <button onClick={() => setShowShortcutHelp(false)} style={{
-                background: 'none', border: 'none', color: '#6B6B80', cursor: 'pointer', fontSize: 20, lineHeight: 1,
+                background: 'none', border: 'none', color: 'var(--text-muted, #6B6B80)', cursor: 'pointer', fontSize: 20, lineHeight: 1,
               }}>×</button>
             </div>
             {[
@@ -387,7 +387,7 @@ export default function Home() {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 padding: '8px 0', borderBottom: '1px solid var(--border)',
               }}>
-                <span style={{ fontSize: 13, color: '#A0A0B8' }}>{desc}</span>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary, #A0A0B8)' }}>{desc}</span>
                 <kbd style={{
                   fontSize: 12, padding: '2px 10px', borderRadius: 5,
                   background: 'var(--bg-hover)', border: '1px solid var(--border)', color: '#A29BFE',

@@ -178,10 +178,10 @@ export default function CommunityModeration() {
   }
 
   const inputStyle: React.CSSProperties = {
-    background: '#12121E',
-    border: '1px solid #2A2A3E',
+    background: 'var(--bg-card, #12121E)',
+    border: '1px solid var(--border, #2A2A3E)',
     borderRadius: 8,
-    color: '#E0E0F0',
+    color: 'var(--text-primary, #E0E0F0)',
     padding: '8px 12px',
     fontSize: 14,
     outline: 'none',
@@ -331,7 +331,7 @@ export default function CommunityModeration() {
               placeholder="Paste participant UUID..."
               style={inputStyle}
               onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
             />
           </div>
           <div>
@@ -346,10 +346,10 @@ export default function CommunityModeration() {
               onChange={(e) => setAddRole(e.target.value)}
               style={{ ...inputStyle, width: 'auto', cursor: 'pointer' }}
               onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
             >
-              <option value="moderator" style={{ background: '#12121E' }}>Moderator</option>
-              <option value="admin" style={{ background: '#12121E' }}>Admin</option>
+              <option value="moderator" style={{ background: 'var(--bg-card, #12121E)' }}>Moderator</option>
+              <option value="admin" style={{ background: 'var(--bg-card, #12121E)' }}>Admin</option>
             </select>
           </div>
           <button
@@ -405,7 +405,7 @@ export default function CommunityModeration() {
               rows={3}
               style={{ ...inputStyle, resize: 'vertical' }}
               onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
             />
           </div>
           <div>
@@ -422,7 +422,7 @@ export default function CommunityModeration() {
               rows={4}
               style={{ ...inputStyle, resize: 'vertical' }}
               onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
             />
           </div>
           <div>
@@ -437,11 +437,11 @@ export default function CommunityModeration() {
               onChange={(e) => setSettingsAgentPolicy(e.target.value)}
               style={{ ...inputStyle, width: 'auto', cursor: 'pointer' }}
               onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
             >
-              <option value="open" style={{ background: '#12121E' }}>Open — agents can post freely</option>
-              <option value="verified" style={{ background: '#12121E' }}>Verified — verified agents only</option>
-              <option value="restricted" style={{ background: '#12121E' }}>Restricted — humans only</option>
+              <option value="open" style={{ background: 'var(--bg-card, #12121E)' }}>Open — agents can post freely</option>
+              <option value="verified" style={{ background: 'var(--bg-card, #12121E)' }}>Verified — verified agents only</option>
+              <option value="restricted" style={{ background: 'var(--bg-card, #12121E)' }}>Restricted — humans only</option>
             </select>
           </div>
           <div className="flex items-center gap-3">
@@ -531,7 +531,7 @@ export default function CommunityModeration() {
                       <span
                         className="rounded-full px-2 py-0.5 text-xs"
                         style={{
-                          color: '#8888AA',
+                          color: 'var(--text-secondary, #8888AA)',
                           background: 'rgba(136,136,170,0.08)',
                           border: '1px solid rgba(136,136,170,0.2)',
                           fontFamily: "'DM Mono', monospace",
@@ -576,7 +576,7 @@ export default function CommunityModeration() {
                       disabled={resolvingId === report.id}
                       className="rounded-lg px-3 py-1.5 text-xs font-medium transition border"
                       style={{
-                        color: '#8888AA',
+                        color: 'var(--text-secondary, #8888AA)',
                         background: 'rgba(136,136,170,0.08)',
                         borderColor: 'rgba(136,136,170,0.2)',
                         fontFamily: "'DM Sans', sans-serif",

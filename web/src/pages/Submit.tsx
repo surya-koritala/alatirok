@@ -140,7 +140,7 @@ export default function Submit() {
 
   return (
     <div className="mx-auto max-w-2xl py-8">
-      <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: '#E0E0F0', marginBottom: 24 }}>
+      <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: 'var(--text-primary, #E0E0F0)', marginBottom: 24 }}>
         Create a Post
       </h1>
 
@@ -153,7 +153,7 @@ export default function Submit() {
             onChange={(e) => setCommunityId(e.target.value)}
             style={{ ...inputStyle, cursor: 'pointer' }}
             onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-            onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+            onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
           >
             {communities.map((c: any) => (
               <option key={c.id} value={c.id} style={{ background: 'var(--bg-card)' }}>
@@ -173,7 +173,7 @@ export default function Submit() {
             placeholder="What's on your mind?"
             style={inputStyle}
             onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-            onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+            onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
           />
         </div>
 
@@ -208,7 +208,7 @@ export default function Submit() {
                 setLinkPreview(null)
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = '#2A2A3E'
+                e.target.style.borderColor = 'var(--border, #2A2A3E)'
                 fetchPreview(e.target.value)
               }}
               placeholder="https://..."
@@ -216,7 +216,7 @@ export default function Submit() {
               onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
             />
             {fetchingPreview && (
-              <p style={{ fontSize: 11, color: '#6B6B80', fontFamily: "'DM Mono', monospace", marginTop: 4 }}>
+              <p style={{ fontSize: 11, color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Mono', monospace", marginTop: 4 }}>
                 Fetching preview...
               </p>
             )}
@@ -242,7 +242,7 @@ export default function Submit() {
               placeholder="e.g. step-by-step explanation, code snippet..."
               style={inputStyle}
               onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
             />
           </div>
         )}
@@ -257,7 +257,7 @@ export default function Submit() {
                 onChange={(e) => setDeadline(e.target.value)}
                 style={{ ...inputStyle, colorScheme: 'dark' }}
                 onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-                onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
               />
             </div>
             <div style={sectionStyle}>
@@ -269,7 +269,7 @@ export default function Submit() {
                 placeholder="e.g. python, machine learning, data analysis"
                 style={inputStyle}
                 onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-                onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
               />
             </div>
           </>
@@ -286,7 +286,7 @@ export default function Submit() {
                 rows={3}
                 style={{ ...inputStyle, resize: 'vertical' }}
                 onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-                onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
               />
             </div>
             <div style={sectionStyle}>
@@ -298,7 +298,7 @@ export default function Submit() {
                 rows={3}
                 style={{ ...inputStyle, resize: 'vertical' }}
                 onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-                onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
               />
             </div>
             <div style={sectionStyle}>
@@ -310,7 +310,7 @@ export default function Submit() {
                 rows={3}
                 style={{ ...inputStyle, resize: 'vertical' }}
                 onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-                onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
               />
             </div>
           </>
@@ -327,7 +327,7 @@ export default function Submit() {
                 rows={3}
                 style={{ ...inputStyle, resize: 'vertical' }}
                 onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-                onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
               />
             </div>
             <div style={sectionStyle}>
@@ -339,7 +339,7 @@ export default function Submit() {
                 rows={3}
                 style={{ ...inputStyle, resize: 'vertical' }}
                 onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-                onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
               />
             </div>
           </>
@@ -356,7 +356,7 @@ export default function Submit() {
                 placeholder="https://github.com/..."
                 style={inputStyle}
                 onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-                onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
               />
             </div>
             <div style={sectionStyle}>
@@ -366,7 +366,7 @@ export default function Submit() {
                 onChange={(e) => setLanguage(e.target.value)}
                 style={{ ...inputStyle, cursor: 'pointer' }}
                 onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-                onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
               >
                 <option value="" style={{ background: 'var(--bg-card)' }}>Select a language</option>
                 {['Python', 'TypeScript', 'JavaScript', 'Rust', 'Go', 'Java', 'C++', 'C#', 'Ruby', 'Swift', 'Kotlin', 'Other'].map((lang) => (
@@ -386,7 +386,7 @@ export default function Submit() {
                 onChange={(e) => setSeverity(e.target.value)}
                 style={{ ...inputStyle, cursor: 'pointer' }}
                 onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-                onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
               >
                 <option value="info" style={{ background: 'var(--bg-card)' }}>Info</option>
                 <option value="warning" style={{ background: 'var(--bg-card)' }}>Warning</option>
@@ -402,7 +402,7 @@ export default function Submit() {
                 rows={2}
                 style={{ ...inputStyle, resize: 'vertical' }}
                 onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-                onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
               />
             </div>
           </>
@@ -418,7 +418,7 @@ export default function Submit() {
             placeholder="e.g. ai, research, open-source"
             style={inputStyle}
             onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-            onBlur={(e) => (e.target.style.borderColor = '#2A2A3E')}
+            onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
           />
         </div>
 

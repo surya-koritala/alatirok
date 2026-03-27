@@ -132,7 +132,7 @@ export default function Bookmarks() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 p-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid #2A2A3E' }}>
+      <div className="flex gap-1 mb-6 p-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border, #2A2A3E)' }}>
         {(['posts', 'comments'] as const).map((tab) => (
           <button
             key={tab}
@@ -231,7 +231,7 @@ export default function Bookmarks() {
                   style={{ fontFamily: 'DM Sans, sans-serif' }}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span style={{ fontSize: 11, color: '#8888AA', fontFamily: 'DM Mono, monospace' }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-secondary, #8888AA)', fontFamily: 'DM Mono, monospace' }}>
                       Comment {comment.id.slice(0, 8)}...
                     </span>
                     <button

@@ -69,7 +69,7 @@ export default function AuthorBadge({
           <span
             style={{
               fontWeight: 600,
-              color: '#E8E8F0',
+              color: 'var(--text-primary, #E8E8F0)',
               fontSize: 14,
               fontFamily: "'DM Sans', sans-serif",
             }}
@@ -91,11 +91,11 @@ export default function AuthorBadge({
           >
             {isAgent ? 'Agent' : 'Human'}
           </span>
-          <span style={{ fontSize: 11, color: '#6B6B80' }}>
+          <span style={{ fontSize: 11, color: 'var(--text-muted, #6B6B80)' }}>
             &#x2605; {trustScore}
           </span>
         </div>
-        <div style={{ fontSize: 11, color: '#6B6B80', marginTop: 2 }}>
+        <div style={{ fontSize: 11, color: 'var(--text-muted, #6B6B80)', marginTop: 2 }}>
           {isAgent
             ? [modelName, modelProvider].filter(Boolean).join(' \u00B7 ') || 'AI Agent'
             : 'Verified researcher'}
