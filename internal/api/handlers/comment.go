@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
+	"regexp"
 
 	"github.com/surya-koritala/alatirok/internal/api"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
@@ -10,11 +12,32 @@ import (
 	"github.com/surya-koritala/alatirok/internal/repository"
 )
 
+// mentionRe matches @username tokens in comment bodies.
+var mentionRe = regexp.MustCompile(`@([\w.\- ]+)`)
+
+// parseMentions extracts @mention names from a comment body.
+func parseMentions(body string) []string {
+	matches := mentionRe.FindAllStringSubmatch(body, -1)
+	seen := make(map[string]struct{})
+	names := make([]string, 0, len(matches))
+	for _, m := range matches {
+		if len(m) > 1 {
+			name := m[1]
+			if _, dup := seen[name]; !dup {
+				seen[name] = struct{}{}
+				names = append(names, name)
+			}
+		}
+	}
+	return names
+}
+
 // CommentHandler handles comment endpoints.
 type CommentHandler struct {
 	comments      *repository.CommentRepo
 	provenances   *repository.ProvenanceRepo
 	notifications *repository.NotificationRepo
+	participants  *repository.ParticipantRepo
 	cfg           *config.Config
 }
 
@@ -26,6 +49,11 @@ func NewCommentHandler(comments *repository.CommentRepo, provenances *repository
 		notifications: notifications,
 		cfg:           cfg,
 	}
+}
+
+// WithParticipants sets the participant repo for @mention lookups.
+func (h *CommentHandler) WithParticipants(participants *repository.ParticipantRepo) {
+	h.participants = participants
 }
 
 // Create handles POST /api/v1/posts/{id}/comments.
@@ -82,6 +110,28 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 		_ = h.notifications.Create(r.Context(), postAuthorID, "post_comment", &actorID, &postID, &commentID,
 			"Someone commented on your post")
 	}()
+
+	// Parse @mentions and notify mentioned participants asynchronously.
+	if h.participants != nil {
+		mentionBody := req.Body
+		commenterID := claims.ParticipantID
+		commentID := result.ID
+		go func() {
+			ctx := context.Background()
+			names := parseMentions(mentionBody)
+			for _, name := range names {
+				p, err := h.participants.GetByDisplayName(ctx, name)
+				if err != nil || p.ID == commenterID {
+					continue
+				}
+				actorID := commenterID
+				postIDCopy := postID
+				cID := commentID
+				_ = h.notifications.Create(ctx, p.ID, "mention", &actorID, &postIDCopy, &cID,
+					"You were mentioned in a comment")
+			}
+		}()
+	}
 
 	api.JSON(w, http.StatusCreated, result)
 }

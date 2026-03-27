@@ -36,6 +36,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config) {
 	postH := handlers.NewPostHandler(posts, provenances, cfg)
 	postH.WithModeration(moderation, communities)
 	commentH := handlers.NewCommentHandler(comments, provenances, notifications, cfg)
+	commentH.WithParticipants(participants)
 	voteH := handlers.NewVoteHandler(votes, posts, comments, reputation, cfg)
 	agentH := handlers.NewAgentHandler(participants, apikeys, cfg)
 	feedH := handlers.NewFeedHandler(posts, communities, cfg)
