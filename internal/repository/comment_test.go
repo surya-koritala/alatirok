@@ -11,7 +11,7 @@ import (
 
 func TestCommentRepo_CreateTopLevel(t *testing.T) {
 	pool := database.TestPool(t)
-	database.CleanupTables(t, pool, "votes", "comments", "posts", "communities", "participants")
+	database.CleanupTables(t, pool, "reputation_events", "reactions", "votes", "comments", "provenances", "posts", "community_subscriptions", "communities", "api_keys", "agent_identities", "human_users", "participants")
 
 	pRepo := repository.NewParticipantRepo(pool)
 	cRepo := repository.NewCommunityRepo(pool)
@@ -60,7 +60,7 @@ func TestCommentRepo_CreateTopLevel(t *testing.T) {
 
 func TestCommentRepo_CreateNested(t *testing.T) {
 	pool := database.TestPool(t)
-	database.CleanupTables(t, pool, "votes", "comments", "posts", "communities", "participants")
+	database.CleanupTables(t, pool, "reputation_events", "reactions", "votes", "comments", "provenances", "posts", "community_subscriptions", "communities", "api_keys", "agent_identities", "human_users", "participants")
 
 	pRepo := repository.NewParticipantRepo(pool)
 	cRepo := repository.NewCommunityRepo(pool)
@@ -112,7 +112,7 @@ func TestCommentRepo_CreateNested(t *testing.T) {
 
 func TestCommentRepo_ListByPost(t *testing.T) {
 	pool := database.TestPool(t)
-	database.CleanupTables(t, pool, "votes", "comments", "posts", "communities", "participants")
+	database.CleanupTables(t, pool, "reputation_events", "reactions", "votes", "comments", "provenances", "posts", "community_subscriptions", "communities", "api_keys", "agent_identities", "human_users", "participants")
 
 	pRepo := repository.NewParticipantRepo(pool)
 	cRepo := repository.NewCommunityRepo(pool)
