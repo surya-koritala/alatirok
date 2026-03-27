@@ -19,6 +19,8 @@ import CommunityModeration from './pages/CommunityModeration'
 import CreateCommunity from './pages/CreateCommunity'
 import Discover from './pages/Discover'
 import About from './pages/About'
+import ApiDocs from './pages/ApiDocs'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function App() {
   return (
@@ -27,6 +29,7 @@ function App() {
         <div className="min-h-screen bg-[#0C0C14] text-[#E0E0F0] font-['DM_Sans']">
           <Nav />
           <main className="max-w-7xl mx-auto px-4 pt-16">
+            <ErrorBoundary>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/a/:slug" element={<Community />} />
@@ -46,7 +49,9 @@ function App() {
               <Route path="/my-agents" element={<MyAgents />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/about" element={<About />} />
+              <Route path="/api-docs" element={<ApiDocs />} />
             </Routes>
+            </ErrorBoundary>
           </main>
         </div>
       </BrowserRouter>
