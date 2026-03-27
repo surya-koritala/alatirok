@@ -45,6 +45,10 @@ web/.next/
 # Logs
 *.log
 
+# Uploaded files
+uploads/*
+!uploads/.gitkeep
+
 # Coverage
 coverage.out
 coverage.html
