@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import MarkdownContent from '../components/MarkdownContent'
+import MarkdownEditor from '../components/MarkdownEditor'
 
 interface Challenge {
   id: string
@@ -283,9 +285,9 @@ export default function Challenges() {
                   <h1 className="text-2xl font-bold text-[#E0E0F0] mb-3" style={{ fontFamily: 'Outfit, sans-serif' }}>
                     {challenge.title}
                   </h1>
-                  <p className="text-sm text-[#C0C0D8] leading-relaxed whitespace-pre-wrap" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-                    {challenge.body}
-                  </p>
+                  <div className="text-sm text-[#C0C0D8] leading-relaxed" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                    <MarkdownContent content={challenge.body} />
+                  </div>
                 </div>
               </div>
 
@@ -319,13 +321,11 @@ export default function Challenges() {
                 <h2 className="text-sm font-semibold text-[#E0E0F0] mb-3" style={{ fontFamily: 'Outfit, sans-serif' }}>
                   Submit Your Answer
                 </h2>
-                <textarea
+                <MarkdownEditor
                   value={submitBody}
-                  onChange={e => setSubmitBody(e.target.value)}
-                  placeholder="Write your answer or solution here..."
-                  rows={4}
-                  className="w-full resize-none rounded-lg border border-[#2A2A3E] bg-[#0C0C14] px-4 py-3 text-sm text-[#E0E0F0] placeholder-[#555568] outline-none focus:border-[#6C5CE7] transition"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  onChange={setSubmitBody}
+                  placeholder="Write your answer — supports Markdown, code blocks, math"
+                  minHeight={150}
                 />
                 <div className="mt-3 flex justify-end">
                   <button
@@ -380,9 +380,9 @@ export default function Challenges() {
                               {relativeTime(sub.createdAt)}
                             </span>
                           </div>
-                          <p className="text-sm text-[#C0C0D8] leading-relaxed whitespace-pre-wrap" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-                            {sub.body}
-                          </p>
+                          <div className="text-sm text-[#C0C0D8] leading-relaxed" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                            <MarkdownContent content={sub.body} />
+                          </div>
                         </div>
 
                         <div className="flex flex-col items-center gap-2 shrink-0">
@@ -464,13 +464,11 @@ export default function Challenges() {
               className="rounded-lg border border-[#2A2A3E] bg-[#0C0C14] px-4 py-2.5 text-sm text-[#E0E0F0] outline-none focus:border-[#6C5CE7] transition"
               style={{ fontFamily: 'DM Sans, sans-serif' }}
             />
-            <textarea
-              placeholder="Challenge description / prompt"
+            <MarkdownEditor
               value={createForm.body}
-              onChange={e => setCreateForm(f => ({ ...f, body: e.target.value }))}
-              rows={4}
-              className="resize-none rounded-lg border border-[#2A2A3E] bg-[#0C0C14] px-4 py-2.5 text-sm text-[#E0E0F0] outline-none focus:border-[#6C5CE7] transition"
-              style={{ fontFamily: 'DM Sans, sans-serif' }}
+              onChange={v => setCreateForm(f => ({ ...f, body: v }))}
+              placeholder="Challenge description — supports Markdown"
+              minHeight={150}
             />
             <input
               type="text"
@@ -580,7 +578,7 @@ export default function Challenges() {
                     {challenge.title}
                   </h3>
                   <p className="text-sm text-[#8888AA] line-clamp-2" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-                    {challenge.body}
+                    {challenge.body.replace(/#{1,6}\s+/g, '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/[`_*]/g, '').replace(/\[(.+?)\]\(.+?\)/g, '$1').replace(/\n/g, ' ').substring(0, 200)}
                   </p>
 
                   {/* Capability tags */}
