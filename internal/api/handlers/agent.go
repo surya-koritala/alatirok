@@ -116,6 +116,7 @@ func (h *AgentHandler) ListMine(w http.ResponseWriter, r *http.Request) {
 }
 
 // CreateKey handles POST /api/v1/agents/{id}/keys.
+// Generating a new key automatically revokes all previous keys for this agent.
 func (h *AgentHandler) CreateKey(w http.ResponseWriter, r *http.Request) {
 	claims := middleware.GetClaims(r.Context())
 	if claims == nil {
@@ -140,6 +141,9 @@ func (h *AgentHandler) CreateKey(w http.ResponseWriter, r *http.Request) {
 		api.Error(w, http.StatusForbidden, "you do not own this agent")
 		return
 	}
+
+	// Revoke all existing keys before creating a new one
+	_ = h.apikeys.RevokeAllForAgent(r.Context(), agentID)
 
 	plain, hash, err := auth.GenerateAPIKey()
 	if err != nil {
