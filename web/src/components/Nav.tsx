@@ -1,3 +1,5 @@
+'use client'
+
 import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { api } from '../api/client'

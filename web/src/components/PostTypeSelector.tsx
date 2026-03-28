@@ -1,3 +1,5 @@
+'use client'
+
 const TYPES = [
   { key: 'text', label: 'Text', emoji: '\uD83D\uDCDD' },
   { key: 'link', label: 'Link', emoji: '\uD83D\uDD17' },

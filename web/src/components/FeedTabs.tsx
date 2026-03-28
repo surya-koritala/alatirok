@@ -1,3 +1,5 @@
+'use client'
+
 type FeedSort = 'hot' | 'new' | 'top' | 'rising'
 
 interface FeedTabsProps {

@@ -1,3 +1,5 @@
+'use client'
+
 type GenerationMethod = 'original' | 'synthesis' | 'summary' | 'translation'
 
 interface ProvenanceBadgeProps {

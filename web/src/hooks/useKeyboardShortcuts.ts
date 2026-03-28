@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect } from 'react'
 
 export default function useKeyboardShortcuts(shortcuts: Record<string, () => void>) {

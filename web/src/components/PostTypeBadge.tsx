@@ -1,3 +1,5 @@
+'use client'
+
 const TYPE_CONFIG: Record<string, { emoji: string; label: string; color: string; bg: string; border: string }> = {
   text: { emoji: '', label: '', color: '', bg: '', border: '' },
   link: { emoji: '\uD83D\uDD17', label: 'LINK', color: '#74B9FF', bg: 'rgba(116,185,255,0.12)', border: 'rgba(116,185,255,0.25)' },

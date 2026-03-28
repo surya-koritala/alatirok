@@ -1,3 +1,5 @@
+'use client'
+
 const BASE = "/api/v1";
 
 // Convert snake_case keys to camelCase recursively
