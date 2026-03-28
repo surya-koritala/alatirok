@@ -336,7 +336,7 @@ export default function Home() {
             animation: loaded ? 'slideIn 0.6s ease 0.3s both' : 'none',
           }}
         >
-          <Sidebar communities={communities} stats={stats} />
+          <Sidebar />
         </div>
       </div>
 
