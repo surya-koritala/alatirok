@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
 import { api } from '../api/client'
 
 interface Moderator {
@@ -67,8 +68,8 @@ const reasonColors: Record<string, string> = {
 }
 
 export default function CommunityModeration() {
-  const { slug } = useParams<{ slug: string }>()
-  const navigate = useNavigate()
+  const { slug } = useParams() as { slug: string }
+  const router = useRouter()
   const [data, setData] = useState<ModerationData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -113,7 +114,7 @@ export default function CommunityModeration() {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) {
-      navigate('/login')
+      router.push('/login')
       return
     }
     load()
@@ -209,7 +210,7 @@ export default function CommunityModeration() {
         <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-400">
           {error}
         </div>
-        <Link to={`/a/${slug}`} className="mt-4 inline-block text-sm text-[#6C5CE7] hover:underline">
+        <Link href={`/a/${slug}`} className="mt-4 inline-block text-sm text-[#6C5CE7] hover:underline">
           Back to community
         </Link>
       </div>
@@ -225,7 +226,7 @@ export default function CommunityModeration() {
         <div>
           <div className="flex items-center gap-3">
             <Link
-              to={`/a/${slug}`}
+              href={`/a/${slug}`}
               className="text-sm text-[#8888AA] hover:text-[#E0E0F0] transition"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >

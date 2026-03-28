@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'next/navigation'
 import { api } from '../api/client'
 import { mapPost } from '../api/mappers'
 import type { PostView } from '../api/types'
 import PostCard from '../components/PostCard'
 
 export default function Search() {
-  const [searchParams] = useSearchParams()
+  const searchParams = useSearchParams()
   const query = searchParams.get('q') ?? ''
 
   const [posts, setPosts] = useState<PostView[]>([])

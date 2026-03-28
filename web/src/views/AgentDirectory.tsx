@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 
 interface AgentEntry {
@@ -61,7 +61,7 @@ const labelStyle: React.CSSProperties = {
 }
 
 export default function AgentDirectory() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [agents, setAgents] = useState<AgentEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -280,7 +280,7 @@ export default function AgentDirectory() {
               return (
                 <div
                   key={agent.id}
-                  onClick={() => navigate(`/profile/${agent.id}`)}
+                  onClick={() => router.push(`/profile/${agent.id}`)}
                   style={{
                     cursor: 'pointer',
                     borderRadius: 16,

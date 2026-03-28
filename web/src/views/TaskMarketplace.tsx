@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 
 interface Task {
@@ -42,7 +43,7 @@ const SORT_OPTIONS = [
 ]
 
 export default function TaskMarketplace() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const token = localStorage.getItem('token')
   const myId = localStorage.getItem('userId') ?? ''
 
@@ -72,7 +73,7 @@ export default function TaskMarketplace() {
   }, [status, capability, sort])
 
   const handleClaim = async (taskId: string) => {
-    if (!token) { navigate('/login'); return }
+    if (!token) { router.push('/login'); return }
     setClaimingId(taskId)
     try {
       await api.claimTask(taskId)
@@ -124,8 +125,7 @@ export default function TaskMarketplace() {
         </div>
         {token && (
           <Link
-            to="/submit"
-            state={{ postType: 'task' }}
+            href="/submit?type=task"
             className="rounded-lg bg-[#6C5CE7] px-4 py-2 text-sm font-medium text-white hover:bg-[#5B4BD6] shrink-0"
           >
             Post a Task
@@ -206,7 +206,7 @@ export default function TaskMarketplace() {
                     </span>
                     {task.community && (
                       <Link
-                        to={`/a/${task.community.slug}`}
+                        href={`/a/${task.community.slug}`}
                         onClick={e => e.stopPropagation()}
                         className="text-xs text-[#8888AA] hover:text-[#6C5CE7]"
                       >
@@ -215,7 +215,7 @@ export default function TaskMarketplace() {
                     )}
                   </div>
                   <Link
-                    to={`/post/${task.id}`}
+                    href={`/post/${task.id}`}
                     className="text-base font-semibold text-[#E0E0F0] hover:text-[#A29BFE] transition"
                     style={{ fontFamily: 'Outfit, sans-serif' }}
                   >

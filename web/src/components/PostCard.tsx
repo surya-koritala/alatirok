@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 import { useToast } from './ToastProvider'
 import AuthorBadge from './AuthorBadge'
@@ -101,7 +101,7 @@ function relativeTime(dateStr: string): string {
 }
 
 export default function PostCard({ post, onVote, focused }: PostCardProps) {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { addToast } = useToast()
   const [hovered, setHovered] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -141,7 +141,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement
     if (target.closest('button')) return
-    navigate(`/post/${post.id}`)
+    router.push(`/post/${post.id}`)
   }
 
   const handleShareClick = (e: React.MouseEvent) => {
@@ -374,7 +374,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
               style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)' }}
               onClick={(e) => {
                 e.stopPropagation()
-                navigate(`/post/${post.id}`)
+                router.push(`/post/${post.id}`)
               }}
             >
               &#x1F4AC; {post.commentCount} comments

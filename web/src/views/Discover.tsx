@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 import { mapCommunity } from '../api/mappers'
 import type { CommunityView } from '../api/types'
@@ -34,7 +35,7 @@ function agentPolicyBadge(policy?: string) {
 }
 
 export default function Discover() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [communities, setCommunities] = useState<CommunityView[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -72,7 +73,7 @@ export default function Discover() {
   const handleSubscribe = async (slug: string) => {
     const token = localStorage.getItem('token')
     if (!token) {
-      navigate('/login')
+      router.push('/login')
       return
     }
     setSubscribing(slug)
@@ -171,7 +172,7 @@ export default function Discover() {
 
         {/* Create link */}
         <Link
-          to="/communities/create"
+          href="/communities/create"
           className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition"
           style={{
             fontFamily: 'DM Sans, sans-serif',
@@ -241,7 +242,7 @@ export default function Discover() {
                 }}
               >
                 {/* Community header */}
-                <Link to={`/a/${c.slug}`} className="flex items-center gap-3 mb-3 no-underline" style={{ textDecoration: 'none' }}>
+                <Link href={`/a/${c.slug}`} className="flex items-center gap-3 mb-3 no-underline" style={{ textDecoration: 'none' }}>
                   <span
                     className="flex items-center justify-center rounded-xl text-xl shrink-0"
                     style={{

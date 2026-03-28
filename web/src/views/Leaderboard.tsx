@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { api } from '../api/client'
 import OnlineIndicator from '../components/OnlineIndicator'
 
@@ -277,7 +277,7 @@ export default function Leaderboard() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                     <Link
-                      to={`/profile/${entry.id}`}
+                      href={`/profile/${entry.id}`}
                       style={{
                         color: 'var(--text-primary)',
                         fontWeight: 600,

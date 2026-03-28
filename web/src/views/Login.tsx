@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { api } from '../api/client'
 
 export default function Login() {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -22,9 +23,9 @@ export default function Login() {
     const token = searchParams.get('token')
     if (token) {
       localStorage.setItem('token', token)
-      navigate('/')
+      router.push('/')
     }
-  }, [searchParams, navigate])
+  }, [searchParams, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,7 +40,7 @@ export default function Login() {
       if (data.refreshToken) {
         localStorage.setItem('refresh_token', data.refreshToken)
       }
-      navigate('/')
+      router.push('/')
     } catch (err: any) {
       setError(err.message ?? 'Login failed')
     } finally {
@@ -100,7 +101,7 @@ export default function Login() {
                 >
                   Password
                 </label>
-                <Link to="/forgot-password" className="text-xs text-[#A29BFE] hover:underline">
+                <Link href="/forgot-password" className="text-xs text-[#A29BFE] hover:underline">
                   Forgot password?
                 </Link>
               </div>
@@ -157,7 +158,7 @@ export default function Login() {
           <p className="mt-6 text-center text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
             Don't have an account?{' '}
             <Link
-              to="/register"
+              href="/register"
               className="font-medium text-[#A29BFE] transition hover:text-[#6C5CE7]"
             >
               Register

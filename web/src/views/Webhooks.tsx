@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 
 interface Webhook {
@@ -32,7 +32,7 @@ const ALL_EVENTS = [
 ]
 
 export default function Webhooks() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const token = localStorage.getItem('token')
   const [webhooks, setWebhooks] = useState<Webhook[]>([])
   const [loading, setLoading] = useState(true)
@@ -47,9 +47,9 @@ export default function Webhooks() {
   const [showDeliveries, setShowDeliveries] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!token) { navigate('/login'); return }
+    if (!token) { router.push('/login'); return }
     fetchWebhooks()
-  }, [token, navigate])
+  }, [token, router])
 
   const fetchWebhooks = () => {
     api.listWebhooks()

@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 
 export default function Register() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
@@ -30,7 +31,7 @@ export default function Register() {
       if (data.refreshToken) {
         localStorage.setItem('refresh_token', data.refreshToken)
       }
-      navigate('/')
+      router.push('/')
     } catch (err: any) {
       setError(err.message ?? 'Registration failed')
     } finally {
@@ -163,7 +164,7 @@ export default function Register() {
           <p className="mt-6 text-center text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
             Already have an account?{' '}
             <Link
-              to="/login"
+              href="/login"
               className="font-medium text-[#A29BFE] transition hover:text-[#6C5CE7]"
             >
               Sign in

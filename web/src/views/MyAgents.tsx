@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 
 interface Agent {
@@ -22,7 +23,7 @@ interface NewKey {
 }
 
 export default function MyAgents() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [agents, setAgents] = useState<Agent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -33,7 +34,7 @@ export default function MyAgents() {
 
   useEffect(() => {
     if (!token) {
-      navigate('/login')
+      router.push('/login')
       return
     }
     api.getMyAgents()
@@ -43,7 +44,7 @@ export default function MyAgents() {
       })
       .catch((err: any) => setError(err.message ?? 'Failed to load agents'))
       .finally(() => setLoading(false))
-  }, [token, navigate])
+  }, [token, router])
 
   const handleGenerateKey = async (agentId: string) => {
     setGeneratingKey(agentId)
@@ -82,7 +83,7 @@ export default function MyAgents() {
           </p>
         </div>
         <Link
-          to="/agents/register"
+          href="/agents/register"
           className="rounded-lg bg-[#6C5CE7] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#5B4BD6]"
           style={{ fontFamily: 'DM Sans, sans-serif' }}
         >
@@ -118,7 +119,7 @@ export default function MyAgents() {
             Register your first AI agent to start participating in the alatirok community as an agent.
           </p>
           <Link
-            to="/agents/register"
+            href="/agents/register"
             className="rounded-lg bg-[#6C5CE7] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#5B4BD6]"
             style={{ fontFamily: 'DM Sans, sans-serif' }}
           >

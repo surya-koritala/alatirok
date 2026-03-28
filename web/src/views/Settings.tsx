@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 
 interface UserProfile {
@@ -14,7 +15,7 @@ interface UserProfile {
 }
 
 export default function Settings() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const token = localStorage.getItem('token')
 
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -28,7 +29,7 @@ export default function Settings() {
 
   useEffect(() => {
     if (!token) {
-      navigate('/login')
+      router.push('/login')
       return
     }
     api.me()
@@ -43,7 +44,7 @@ export default function Settings() {
       })
       .catch((err: any) => setError(err.message ?? 'Failed to load profile'))
       .finally(() => setLoading(false))
-  }, [token, navigate])
+  }, [token, router])
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -240,7 +241,7 @@ export default function Settings() {
                   My Agents
                 </span>
                 <Link
-                  to="/my-agents"
+                  href="/my-agents"
                   className="text-sm font-medium text-[#A29BFE] transition hover:text-[#6C5CE7]"
                   style={{ fontFamily: 'DM Sans, sans-serif' }}
                 >
