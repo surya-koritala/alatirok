@@ -63,11 +63,9 @@ export default function Nav({
     localStorage.getItem('userId') ?? undefined,
   )
   const [showDropdown, setShowDropdown] = useState(false)
-  const [showExploreMenu, setShowExploreMenu] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
 
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const exploreRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
   const hasToken = !!localStorage.getItem('token')
@@ -100,9 +98,6 @@ export default function Nav({
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setShowDropdown(false)
-      }
-      if (exploreRef.current && !exploreRef.current.contains(e.target as Node)) {
-        setShowExploreMenu(false)
       }
     }
     document.addEventListener('mousedown', handler)
@@ -170,103 +165,6 @@ export default function Nav({
 
         {/* Desktop actions */}
         <div className="hidden md:flex shrink-0 items-center gap-2">
-
-          {/* Explore dropdown */}
-          <div className="relative" ref={exploreRef}>
-            <button
-              onClick={() => setShowExploreMenu((prev) => !prev)}
-              className="flex items-center gap-1.5 rounded-lg border border-[#2A2A3E] px-3 py-2 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0]"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
-              Explore
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{
-                  transform: showExploreMenu ? 'rotate(180deg)' : 'none',
-                  transition: 'transform 0.15s',
-                }}
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-
-            {showExploreMenu && (
-              <div style={dropdownStyle}>
-                <Link
-                  href="/communities"
-                  className={dropdownItemClass}
-                  style={dropdownItemStyle}
-                  onClick={() => setShowExploreMenu(false)}
-                >
-                  <span style={{ width: 20 }}>🏘️</span> Browse Communities
-                </Link>
-                <Link
-                  href="/agents"
-                  className={dropdownItemClass}
-                  style={dropdownItemStyle}
-                  onClick={() => setShowExploreMenu(false)}
-                >
-                  <span style={{ width: 20 }}>🤖</span> Agent Directory
-                </Link>
-                <Link
-                  href="/leaderboard"
-                  className={dropdownItemClass}
-                  style={dropdownItemStyle}
-                  onClick={() => setShowExploreMenu(false)}
-                >
-                  <span style={{ width: 20 }}>🏆</span> Leaderboard
-                </Link>
-                <Link
-                  href="/challenges"
-                  className={dropdownItemClass}
-                  style={dropdownItemStyle}
-                  onClick={() => setShowExploreMenu(false)}
-                >
-                  <span style={{ width: 20 }}>⚡</span> Challenges
-                </Link>
-                <Link
-                  href="/tasks"
-                  className={dropdownItemClass}
-                  style={dropdownItemStyle}
-                  onClick={() => setShowExploreMenu(false)}
-                >
-                  <span style={{ width: 20 }}>📋</span> Tasks
-                </Link>
-                <div style={{ margin: '4px 0', borderTop: '1px solid var(--border, #2A2A3E)' }} />
-                <Link
-                  href="/about"
-                  className={dropdownItemClass}
-                  style={dropdownItemStyle}
-                  onClick={() => setShowExploreMenu(false)}
-                >
-                  <span style={{ width: 20 }}>ℹ️</span> About
-                </Link>
-                <Link
-                  href="/docs"
-                  className={dropdownItemClass}
-                  style={dropdownItemStyle}
-                  onClick={() => setShowExploreMenu(false)}
-                >
-                  <span style={{ width: 20 }}>📖</span> API Docs
-                </Link>
-                <Link
-                  href="/content-policy"
-                  className={dropdownItemClass}
-                  style={dropdownItemStyle}
-                  onClick={() => setShowExploreMenu(false)}
-                >
-                  <span style={{ width: 20 }}>📜</span> Content Policy
-                </Link>
-              </div>
-            )}
-          </div>
 
           {/* New Post */}
           <Link

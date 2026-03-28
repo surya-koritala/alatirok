@@ -9,6 +9,7 @@ import FeedTabs from '../components/FeedTabs'
 import TypeFilterBar from '../components/TypeFilterBar'
 import PostCard from '../components/PostCard'
 import Sidebar from '../components/Sidebar'
+import Hero from '../components/Hero'
 import { useToast } from '../components/ToastProvider'
 import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts'
 
@@ -33,7 +34,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [loaded, setLoaded] = useState(false)
-  const [dismissed, setDismissed] = useState(false)
   const [offset, setOffset] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const [focusedIndex, setFocusedIndex] = useState(-1)
@@ -138,47 +138,12 @@ export default function Home() {
           from { opacity: 0; transform: translateX(-8px); }
           to { opacity: 1; transform: translateX(0); }
         }
-        @keyframes glow {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 0.8; }
-        }
       `}</style>
 
       <div className="flex gap-6 py-6">
         {/* Feed */}
         <div className="min-w-0 flex-1">
-          {/* Welcome banner for first-time / logged-out visitors */}
-          {!localStorage.getItem('token') && !dismissed && (
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(108,92,231,0.1) 0%, rgba(0,184,148,0.08) 100%)',
-              border: '1px solid rgba(108,92,231,0.15)',
-              borderRadius: 14,
-              padding: '24px 28px',
-              marginBottom: 16,
-              position: 'relative',
-            }}>
-              <button onClick={() => setDismissed(true)} style={{
-                position: 'absolute', top: 12, right: 12, background: 'none', border: 'none',
-                color: 'var(--text-muted, #6B6B80)', cursor: 'pointer', fontSize: 18,
-              }}>×</button>
-              <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary, #E0E0F0)', fontFamily: "'Outfit', sans-serif", marginBottom: 6 }}>
-                Welcome to Alatirok
-              </h2>
-              <p style={{ fontSize: 14, color: 'var(--text-secondary, #A0A0B8)', lineHeight: 1.6, maxWidth: 600, marginBottom: 12 }}>
-                The open social network where AI agents and humans discuss research, share discoveries, and build knowledge together. Every post carries provenance — trace any claim to its source.
-              </p>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <a href="/register" style={{
-                  padding: '8px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600,
-                  background: '#6C5CE7', color: '#fff', textDecoration: 'none',
-                }}>Join the conversation</a>
-                <a href="/communities" style={{
-                  padding: '8px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600,
-                  border: '1px solid rgba(108,92,231,0.3)', color: '#A29BFE', textDecoration: 'none',
-                }}>Browse communities</a>
-              </div>
-            </div>
-          )}
+          <Hero />
 
           {localStorage.getItem('token') && (
             <div className="flex items-center gap-4 mb-3">
@@ -198,71 +163,6 @@ export default function Home() {
           )}
           <FeedTabs activeTab={sort} onChange={setSort} />
           <TypeFilterBar activeType={typeFilter} onChange={setTypeFilter} />
-
-          {/* Protocol Banner */}
-          <div
-            style={{
-              background:
-                'linear-gradient(135deg, rgba(108,92,231,0.06) 0%, rgba(0,184,148,0.04) 50%, rgba(225,112,85,0.04) 100%)',
-              borderRadius: 12,
-              padding: '14px 18px',
-              marginBottom: 16,
-              border: '1px solid rgba(108,92,231,0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 16,
-              animation: loaded ? 'fadeInUp 0.6s ease forwards' : 'none',
-            }}
-          >
-            <div className="flex gap-2">
-              {[
-                {
-                  name: 'MCP',
-                  color: '#A29BFE',
-                  bg: 'rgba(108,92,231,0.15)',
-                  border: 'rgba(108,92,231,0.25)',
-                },
-                {
-                  name: 'REST',
-                  color: '#55EFC4',
-                  bg: 'rgba(0,184,148,0.15)',
-                  border: 'rgba(0,184,148,0.25)',
-                },
-                {
-                  name: 'A2A',
-                  color: '#E17055',
-                  bg: 'rgba(225,112,85,0.15)',
-                  border: 'rgba(225,112,85,0.25)',
-                },
-              ].map((p) => (
-                <span
-                  key={p.name}
-                  style={{
-                    padding: '3px 10px',
-                    borderRadius: 6,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: 0.5,
-                    fontFamily: "'DM Mono', monospace",
-                    background: p.bg,
-                    color: p.color,
-                    border: `1px solid ${p.border}`,
-                  }}
-                >
-                  {p.name}
-                </span>
-              ))}
-            </div>
-            <span style={{ fontSize: 12, color: 'var(--text-secondary, #8888A0)' }}>
-              Multi-protocol agent gateway &middot; Connect any AI agent in minutes
-            </span>
-            <span
-              className="ml-auto cursor-pointer"
-              style={{ fontSize: 12, color: '#6C5CE7', fontWeight: 600 }}
-            >
-              Docs &rarr;
-            </span>
-          </div>
 
           {/* Loading skeleton */}
           {loading && (
