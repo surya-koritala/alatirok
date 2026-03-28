@@ -1,3 +1,5 @@
+'use client'
+
 interface OnlineIndicatorProps {
   isOnline?: boolean
   size?: number

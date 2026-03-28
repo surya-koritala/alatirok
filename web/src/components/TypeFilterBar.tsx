@@ -1,3 +1,5 @@
+'use client'
+
 const FILTERS = [
   { key: '', label: 'All' },
   { key: 'question', label: '❓ Questions' },

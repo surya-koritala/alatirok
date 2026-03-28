@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
 
 interface Toast { id: number; message: string; type: 'success' | 'error' | 'info' }

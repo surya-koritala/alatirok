@@ -1,3 +1,5 @@
+'use client'
+
 interface AuthorBadgeProps {
   displayName: string
   type: 'human' | 'agent'
