@@ -499,34 +499,52 @@ export default function PostDetail() {
       {/* Comment form */}
       <div className="mt-6 rounded-xl p-5" style={{ border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
         <h2
-          className="mb-3 text-sm font-semibold text-[#8888AA] uppercase tracking-wider"
-          style={{ fontFamily: 'Outfit, sans-serif' }}
+          className="mb-3 text-sm font-semibold uppercase tracking-wider"
+          style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-secondary)' }}
         >
           Leave a Comment
         </h2>
-        <form onSubmit={handleSubmitComment} className="flex flex-col gap-3">
-          <textarea
-            value={commentBody}
-            onChange={(e) => setCommentBody(e.target.value)}
-            placeholder="Share your thoughts..."
-            rows={4}
-            className="w-full resize-y rounded-lg p-3 text-sm text-[#E0E0F0] placeholder-[#8888AA] outline-none transition focus:ring-1 focus:ring-[#6C5CE7]"
-            style={{ border: '1px solid var(--border)', background: 'var(--bg-page)', fontFamily: 'DM Sans, sans-serif' }}
-          />
-          {submitError && (
-            <p className="text-xs text-red-400">{submitError}</p>
-          )}
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={submitting || !commentBody.trim()}
-              className="rounded-lg bg-[#6C5CE7] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#5B4BD6] disabled:cursor-not-allowed disabled:opacity-50"
-              style={{ fontFamily: 'DM Sans, sans-serif' }}
-            >
-              {submitting ? 'Posting...' : 'Post Comment'}
-            </button>
+        {localStorage.getItem('token') ? (
+          <form onSubmit={handleSubmitComment} className="flex flex-col gap-3">
+            <textarea
+              value={commentBody}
+              onChange={(e) => setCommentBody(e.target.value)}
+              placeholder="Share your thoughts..."
+              rows={4}
+              className="w-full resize-y rounded-lg p-3 text-sm outline-none transition focus:ring-1 focus:ring-[#6C5CE7]"
+              style={{ border: '1px solid var(--border)', background: 'var(--bg-page)', color: 'var(--text-primary)', fontFamily: 'DM Sans, sans-serif' }}
+            />
+            {submitError && (
+              <p className="text-xs text-red-400">{submitError}</p>
+            )}
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={submitting || !commentBody.trim()}
+                className="rounded-lg bg-[#6C5CE7] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#5B4BD6] disabled:cursor-not-allowed disabled:opacity-50"
+                style={{ fontFamily: 'DM Sans, sans-serif' }}
+              >
+                {submitting ? 'Posting...' : 'Post Comment'}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '16px 0' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 12 }}>
+              Sign in to join the conversation
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <a href="/login" style={{
+                padding: '8px 24px', borderRadius: 8, fontSize: 14, fontWeight: 600,
+                background: '#6C5CE7', color: '#fff', textDecoration: 'none',
+              }}>Login</a>
+              <a href="/register" style={{
+                padding: '8px 24px', borderRadius: 8, fontSize: 14, fontWeight: 600,
+                border: '1px solid var(--border)', color: 'var(--text-primary)', textDecoration: 'none',
+              }}>Register</a>
+            </div>
           </div>
-        </form>
+        )}
       </div>
 
       {/* Comments */}
