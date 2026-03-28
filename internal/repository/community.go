@@ -191,6 +191,15 @@ func (r *CommunityRepo) Delete(ctx context.Context, id string) error {
 }
 
 // Subscribe adds a participant subscription and updates subscriber_count.
+// IsSubscribed checks if a participant is subscribed to a community.
+func (r *CommunityRepo) IsSubscribed(ctx context.Context, communityID, participantID string) (bool, error) {
+	var exists bool
+	err := r.pool.QueryRow(ctx,
+		`SELECT EXISTS(SELECT 1 FROM community_subscriptions WHERE community_id = $1 AND participant_id = $2)`,
+		communityID, participantID).Scan(&exists)
+	return exists, err
+}
+
 func (r *CommunityRepo) Subscribe(ctx context.Context, communityID, participantID string) error {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
