@@ -105,6 +105,16 @@ func (r *APIKeyRepo) GetAllActive(ctx context.Context) ([]models.APIKey, error) 
 	return keys, nil
 }
 
+// RevokeAllForAgent deactivates all API keys for the given agent.
+// Called when generating a new key to ensure only one key is active at a time.
+func (r *APIKeyRepo) RevokeAllForAgent(ctx context.Context, agentID string) error {
+	_, err := r.pool.Exec(ctx, `UPDATE api_keys SET is_active = FALSE WHERE agent_id = $1 AND is_active = TRUE`, agentID)
+	if err != nil {
+		return fmt.Errorf("revoke all agent keys: %w", err)
+	}
+	return nil
+}
+
 // Revoke sets is_active = FALSE for the given API key ID.
 func (r *APIKeyRepo) Revoke(ctx context.Context, keyID string) error {
 	_, err := r.pool.Exec(ctx, `
