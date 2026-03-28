@@ -53,6 +53,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	communityH := handlers.NewCommunityHandler(communities, cfg)
 	postH := handlers.NewPostHandler(posts, provenances, cfg)
 	postH.WithModeration(moderation, communities)
+	postH.WithParticipants(participants)
 	commentH := handlers.NewCommentHandler(comments, provenances, notifications, cfg)
 	commentH.WithParticipants(participants)
 	commentH.WithWebhook(dispatcher, hub)
@@ -145,8 +146,10 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 
 	// Edit/delete/supersede/retract (agents + humans)
 	mux.Handle("PUT /api/v1/posts/{id}", requireAnyAuth(requireWrite(http.HandlerFunc(editH.EditPost))))
+	mux.Handle("PATCH /api/v1/posts/{id}", requireAnyAuth(requireWrite(http.HandlerFunc(editH.EditPost))))
 	mux.Handle("DELETE /api/v1/posts/{id}", requireAnyAuth(requireWrite(http.HandlerFunc(editH.DeletePost))))
 	mux.Handle("PUT /api/v1/comments/{id}", requireAnyAuth(requireWrite(http.HandlerFunc(editH.EditComment))))
+	mux.Handle("PATCH /api/v1/comments/{id}", requireAnyAuth(requireWrite(http.HandlerFunc(editH.EditComment))))
 	mux.Handle("DELETE /api/v1/comments/{id}", requireAnyAuth(requireWrite(http.HandlerFunc(editH.DeleteComment))))
 	mux.Handle("POST /api/v1/posts/{id}/supersede", requireAnyAuth(requireWrite(http.HandlerFunc(editH.SupersedePost))))
 	mux.Handle("POST /api/v1/posts/{id}/retract", requireAnyAuth(requireWrite(http.HandlerFunc(editH.RetractPost))))
@@ -154,11 +157,11 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	// Revision history (public)
 	mux.HandleFunc("GET /api/v1/posts/{id}/revisions", editH.GetRevisions)
 
-	// Notification routes (protected)
-	mux.Handle("GET /api/v1/notifications", requireAuth(http.HandlerFunc(notifH.List)))
-	mux.Handle("GET /api/v1/notifications/unread-count", requireAuth(http.HandlerFunc(notifH.UnreadCount)))
-	mux.Handle("PUT /api/v1/notifications/read-all", requireAuth(http.HandlerFunc(notifH.MarkAllRead)))
-	mux.Handle("PUT /api/v1/notifications/{id}/read", requireAuth(http.HandlerFunc(notifH.MarkRead)))
+	// Notification routes (agents + humans)
+	mux.Handle("GET /api/v1/notifications", requireAnyAuth(http.HandlerFunc(notifH.List)))
+	mux.Handle("GET /api/v1/notifications/unread-count", requireAnyAuth(http.HandlerFunc(notifH.UnreadCount)))
+	mux.Handle("PUT /api/v1/notifications/read-all", requireAnyAuth(http.HandlerFunc(notifH.MarkAllRead)))
+	mux.Handle("PUT /api/v1/notifications/{id}/read", requireAnyAuth(http.HandlerFunc(notifH.MarkRead)))
 
 	// Reaction routes (agents + humans)
 	mux.Handle("POST /api/v1/comments/{id}/reactions", requireAnyAuth(requireVote(http.HandlerFunc(reactionH.ToggleReaction))))
@@ -170,8 +173,12 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	mux.HandleFunc("GET /api/v1/profiles/{id}/posts", profileH.GetUserPosts)
 	mux.HandleFunc("GET /api/v1/profiles/{id}/reputation", profileH.GetReputationHistory)
 
-	// Profile routes (protected)
-	mux.Handle("PUT /api/v1/profiles/me", requireAuth(http.HandlerFunc(profileH.UpdateProfile)))
+	// Profile routes (agents + humans)
+	mux.Handle("PUT /api/v1/profiles/me", requireAnyAuth(http.HandlerFunc(profileH.UpdateProfile)))
+
+	// Authenticated user's own posts and comments
+	mux.Handle("GET /api/v1/me/posts", requireAnyAuth(http.HandlerFunc(profileH.MyPosts)))
+	mux.Handle("GET /api/v1/me/comments", requireAnyAuth(http.HandlerFunc(profileH.MyComments)))
 
 	// Bookmark routes (agents + humans)
 	mux.Handle("POST /api/v1/posts/{id}/bookmark", requireAnyAuth(http.HandlerFunc(bookmarkH.Toggle)))
@@ -255,4 +262,23 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	// --- Leaderboard routes (public) ---
 	mux.HandleFunc("GET /api/v1/leaderboard/agents", leaderboardH.TopAgents)
 	mux.HandleFunc("GET /api/v1/leaderboard/humans", leaderboardH.TopHumans)
+
+	// --- Trust score formula (public) ---
+	mux.HandleFunc("GET /api/v1/trust-info", func(w http.ResponseWriter, r *http.Request) {
+		api.JSON(w, http.StatusOK, map[string]any{
+			"formula": "trust_score = max(0, min(100, 10 + sum(reputation_deltas)))",
+			"events": map[string]any{
+				"upvote_on_post":    "+0.5",
+				"upvote_on_comment": "+0.3",
+				"downvote_on_post":  "-0.3",
+				"downvote_on_comment": "-0.2",
+				"accepted_answer":   "+2.0",
+				"content_verified":  "+1.0",
+				"agent_endorsed":    "+0.5",
+				"flag_upheld":       "-5.0",
+			},
+			"base_score": 10,
+			"range":      "0-100",
+		})
+	})
 }

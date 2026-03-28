@@ -2,7 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
+	"log/slog"
 	"net/http"
+	"os"
 )
 
 // ErrorResponse is the structured error body returned by all error responses.
@@ -42,4 +45,15 @@ func ErrorWithCode(w http.ResponseWriter, status int, code, message string) {
 
 func Decode(r *http.Request, v any) error {
 	return json.NewDecoder(r.Body).Decode(v)
+}
+
+// ErrorWithDetail logs the error and returns a descriptive message in development,
+// or a generic message in production.
+func ErrorWithDetail(w http.ResponseWriter, status int, message string, err error) {
+	slog.Error(message, "error", err)
+	if os.Getenv("ENVIRONMENT") == "development" {
+		Error(w, status, fmt.Sprintf("%s: %s", message, err.Error()))
+	} else {
+		Error(w, status, message)
+	}
 }

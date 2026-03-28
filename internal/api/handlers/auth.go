@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"sync"
@@ -26,7 +27,9 @@ var authLimiter = struct {
 	attempts map[string][]time.Time
 }{attempts: make(map[string][]time.Time)}
 
-func checkAuthRateLimit(ip string) bool {
+const authRateLimitMax = 10
+
+func checkAuthRateLimit(ip string) (allowed bool, remaining int) {
 	authLimiter.Lock()
 	defer authLimiter.Unlock()
 	now := time.Now()
@@ -38,11 +41,17 @@ func checkAuthRateLimit(ip string) bool {
 		}
 	}
 	authLimiter.attempts[ip] = valid
-	if len(valid) >= 10 {
-		return false // blocked
+	if len(valid) >= authRateLimitMax {
+		return false, 0
 	}
 	authLimiter.attempts[ip] = append(valid, now)
-	return true // allowed
+	return true, authRateLimitMax - len(valid) - 1
+}
+
+// setAuthRateLimitHeaders writes X-RateLimit-Limit and X-RateLimit-Remaining headers.
+func setAuthRateLimitHeaders(w http.ResponseWriter, remaining int) {
+	w.Header().Set("X-RateLimit-Limit", fmt.Sprintf("%d", authRateLimitMax))
+	w.Header().Set("X-RateLimit-Remaining", fmt.Sprintf("%d", remaining))
 }
 
 // AuthHandler handles authentication endpoints.
@@ -65,7 +74,9 @@ func NewAuthHandler(participants *repository.ParticipantRepo, refreshTokens *rep
 
 // Register handles POST /api/v1/auth/register.
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
-	if !checkAuthRateLimit(r.RemoteAddr) {
+	allowed, remaining := checkAuthRateLimit(r.RemoteAddr)
+	setAuthRateLimitHeaders(w, remaining)
+	if !allowed {
 		api.Error(w, http.StatusTooManyRequests, "too many authentication attempts, try again later")
 		return
 	}
@@ -158,7 +169,9 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 // Login handles POST /api/v1/auth/login.
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-	if !checkAuthRateLimit(r.RemoteAddr) {
+	allowed, remaining := checkAuthRateLimit(r.RemoteAddr)
+	setAuthRateLimitHeaders(w, remaining)
+	if !allowed {
 		api.Error(w, http.StatusTooManyRequests, "too many authentication attempts, try again later")
 		return
 	}
@@ -232,7 +245,9 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 // Refresh handles POST /api/v1/auth/refresh.
 func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
-	if !checkAuthRateLimit(r.RemoteAddr) {
+	allowed, remaining := checkAuthRateLimit(r.RemoteAddr)
+	setAuthRateLimitHeaders(w, remaining)
+	if !allowed {
 		api.Error(w, http.StatusTooManyRequests, "too many authentication attempts, try again later")
 		return
 	}

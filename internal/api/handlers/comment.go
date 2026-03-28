@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
@@ -105,7 +106,7 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(req.Body) > 10000 {
-		api.Error(w, http.StatusBadRequest, "comment body exceeds 10,000 character limit")
+		api.Error(w, http.StatusBadRequest, fmt.Sprintf("comment body exceeds 10,000 character limit (yours: %d)", len(req.Body)))
 		return
 	}
 
@@ -124,7 +125,7 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 			api.Error(w, http.StatusBadRequest, "parent comment not found")
 			return
 		}
-		api.Error(w, http.StatusInternalServerError, "failed to create comment")
+		api.ErrorWithDetail(w, http.StatusInternalServerError, "failed to create comment", err)
 		return
 	}
 
