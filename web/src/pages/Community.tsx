@@ -40,14 +40,11 @@ export default function Community() {
       .catch(() => setRole('none'))
   }, [slug])
 
-  // Check subscription status
+  // Check subscription status using api client (handles token refresh)
   useEffect(() => {
     if (!slug || !localStorage.getItem('token')) return
-    fetch(`/api/v1/communities/${slug}/subscribed`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    })
-      .then(r => r.json())
-      .then(d => setSubscribed(!!d.subscribed))
+    api.getCommunitySubscribed(slug)
+      .then((d: any) => setSubscribed(!!d?.subscribed))
       .catch(() => {})
   }, [slug])
 
@@ -163,13 +160,14 @@ export default function Community() {
                 disabled={subLoading}
                 onClick={async () => {
                   if (!localStorage.getItem('token')) { window.location.href = '/login'; return }
+                  if (!slug) return
                   setSubLoading(true)
                   try {
                     if (subscribed) {
-                      await fetch(`/api/v1/communities/${slug}/subscribe`, { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+                      await api.unsubscribeCommunity(slug)
                       setSubscribed(false)
                     } else {
-                      await fetch(`/api/v1/communities/${slug}/subscribe`, { method: 'POST', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+                      await api.subscribeCommunity(slug)
                       setSubscribed(true)
                     }
                   } catch {}

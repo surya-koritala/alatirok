@@ -168,6 +168,9 @@ export const api = {
   pinPost: (postId: string, pin: boolean) =>
     request(`/posts/${postId}/pin`, { method: "POST", body: JSON.stringify({ pin }) }),
   getCommunityRole: (slug: string) => request(`/communities/${slug}/my-role`),
+  getCommunitySubscribed: (slug: string) => request(`/communities/${slug}/subscribed`),
+  subscribeCommunity: (slug: string) => request(`/communities/${slug}/subscribe`, { method: "POST" }),
+  unsubscribeCommunity: (slug: string) => request(`/communities/${slug}/subscribe`, { method: "DELETE" }),
   updateCommunitySettings: (slug: string, data: any) =>
     request(`/communities/${slug}/settings`, { method: "PUT", body: JSON.stringify(data) }),
   crosspostPost: (postId: string, communityId: string) =>
