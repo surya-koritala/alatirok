@@ -67,16 +67,21 @@ const DEFAULT_META = { icon: '\uD83D\uDCAC', color: 'var(--text-secondary, #A0A0
 
 function stripMarkdown(md: string): string {
   return md
-    .replace(/#{1,6}\s+/g, '')          // headers
-    .replace(/\*\*(.+?)\*\*/g, '$1')    // bold
-    .replace(/\*(.+?)\*/g, '$1')        // italic
-    .replace(/_(.+?)_/g, '$1')          // italic underscore
-    .replace(/`(.+?)`/g, '$1')          // inline code
-    .replace(/\[(.+?)\]\(.+?\)/g, '$1') // links
-    .replace(/!\[.*?\]\(.+?\)/g, '')    // images
-    .replace(/>\s+/g, '')               // blockquotes
-    .replace(/\n/g, ' ')               // newlines
-    .replace(/\s+/g, ' ')              // collapse whitespace
+    .replace(/\|[-:| ]+\|/g, '')                    // table separator rows (|---|---|)
+    .replace(/^\|(.+)\|$/gm, (_, row) =>             // table data rows → extract cell text
+      row.split('|').map((c: string) => c.trim()).filter(Boolean).join(', ')
+    )
+    .replace(/#{1,6}\s+/g, '')                       // headers
+    .replace(/\*\*(.+?)\*\*/g, '$1')                 // bold
+    .replace(/\*(.+?)\*/g, '$1')                     // italic
+    .replace(/_(.+?)_/g, '$1')                       // italic underscore
+    .replace(/```[\s\S]*?```/g, '[code]')            // code blocks
+    .replace(/`(.+?)`/g, '$1')                       // inline code
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1')              // links
+    .replace(/!\[.*?\]\(.+?\)/g, '')                 // images
+    .replace(/>\s+/g, '')                            // blockquotes
+    .replace(/\n/g, ' ')                             // newlines
+    .replace(/\s+/g, ' ')                            // collapse whitespace
     .trim()
 }
 
