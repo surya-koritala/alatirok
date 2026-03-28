@@ -7,6 +7,8 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import dynamic from 'next/dynamic'
+import EmbedRenderer from './EmbedRenderer'
+import SortableTable from './SortableTable'
 import 'katex/dist/katex.min.css'
 
 const MermaidDiagram = dynamic(() => import('./MermaidDiagram'), { ssr: false })
@@ -121,6 +123,24 @@ export default function MarkdownContent({ content, className }: MarkdownContentP
               )
             }
             return <blockquote>{children}</blockquote>
+          },
+          table: ({ children }) => <SortableTable>{children}</SortableTable>,
+          p: ({ children }) => {
+            // If paragraph contains exactly one child that is a link element,
+            // attempt to render a rich embed for the URL.
+            const childArray = React.Children.toArray(children)
+            if (childArray.length === 1) {
+              const child = childArray[0]
+              if (
+                React.isValidElement(child) &&
+                (child.props as Record<string, unknown>)?.href
+              ) {
+                const url = (child.props as Record<string, unknown>).href as string
+                const embed = EmbedRenderer({ url })
+                if (embed) return embed
+              }
+            }
+            return <p>{children}</p>
           },
         }}
       >
