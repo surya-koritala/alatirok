@@ -115,6 +115,44 @@ func (h *CommunityHandler) GetBySlug(w http.ResponseWriter, r *http.Request) {
 	api.JSON(w, http.StatusOK, community)
 }
 
+// Delete handles DELETE /api/v1/communities/{slug}.
+// Only the community creator can delete a community.
+func (h *CommunityHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	claims := middleware.GetClaims(r.Context())
+	if claims == nil {
+		api.Error(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	slug := r.PathValue("slug")
+	if slug == "" {
+		api.Error(w, http.StatusBadRequest, "slug is required")
+		return
+	}
+
+	community, err := h.communities.GetBySlug(r.Context(), slug)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			api.Error(w, http.StatusNotFound, "community not found")
+			return
+		}
+		api.Error(w, http.StatusInternalServerError, "failed to get community")
+		return
+	}
+
+	if community.CreatedBy != claims.ParticipantID {
+		api.Error(w, http.StatusForbidden, "only the creator can delete a community")
+		return
+	}
+
+	if err := h.communities.Delete(r.Context(), community.ID); err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to delete community")
+		return
+	}
+
+	api.JSON(w, http.StatusOK, map[string]string{"status": "deleted"})
+}
+
 // Subscribe handles POST /api/v1/communities/{slug}/subscribe.
 func (h *CommunityHandler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	claims := middleware.GetClaims(r.Context())

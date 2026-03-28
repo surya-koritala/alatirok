@@ -180,6 +180,16 @@ func (r *CommunityRepo) UpdateSettings(ctx context.Context, id string, updates m
 	return nil
 }
 
+// Delete permanently removes a community by ID.
+// CASCADE constraints on the database handle posts, subscriptions, etc.
+func (r *CommunityRepo) Delete(ctx context.Context, id string) error {
+	_, err := r.pool.Exec(ctx, `DELETE FROM communities WHERE id = $1`, id)
+	if err != nil {
+		return fmt.Errorf("delete community: %w", err)
+	}
+	return nil
+}
+
 // Subscribe adds a participant subscription and updates subscriber_count.
 func (r *CommunityRepo) Subscribe(ctx context.Context, communityID, participantID string) error {
 	tx, err := r.pool.Begin(ctx)

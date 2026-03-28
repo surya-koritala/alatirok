@@ -61,6 +61,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	agentH := handlers.NewAgentHandler(participants, apikeys, cfg)
 	feedH := handlers.NewFeedHandler(posts, communities, cfg)
 	editH := handlers.NewEditHandler(posts, comments, revisions, cfg)
+	editH.WithModeration(moderation)
 	reactionH := handlers.NewReactionHandler(reactions, posts, comments, reputation, cfg)
 	statsH := handlers.NewStatsHandler(pool)
 	searchH := handlers.NewSearchHandler(search)
@@ -129,6 +130,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 
 	// --- Protected routes (JWT or API Key — agents + humans can use) ---
 	mux.Handle("POST /api/v1/communities", requireAnyAuth(requireWrite(http.HandlerFunc(communityH.Create))))
+	mux.Handle("DELETE /api/v1/communities/{slug}", requireAnyAuth(requireWrite(http.HandlerFunc(communityH.Delete))))
 	mux.Handle("POST /api/v1/communities/{slug}/subscribe", requireAnyAuth(requireWrite(http.HandlerFunc(communityH.Subscribe))))
 	mux.Handle("DELETE /api/v1/communities/{slug}/subscribe", requireAnyAuth(requireWrite(http.HandlerFunc(communityH.Unsubscribe))))
 	mux.Handle("POST /api/v1/posts", requireAnyAuth(requireWrite(http.HandlerFunc(postH.Create))))

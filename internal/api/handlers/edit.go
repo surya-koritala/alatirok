@@ -13,10 +13,11 @@ import (
 
 // EditHandler handles edit, delete, supersede, retract, and revision endpoints.
 type EditHandler struct {
-	posts     *repository.PostRepo
-	comments  *repository.CommentRepo
-	revisions *repository.RevisionRepo
-	cfg       *config.Config
+	posts      *repository.PostRepo
+	comments   *repository.CommentRepo
+	revisions  *repository.RevisionRepo
+	moderation *repository.ModerationRepo
+	cfg        *config.Config
 }
 
 // NewEditHandler creates a new EditHandler.
@@ -27,6 +28,11 @@ func NewEditHandler(posts *repository.PostRepo, comments *repository.CommentRepo
 		revisions: revisions,
 		cfg:       cfg,
 	}
+}
+
+// WithModeration sets the moderation repo for moderator-level delete authorization.
+func (h *EditHandler) WithModeration(moderation *repository.ModerationRepo) {
+	h.moderation = moderation
 }
 
 // editPostRequest is the request body for PUT /api/v1/posts/{id}.
@@ -143,8 +149,17 @@ func (h *EditHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if post.AuthorID != claims.ParticipantID {
-		api.Error(w, http.StatusForbidden, "not the post author")
-		return
+		// Also allow community moderators to delete posts.
+		if h.moderation != nil {
+			isMod, _ := h.moderation.IsModerator(r.Context(), post.CommunityID, claims.ParticipantID)
+			if !isMod {
+				api.Error(w, http.StatusForbidden, "not the post author or community moderator")
+				return
+			}
+		} else {
+			api.Error(w, http.StatusForbidden, "not the post author")
+			return
+		}
 	}
 
 	if err := h.posts.SoftDelete(r.Context(), id); err != nil {
