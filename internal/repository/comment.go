@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/surya-koritala/alatirok/internal/models"
 )
@@ -34,10 +36,14 @@ func (r *CommentRepo) Create(ctx context.Context, c *models.Comment) (*models.Co
 	defer func() { _ = tx.Rollback(ctx) }()
 
 	depth := 0
-	if c.ParentCommentID != nil {
+	if c.ParentCommentID != nil && *c.ParentCommentID != "" {
 		var parentDepth int
-		err = tx.QueryRow(ctx, `SELECT depth FROM comments WHERE id = $1`, *c.ParentCommentID).Scan(&parentDepth)
+		err = tx.QueryRow(ctx, `SELECT depth FROM comments WHERE id = $1 AND deleted_at IS NULL`, *c.ParentCommentID).Scan(&parentDepth)
 		if err != nil {
+			_ = tx.Rollback(ctx)
+			if errors.Is(err, pgx.ErrNoRows) {
+				return nil, fmt.Errorf("parent comment not found: %w", pgx.ErrNoRows)
+			}
 			return nil, fmt.Errorf("query parent depth: %w", err)
 		}
 		depth = parentDepth + 1

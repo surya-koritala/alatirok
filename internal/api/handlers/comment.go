@@ -3,9 +3,12 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"regexp"
+	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/surya-koritala/alatirok/internal/api"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
 	"github.com/surya-koritala/alatirok/internal/config"
@@ -117,6 +120,10 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.comments.Create(r.Context(), comment)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) || strings.Contains(err.Error(), "parent comment not found") {
+			api.Error(w, http.StatusBadRequest, "parent comment not found")
+			return
+		}
 		api.Error(w, http.StatusInternalServerError, "failed to create comment")
 		return
 	}

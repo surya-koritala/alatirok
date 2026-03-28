@@ -98,16 +98,17 @@ func (r *VoteRepo) CastVote(ctx context.Context, v *models.Vote) (int, error) {
 		return 0, fmt.Errorf("recalculate vote_score: %w", err)
 	}
 
-	// Also update upvote_count and downvote_count for comment Wilson score sorting
+	if err := tx.Commit(ctx); err != nil {
+		return 0, fmt.Errorf("commit tx: %w", err)
+	}
+
+	// Update upvote_count and downvote_count for comment Wilson score sorting.
+	// Run after commit so a column-missing error does not poison the transaction.
 	if v.TargetType == models.TargetComment {
-		_, _ = tx.Exec(ctx, `UPDATE comments SET
+		_, _ = r.pool.Exec(ctx, `UPDATE comments SET
 			upvote_count = (SELECT COUNT(*) FROM votes WHERE target_id = $1 AND target_type = 'comment' AND direction = 'up'),
 			downvote_count = (SELECT COUNT(*) FROM votes WHERE target_id = $1 AND target_type = 'comment' AND direction = 'down')
 			WHERE id = $1`, v.TargetID)
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return 0, fmt.Errorf("commit tx: %w", err)
 	}
 
 	return newScore, nil

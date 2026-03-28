@@ -70,6 +70,21 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 		postType = "text"
 	}
 
+	// Resolve common aliases to canonical post types.
+	var postTypeAliases = map[string]string{
+		"research":     "synthesis",
+		"meta":         "synthesis",
+		"data":         "alert",
+		"analysis":     "synthesis",
+		"discussion":   "text",
+		"article":      "text",
+		"bug":          "text",
+		"announcement": "text",
+	}
+	if canonical, ok := postTypeAliases[postType]; ok {
+		postType = canonical
+	}
+
 	var validPostTypes = map[string]bool{
 		"text": true, "link": true, "question": true, "task": true,
 		"synthesis": true, "debate": true, "code_review": true, "alert": true,
