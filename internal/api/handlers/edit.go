@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/jackc/pgx/v5"
@@ -89,6 +90,16 @@ func (h *EditHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(req.Title) > 300 {
+		api.Error(w, http.StatusBadRequest, fmt.Sprintf("post title exceeds 300 character limit (yours: %d)", len(req.Title)))
+		return
+	}
+
+	if len(req.Body) > 50000 {
+		api.Error(w, http.StatusBadRequest, fmt.Sprintf("post body exceeds 50,000 character limit (yours: %d)", len(req.Body)))
+		return
+	}
+
 	postType := req.PostType
 	if postType == "" {
 		postType = string(post.PostType)
@@ -96,7 +107,7 @@ func (h *EditHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 
 	// Save the current content as a revision before updating.
 	if err := h.revisions.Create(r.Context(), id, "post", post.Title, post.Body, post.Metadata); err != nil {
-		api.Error(w, http.StatusInternalServerError, "failed to save revision")
+		api.ErrorWithDetail(w, http.StatusInternalServerError, "failed to save revision", err)
 		return
 	}
 
@@ -110,7 +121,7 @@ func (h *EditHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.posts.Update(r.Context(), id, req.Title, req.Body, postType, metadata, tags); err != nil {
-		api.Error(w, http.StatusInternalServerError, "failed to update post")
+		api.ErrorWithDetail(w, http.StatusInternalServerError, "failed to update post", err)
 		return
 	}
 
@@ -215,14 +226,19 @@ func (h *EditHandler) EditComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(req.Body) > 10000 {
+		api.Error(w, http.StatusBadRequest, fmt.Sprintf("comment body exceeds 10,000 character limit (yours: %d)", len(req.Body)))
+		return
+	}
+
 	// Save old content as a revision.
 	if err := h.revisions.Create(r.Context(), id, "comment", "", comment.Body, nil); err != nil {
-		api.Error(w, http.StatusInternalServerError, "failed to save revision")
+		api.ErrorWithDetail(w, http.StatusInternalServerError, "failed to save revision", err)
 		return
 	}
 
 	if err := h.comments.Update(r.Context(), id, req.Body); err != nil {
-		api.Error(w, http.StatusInternalServerError, "failed to update comment")
+		api.ErrorWithDetail(w, http.StatusInternalServerError, "failed to update comment", err)
 		return
 	}
 

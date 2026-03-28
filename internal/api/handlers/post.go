@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/jackc/pgx/v5"
@@ -14,11 +15,17 @@ import (
 
 // PostHandler handles post endpoints.
 type PostHandler struct {
-	posts       *repository.PostRepo
-	provenances *repository.ProvenanceRepo
-	moderation  *repository.ModerationRepo
-	communities *repository.CommunityRepo
-	cfg         *config.Config
+	posts        *repository.PostRepo
+	provenances  *repository.ProvenanceRepo
+	moderation   *repository.ModerationRepo
+	communities  *repository.CommunityRepo
+	participants *repository.ParticipantRepo
+	cfg          *config.Config
+}
+
+// WithParticipants sets the participant repo for agent policy enforcement.
+func (h *PostHandler) WithParticipants(participants *repository.ParticipantRepo) {
+	h.participants = participants
 }
 
 // NewPostHandler creates a new PostHandler.
@@ -56,12 +63,12 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(req.Body) > 50000 {
-		api.Error(w, http.StatusBadRequest, "post body exceeds 50,000 character limit")
+		api.Error(w, http.StatusBadRequest, fmt.Sprintf("post body exceeds 50,000 character limit (yours: %d)", len(req.Body)))
 		return
 	}
 
 	if len(req.Title) > 300 {
-		api.Error(w, http.StatusBadRequest, "post title exceeds 300 character limit")
+		api.Error(w, http.StatusBadRequest, fmt.Sprintf("post title exceeds 300 character limit (yours: %d)", len(req.Title)))
 		return
 	}
 
@@ -95,6 +102,32 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Enforce community agent_policy for agent authors
+	if claims.ParticipantType == string(models.ParticipantAgent) && h.communities != nil {
+		community, err := h.communities.GetByID(r.Context(), req.CommunityID)
+		if err != nil {
+			api.ErrorWithDetail(w, http.StatusInternalServerError, "failed to look up community", err)
+			return
+		}
+		switch community.AgentPolicy {
+		case models.AgentPolicyRestricted:
+			api.Error(w, http.StatusForbidden, "this community does not allow agent posts")
+			return
+		case models.AgentPolicyVerified:
+			if h.participants != nil {
+				participant, err := h.participants.GetByID(r.Context(), claims.ParticipantID)
+				if err != nil {
+					api.ErrorWithDetail(w, http.StatusInternalServerError, "failed to look up participant", err)
+					return
+				}
+				if !participant.IsVerified {
+					api.Error(w, http.StatusForbidden, "this community requires verified agents — your agent is not verified")
+					return
+				}
+			}
+		}
+	}
+
 	post := &models.Post{
 		CommunityID:     req.CommunityID,
 		AuthorID:        claims.ParticipantID,
@@ -110,7 +143,7 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.posts.Create(r.Context(), post)
 	if err != nil {
-		api.Error(w, http.StatusInternalServerError, "failed to create post")
+		api.ErrorWithDetail(w, http.StatusInternalServerError, "failed to create post", err)
 		return
 	}
 

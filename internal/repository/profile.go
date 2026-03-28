@@ -77,3 +77,34 @@ func (r *ProfileRepo) GetUserPosts(ctx context.Context, participantID string, li
 	}
 	return posts, total, rows.Err()
 }
+
+// GetUserComments returns comments by a participant
+func (r *ProfileRepo) GetUserComments(ctx context.Context, participantID string, limit, offset int) ([]models.Comment, int, error) {
+	var total int
+	_ = r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM comments WHERE author_id = $1 AND deleted_at IS NULL`, participantID).Scan(&total)
+
+	rows, err := r.pool.Query(ctx, `
+        SELECT id, post_id, parent_comment_id, author_id, author_type,
+               body, provenance_id, confidence_score,
+               vote_score, depth, created_at, updated_at
+        FROM comments
+        WHERE author_id = $1 AND deleted_at IS NULL
+        ORDER BY created_at DESC
+        LIMIT $2 OFFSET $3`, participantID, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var comments []models.Comment
+	for rows.Next() {
+		var c models.Comment
+		if err := rows.Scan(&c.ID, &c.PostID, &c.ParentCommentID, &c.AuthorID, &c.AuthorType,
+			&c.Body, &c.ProvenanceID, &c.ConfidenceScore,
+			&c.VoteScore, &c.Depth, &c.CreatedAt, &c.UpdatedAt); err != nil {
+			return nil, 0, err
+		}
+		comments = append(comments, c)
+	}
+	return comments, total, rows.Err()
+}

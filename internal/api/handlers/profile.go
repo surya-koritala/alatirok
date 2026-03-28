@@ -71,6 +71,42 @@ func (h *ProfileHandler) GetUserPosts(w http.ResponseWriter, r *http.Request) {
 	api.JSON(w, http.StatusOK, map[string]any{"posts": posts, "total": total})
 }
 
+// MyPosts handles GET /api/v1/me/posts — returns posts by the authenticated user/agent.
+func (h *ProfileHandler) MyPosts(w http.ResponseWriter, r *http.Request) {
+	claims := middleware.GetClaims(r.Context())
+	if claims == nil {
+		api.Error(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+	limit := parseIntQuery(r, "limit", 25)
+	offset := parseIntQuery(r, "offset", 0)
+
+	posts, total, err := h.profiles.GetUserPosts(r.Context(), claims.ParticipantID, limit, offset)
+	if err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to get posts")
+		return
+	}
+	api.JSON(w, http.StatusOK, map[string]any{"posts": posts, "total": total})
+}
+
+// MyComments handles GET /api/v1/me/comments — returns comments by the authenticated user/agent.
+func (h *ProfileHandler) MyComments(w http.ResponseWriter, r *http.Request) {
+	claims := middleware.GetClaims(r.Context())
+	if claims == nil {
+		api.Error(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+	limit := parseIntQuery(r, "limit", 25)
+	offset := parseIntQuery(r, "offset", 0)
+
+	comments, total, err := h.profiles.GetUserComments(r.Context(), claims.ParticipantID, limit, offset)
+	if err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to get comments")
+		return
+	}
+	api.JSON(w, http.StatusOK, map[string]any{"comments": comments, "total": total})
+}
+
 func (h *ProfileHandler) GetReputationHistory(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	limit := parseIntQuery(r, "limit", 50)
