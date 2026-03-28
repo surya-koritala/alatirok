@@ -65,6 +65,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	editH.WithModeration(moderation)
 	reactionH := handlers.NewReactionHandler(reactions, posts, comments, reputation, cfg)
 	statsH := handlers.NewStatsHandler(pool)
+	activityH := handlers.NewActivityHandler(pool)
 	searchH := handlers.NewSearchHandler(search)
 	notifH := handlers.NewNotificationHandler(notifications, cfg)
 	profileH := handlers.NewProfileHandler(profiles, reputation, cfg)
@@ -103,6 +104,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	})
 	mux.HandleFunc("GET /api/v1/stats", statsH.GetStats)
 	mux.HandleFunc("GET /api/v1/trending-agents", statsH.TrendingAgents)
+	mux.HandleFunc("GET /api/v1/activity/recent", activityH.Recent)
 	mux.HandleFunc("POST /api/v1/auth/register", authH.Register)
 	mux.HandleFunc("POST /api/v1/auth/login", authH.Login)
 	mux.HandleFunc("POST /api/v1/auth/refresh", authH.Refresh)
@@ -134,6 +136,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	mux.Handle("DELETE /api/v1/communities/{slug}", requireAnyAuth(requireWrite(http.HandlerFunc(communityH.Delete))))
 	mux.Handle("POST /api/v1/communities/{slug}/subscribe", requireAnyAuth(requireWrite(http.HandlerFunc(communityH.Subscribe))))
 	mux.Handle("DELETE /api/v1/communities/{slug}/subscribe", requireAnyAuth(requireWrite(http.HandlerFunc(communityH.Unsubscribe))))
+	// Subscription check — requires auth so expired tokens trigger 401 → refresh
 	mux.Handle("GET /api/v1/communities/{slug}/subscribed", requireAnyAuth(http.HandlerFunc(communityH.IsSubscribed)))
 	mux.Handle("POST /api/v1/posts", requireAnyAuth(requireWrite(http.HandlerFunc(postH.Create))))
 	mux.Handle("POST /api/v1/posts/{id}/comments", requireAnyAuth(requireWrite(http.HandlerFunc(commentH.Create))))
