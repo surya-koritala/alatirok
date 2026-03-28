@@ -56,6 +56,11 @@ export default function Submit() {
   const [linkPreview, setLinkPreview] = useState<any>(null)
   const [fetchingPreview, setFetchingPreview] = useState(false)
 
+  // Poll state
+  const [showPoll, setShowPoll] = useState(false)
+  const [pollOptions, setPollOptions] = useState(['', ''])
+  const [pollDeadline, setPollDeadline] = useState('')
+
   const fetchPreview = async (rawUrl: string) => {
     if (!rawUrl.trim() || !/^https?:\/\/.+/.test(rawUrl.trim())) return
     setFetchingPreview(true)
@@ -132,6 +137,23 @@ export default function Submit() {
 
     try {
       const newPost = await api.createPost(payload) as any
+
+      // Create poll if enabled
+      if (showPoll) {
+        const validOptions = pollOptions.map(o => o.trim()).filter(Boolean)
+        if (validOptions.length >= 2) {
+          const pollData: { options: string[]; deadline?: string } = { options: validOptions }
+          if (pollDeadline) {
+            pollData.deadline = new Date(pollDeadline).toISOString()
+          }
+          try {
+            await api.createPoll(newPost.id, pollData)
+          } catch {
+            // Poll creation failed but post was created -- navigate anyway
+          }
+        }
+      }
+
       router.push(`/post/${newPost.id}`)
     } catch (err: any) {
       setError(err.message ?? 'Failed to create post')
@@ -409,6 +431,85 @@ export default function Submit() {
             </div>
           </>
         )}
+
+        {/* Poll Builder */}
+        <div style={sectionStyle}>
+          <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={showPoll}
+              onChange={(e) => {
+                setShowPoll(e.target.checked)
+                if (!e.target.checked) {
+                  setPollOptions(['', ''])
+                  setPollDeadline('')
+                }
+              }}
+              style={{ accentColor: '#6C5CE7' }}
+            />
+            Add Poll
+          </label>
+          {showPoll && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4, padding: 16, border: '1px solid var(--border, #2A2A3E)', borderRadius: 10, background: 'rgba(108,92,231,0.03)' }}>
+              {pollOptions.map((opt, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    type="text"
+                    value={opt}
+                    onChange={(e) => {
+                      const updated = [...pollOptions]
+                      updated[idx] = e.target.value
+                      setPollOptions(updated)
+                    }}
+                    placeholder={`Option ${idx + 1}`}
+                    style={{ ...inputStyle, flex: 1 }}
+                    onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
+                    onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
+                  />
+                  {pollOptions.length > 2 && (
+                    <button
+                      type="button"
+                      onClick={() => setPollOptions(pollOptions.filter((_, i) => i !== idx))}
+                      style={{
+                        width: 28, height: 28, borderRadius: 6,
+                        border: '1px solid var(--border, #2A2A3E)', background: 'transparent',
+                        color: '#FF7675', fontSize: 16, cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}
+                    >
+                      -
+                    </button>
+                  )}
+                </div>
+              ))}
+              {pollOptions.length < 10 && (
+                <button
+                  type="button"
+                  onClick={() => setPollOptions([...pollOptions, ''])}
+                  style={{
+                    padding: '6px 14px', borderRadius: 6,
+                    border: '1px dashed var(--border, #2A2A3E)', background: 'transparent',
+                    color: '#A29BFE', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  + Add Option
+                </button>
+              )}
+              <div style={{ marginTop: 4 }}>
+                <label style={{ ...labelStyle, marginBottom: 4, display: 'block' }}>Deadline (optional)</label>
+                <input
+                  type="datetime-local"
+                  value={pollDeadline}
+                  onChange={(e) => setPollDeadline(e.target.value)}
+                  style={{ ...inputStyle, colorScheme: 'dark' }}
+                  onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
+                  onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
+                />
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Tags */}
         <div style={sectionStyle}>

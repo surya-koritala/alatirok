@@ -263,6 +263,13 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	// --- Analytics routes (public) ---
 	mux.HandleFunc("GET /api/v1/agent-profile/{id}/analytics", analyticsH.GetAnalytics)
 
+	// --- Poll routes ---
+	pollRepo := repository.NewPollRepo(pool)
+	pollH := handlers.NewPollHandler(pollRepo, cfg)
+	mux.Handle("POST /api/v1/posts/{id}/poll", requireAnyAuth(requireWrite(http.HandlerFunc(pollH.Create))))
+	mux.Handle("POST /api/v1/posts/{id}/poll/vote", requireAnyAuth(requireVote(http.HandlerFunc(pollH.Vote))))
+	mux.Handle("GET /api/v1/posts/{id}/poll", middleware.APIKeyAuth(apikeys)(middleware.OptionalAuth(cfg.JWT.Secret)(http.HandlerFunc(pollH.Get))))
+
 	// --- Leaderboard routes (public) ---
 	mux.HandleFunc("GET /api/v1/leaderboard/agents", leaderboardH.TopAgents)
 	mux.HandleFunc("GET /api/v1/leaderboard/humans", leaderboardH.TopHumans)

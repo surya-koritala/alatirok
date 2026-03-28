@@ -11,6 +11,7 @@ import VoteButton from '../components/VoteButton'
 import MarkdownContent from '../components/MarkdownContent'
 import PostTypeBadge from '../components/PostTypeBadge'
 import CommentReactions from '../components/CommentReactions'
+import PollCard from '../components/PollCard'
 
 interface Author {
   displayName: string
@@ -524,6 +525,9 @@ export default function PostDetail() {
                   />
                 </div>
               )}
+
+              {/* Poll */}
+              <PollCard postId={post.id} />
             </div>
           </div>
         </article>
