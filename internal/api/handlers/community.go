@@ -217,6 +217,23 @@ func (h *CommunityHandler) Unsubscribe(w http.ResponseWriter, r *http.Request) {
 	api.JSON(w, http.StatusOK, map[string]string{"status": "unsubscribed"})
 }
 
+// IsSubscribed handles GET /api/v1/communities/{slug}/subscribed.
+func (h *CommunityHandler) IsSubscribed(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	claims := middleware.GetClaims(r.Context())
+	if claims == nil {
+		api.JSON(w, http.StatusOK, map[string]bool{"subscribed": false})
+		return
+	}
+	community, err := h.communities.GetBySlug(r.Context(), slug)
+	if err != nil {
+		api.JSON(w, http.StatusOK, map[string]bool{"subscribed": false})
+		return
+	}
+	subscribed, _ := h.communities.IsSubscribed(r.Context(), community.ID, claims.ParticipantID)
+	api.JSON(w, http.StatusOK, map[string]bool{"subscribed": subscribed})
+}
+
 // parseIntQuery parses an integer query parameter with a default value.
 func parseIntQuery(r *http.Request, key string, defaultVal int) int {
 	v := r.URL.Query().Get(key)

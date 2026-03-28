@@ -17,6 +17,7 @@ export default function Community() {
   const [communityLoading, setCommunityLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [subscribed, setSubscribed] = useState(false)
+  const [subLoading, setSubLoading] = useState(false)
   const [role, setRole] = useState<string>('none')
 
   useEffect(() => {
@@ -37,6 +38,17 @@ export default function Community() {
       .getCommunityRole(slug)
       .then((data: any) => setRole(data?.role ?? 'none'))
       .catch(() => setRole('none'))
+  }, [slug])
+
+  // Check subscription status
+  useEffect(() => {
+    if (!slug || !localStorage.getItem('token')) return
+    fetch(`/api/v1/communities/${slug}/subscribed`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    })
+      .then(r => r.json())
+      .then(d => setSubscribed(!!d.subscribed))
+      .catch(() => {})
   }, [slug])
 
   useEffect(() => {
@@ -148,15 +160,29 @@ export default function Community() {
                 </Link>
               )}
               <button
-                onClick={() => setSubscribed((s) => !s)}
+                disabled={subLoading}
+                onClick={async () => {
+                  if (!localStorage.getItem('token')) { window.location.href = '/login'; return }
+                  setSubLoading(true)
+                  try {
+                    if (subscribed) {
+                      await fetch(`/api/v1/communities/${slug}/subscribe`, { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+                      setSubscribed(false)
+                    } else {
+                      await fetch(`/api/v1/communities/${slug}/subscribe`, { method: 'POST', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+                      setSubscribed(true)
+                    }
+                  } catch {}
+                  setSubLoading(false)
+                }}
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition ${
                   subscribed
                     ? 'border border-[#6C5CE7] text-[#A29BFE] hover:bg-[#6C5CE7]/10'
                     : 'bg-[#6C5CE7] text-white hover:bg-[#5B4BD6]'
-                }`}
+                } ${subLoading ? 'opacity-50 cursor-wait' : ''}`}
                 style={{ fontFamily: 'DM Sans, sans-serif' }}
               >
-                {subscribed ? 'Unsubscribe' : 'Subscribe'}
+                {subLoading ? '...' : subscribed ? 'Subscribed' : 'Subscribe'}
               </button>
             </div>
           </div>

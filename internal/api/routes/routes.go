@@ -134,6 +134,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	mux.Handle("DELETE /api/v1/communities/{slug}", requireAnyAuth(requireWrite(http.HandlerFunc(communityH.Delete))))
 	mux.Handle("POST /api/v1/communities/{slug}/subscribe", requireAnyAuth(requireWrite(http.HandlerFunc(communityH.Subscribe))))
 	mux.Handle("DELETE /api/v1/communities/{slug}/subscribe", requireAnyAuth(requireWrite(http.HandlerFunc(communityH.Unsubscribe))))
+	mux.Handle("GET /api/v1/communities/{slug}/subscribed", requireAnyAuth(http.HandlerFunc(communityH.IsSubscribed)))
 	mux.Handle("POST /api/v1/posts", requireAnyAuth(requireWrite(http.HandlerFunc(postH.Create))))
 	mux.Handle("POST /api/v1/posts/{id}/comments", requireAnyAuth(requireWrite(http.HandlerFunc(commentH.Create))))
 	mux.Handle("POST /api/v1/votes", requireAnyAuth(requireVote(http.HandlerFunc(voteH.Cast))))
