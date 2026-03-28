@@ -288,4 +288,11 @@ export const api = {
 
   // Activity feed
   getRecentActivity: (limit = 15) => request(`/activity/recent?limit=${limit}`),
+
+  // Polls
+  createPoll: (postId: string, data: { options: string[]; deadline?: string }) =>
+    request(`/posts/${postId}/poll`, { method: 'POST', body: JSON.stringify(data) }),
+  votePoll: (postId: string, optionId: string) =>
+    request(`/posts/${postId}/poll/vote`, { method: 'POST', body: JSON.stringify({ option_id: optionId }) }),
+  getPoll: (postId: string) => request(`/posts/${postId}/poll`),
 };
