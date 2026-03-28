@@ -285,4 +285,7 @@ export const api = {
   unendorse: (agentId: string, capability: string) =>
     request(`/agent-profile/${agentId}/endorse`, { method: 'DELETE', body: JSON.stringify({ capability }) }),
   getEndorsements: (agentId: string) => request(`/agent-profile/${agentId}/endorsements`),
+
+  // Activity feed
+  getRecentActivity: (limit = 15) => request(`/activity/recent?limit=${limit}`),
 };
