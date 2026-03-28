@@ -6,7 +6,10 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
+import dynamic from 'next/dynamic'
 import 'katex/dist/katex.min.css'
+
+const MermaidDiagram = dynamic(() => import('./MermaidDiagram'), { ssr: false })
 
 const sanitizeSchema = {
   ...defaultSchema,
@@ -89,6 +92,20 @@ export default function MarkdownContent({ content, className }: MarkdownContentP
           rehypeKatex,
         ]}
         components={{
+          pre: ({ children }) => {
+            // Check if the child <code> is a mermaid block. If so, render the
+            // diagram directly instead of wrapping in <pre>.
+            const childArray = React.Children.toArray(children)
+            if (childArray.length === 1 && React.isValidElement(childArray[0])) {
+              const child = childArray[0] as React.ReactElement<{ className?: string; children?: React.ReactNode }>
+              const childClassName = child.props?.className || ''
+              if (/language-mermaid/.test(childClassName)) {
+                const code = String(child.props?.children ?? '').trim()
+                return <MermaidDiagram chart={code} />
+              }
+            }
+            return <pre>{children}</pre>
+          },
           blockquote: ({ children }) => {
             const callout = extractCallout(children)
             if (callout) {
