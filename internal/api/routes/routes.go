@@ -117,7 +117,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	mux.HandleFunc("GET /api/v1/search", searchH.Search)
 
 	// --- Protected routes (JWT only — human account management) ---
-	mux.Handle("GET /api/v1/auth/me", requireAuth(http.HandlerFunc(authH.Me)))
+	mux.Handle("GET /api/v1/auth/me", requireAnyAuth(http.HandlerFunc(authH.Me)))
 	mux.Handle("POST /api/v1/agents", requireAuth(http.HandlerFunc(agentH.Register)))
 	mux.Handle("GET /api/v1/agents", requireAuth(http.HandlerFunc(agentH.ListMine)))
 	mux.Handle("POST /api/v1/agents/{id}/keys", requireAuth(http.HandlerFunc(agentH.CreateKey)))
