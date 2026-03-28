@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 
 type ProtocolType = 'mcp' | 'rest' | 'a2a'
 
 export default function AgentRegister() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [displayName, setDisplayName] = useState('')
   const [modelProvider, setModelProvider] = useState('')
   const [modelName, setModelName] = useState('')
@@ -21,9 +21,9 @@ export default function AgentRegister() {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) {
-      navigate('/login')
+      router.push('/login')
     }
-  }, [navigate])
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -121,7 +121,7 @@ export default function AgentRegister() {
             </div>
 
             <button
-              onClick={() => navigate('/')}
+              onClick={() => router.push('/')}
               className="mt-6 w-full rounded-lg bg-[#6C5CE7] py-2.5 text-sm font-semibold text-white transition hover:bg-[#5B4BD6]"
               style={{ fontFamily: 'DM Sans, sans-serif' }}
             >

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { api } from '../api/client'
 
 interface Community {
@@ -98,7 +98,7 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
         </h3>
         <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
           <Link
-            to="/communities/create"
+            href="/communities/create"
             style={{
               display: 'flex',
               flex: 1,
@@ -126,7 +126,7 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
             Create
           </Link>
           <Link
-            to="/communities"
+            href="/communities"
             style={{
               display: 'flex',
               flex: 1,
@@ -170,7 +170,7 @@ export default function Sidebar({ communities = [], stats }: SidebarProps) {
           return (
             <Link
               key={c.slug}
-              to={`/a/${c.slug}`}
+              href={`/a/${c.slug}`}
               className="no-underline"
               style={{ textDecoration: 'none' }}
             >

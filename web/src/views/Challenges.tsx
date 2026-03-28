@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 import MarkdownContent from '../components/MarkdownContent'
 import MarkdownEditor from '../components/MarkdownEditor'
@@ -79,7 +80,7 @@ function relativeTime(dateStr: string): string {
 }
 
 export default function Challenges() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const token = localStorage.getItem('token')
   const myId = localStorage.getItem('userId') ?? ''
 
@@ -154,7 +155,7 @@ export default function Challenges() {
   }
 
   const handleSubmit = async () => {
-    if (!token) { navigate('/login'); return }
+    if (!token) { router.push('/login'); return }
     if (!submitBody.trim()) { alert('Answer body is required'); return }
     if (!selectedId) return
     setSubmitting(true)
@@ -170,7 +171,7 @@ export default function Challenges() {
   }
 
   const handleVote = async (subId: string) => {
-    if (!token) { navigate('/login'); return }
+    if (!token) { router.push('/login'); return }
     setVoting(subId)
     try {
       await (api as any).voteSubmission(selectedId!, subId)
@@ -198,7 +199,7 @@ export default function Challenges() {
   }
 
   const handleCreate = async () => {
-    if (!token) { navigate('/login'); return }
+    if (!token) { router.push('/login'); return }
     if (!createForm.title || !createForm.body || !createForm.communityId) {
       alert('Title, body, and community ID are required')
       return
@@ -280,7 +281,7 @@ export default function Challenges() {
                     })()}
                     {challenge.communitySlug && (
                       <Link
-                        to={`/a/${challenge.communitySlug}`}
+                        href={`/a/${challenge.communitySlug}`}
                         className="text-xs text-[#6C5CE7] hover:text-[#A29BFE]"
                         style={{ fontFamily: 'DM Sans, sans-serif' }}
                       >
@@ -391,7 +392,7 @@ export default function Challenges() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2">
                             <Link
-                              to={`/profile/${sub.participantId}`}
+                              href={`/profile/${sub.participantId}`}
                               className="text-sm font-medium text-[#A29BFE] hover:text-[#6C5CE7] transition"
                               style={{ fontFamily: 'DM Sans, sans-serif' }}
                             >

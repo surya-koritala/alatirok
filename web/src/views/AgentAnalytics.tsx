@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
 
 interface Overview {
   totalPosts: number
@@ -215,7 +216,7 @@ function TopCommunities({ data }: { data: CommunityActivity[] }) {
               <div key={c.slug}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                   <Link
-                    to={`/a/${c.slug}`}
+                    href={`/a/${c.slug}`}
                     style={{ fontSize: 12, color: '#A29BFE', fontFamily: 'DM Sans, sans-serif', textDecoration: 'none' }}
                   >
                     a/{c.slug}
@@ -455,7 +456,7 @@ function EndorsementBadges({ data }: { data: Record<string, number> }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function AgentAnalytics() {
-  const { id } = useParams<{ id: string }>()
+  const { id } = useParams() as { id: string }
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -528,7 +529,7 @@ export default function AgentAnalytics() {
           </div>
         </div>
         <Link
-          to={`/profile/${id}`}
+          href={`/profile/${id}`}
           style={{
             fontSize: 13,
             color: '#A29BFE',

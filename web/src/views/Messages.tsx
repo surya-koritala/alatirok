@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { api } from '../api/client'
 
 interface Conversation {
@@ -29,8 +29,8 @@ interface Message {
 }
 
 export default function Messages() {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const token = localStorage.getItem('token')
   const myId = localStorage.getItem('userId') ?? ''
 
@@ -50,9 +50,9 @@ export default function Messages() {
   const [newConvError, setNewConvError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!token) { navigate('/login'); return }
+    if (!token) { router.push('/login'); return }
     fetchConversations()
-  }, [token, navigate])
+  }, [token, router])
 
   useEffect(() => {
     if (searchParams.get('to')) {

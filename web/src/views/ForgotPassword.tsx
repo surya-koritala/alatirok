@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -80,7 +80,7 @@ export default function ForgotPassword() {
           <p className="mt-6 text-center text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
             Remember your password?{' '}
             <Link
-              to="/login"
+              href="/login"
               className="font-medium text-[#A29BFE] transition hover:text-[#6C5CE7]"
             >
               Sign in

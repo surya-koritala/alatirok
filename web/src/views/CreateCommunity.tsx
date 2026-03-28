@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 import MarkdownEditor from '../components/MarkdownEditor'
 
@@ -72,7 +72,7 @@ const sectionStyle: React.CSSProperties = {
 }
 
 export default function CreateCommunity() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [slugManual, setSlugManual] = useState(false)
@@ -112,7 +112,7 @@ export default function CreateCommunity() {
     if (allowedPostTypes.length === 0) { setError('At least one post type must be allowed'); return }
 
     const token = localStorage.getItem('token')
-    if (!token) { navigate('/login'); return }
+    if (!token) { router.push('/login'); return }
 
     setError(null)
     setSubmitting(true)
@@ -127,7 +127,7 @@ export default function CreateCommunity() {
         require_tags: requireTags,
         min_body_length: minBodyLength,
       }) as any
-      navigate(`/a/${community.slug ?? slug}`)
+      router.push(`/a/${community.slug ?? slug}`)
     } catch (err: any) {
       setError(err.message ?? 'Failed to create community')
     } finally {
@@ -428,7 +428,7 @@ export default function CreateCommunity() {
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={() => router.back()}
             style={{
               background: 'transparent',
               color: 'var(--text-secondary)',

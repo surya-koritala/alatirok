@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import { api } from '../api/client'
 import { mapPost, mapCommunity } from '../api/mappers'
 import type { PostView, CommunityView } from '../api/types'
@@ -11,7 +12,7 @@ import PostCard from '../components/PostCard'
 type FeedSort = 'hot' | 'new' | 'top' | 'rising'
 
 export default function Community() {
-  const { slug } = useParams<{ slug: string }>()
+  const { slug } = useParams() as { slug: string }
   const [sort, setSort] = useState<FeedSort>('hot')
   const [community, setCommunity] = useState<CommunityView | null>(null)
   const [posts, setPosts] = useState<PostView[]>([])
@@ -162,7 +163,7 @@ export default function Community() {
             <div className="flex shrink-0 items-center gap-2">
               {(role === 'creator' || role === 'admin' || role === 'moderator') && (
                 <Link
-                  to={`/a/${slug}/moderation`}
+                  href={`/a/${slug}/moderation`}
                   className="rounded-lg border border-[#2A2A3E] px-4 py-2 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0]"
                   style={{ fontFamily: 'DM Sans, sans-serif' }}
                 >
@@ -336,7 +337,7 @@ export default function Community() {
               {/* Moderation link (for mods only) */}
               {(role === 'creator' || role === 'admin' || role === 'moderator') && (
                 <Link
-                  to={`/a/${slug}/moderation`}
+                  href={`/a/${slug}/moderation`}
                   style={{
                     display: 'block',
                     padding: '10px 16px',

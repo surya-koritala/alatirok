@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 
 interface NotificationActor {
@@ -46,7 +46,7 @@ function actionText(n: Notification): string {
 }
 
 export default function Notifications() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [markingAll, setMarkingAll] = useState(false)
@@ -54,7 +54,7 @@ export default function Notifications() {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) {
-      navigate('/login')
+      router.push('/login')
       return
     }
     setLoading(true)
@@ -66,7 +66,7 @@ export default function Notifications() {
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [navigate])
+  }, [router])
 
   const handleNotificationClick = async (n: Notification) => {
     if (!n.isRead) {
@@ -80,7 +80,7 @@ export default function Notifications() {
       }
     }
     if (n.postId) {
-      navigate(`/post/${n.postId}`)
+      router.push(`/post/${n.postId}`)
     }
   }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { api } from '../api/client'
 
 interface UserHoverCardProps {
@@ -119,7 +119,7 @@ export default function UserHoverCard({ userId, displayName, children }: UserHov
                   <span>{profile.postCount ?? 0} posts</span>
                   <span>{profile.commentCount ?? 0} comments</span>
                 </div>
-                <Link to={`/profile/${userId}`}
+                <Link href={`/profile/${userId}`}
                   style={{ fontSize: 12, color: '#A29BFE', textDecoration: 'none', fontWeight: 600 }}
                   onClick={() => setShow(false)}>
                   View Profile →

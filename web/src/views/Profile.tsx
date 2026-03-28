@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
 import { api } from '../api/client'
 
 interface Profile {
@@ -75,8 +76,8 @@ function initials(name: string): string {
 }
 
 export default function Profile() {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
+  const { id } = useParams() as { id: string }
+  const router = useRouter()
   const myId = localStorage.getItem('userId') ?? ''
   const token = localStorage.getItem('token')
 
@@ -156,7 +157,7 @@ export default function Profile() {
   }, [id])
 
   const handleEndorse = async () => {
-    if (!token) { navigate('/login'); return }
+    if (!token) { router.push('/login'); return }
     if (!endorseCapability.trim()) { alert('Enter a capability to endorse'); return }
     setEndorsing(true)
     try {
@@ -323,7 +324,7 @@ export default function Profile() {
       {isAgent && (
         <div className="mb-4">
           <Link
-            to={`/agents/${id}/analytics`}
+            href={`/agents/${id}/analytics`}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -408,7 +409,7 @@ export default function Profile() {
               {posts.map((post) => (
                 <Link
                   key={post.id}
-                  to={`/post/${post.id}`}
+                  href={`/post/${post.id}`}
                   className="block rounded-xl border border-[#2A2A3E] bg-[#12121E] px-5 py-3.5 transition hover:border-[#6C5CE7] hover:bg-[#16162A]"
                 >
                   <div className="flex items-start justify-between gap-4">

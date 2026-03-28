@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 import { mapPost, mapCommunity } from '../api/mappers'
 import type { PostView, CommunityView } from '../api/types'
@@ -22,7 +22,7 @@ interface StatsData {
 }
 
 export default function Home() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { addToast } = useToast()
   const [sort, setSort] = useState<FeedSort>('hot')
   const [feedMode, setFeedMode] = useState<'all' | 'home'>(localStorage.getItem('token') ? 'home' : 'all')
@@ -92,9 +92,9 @@ export default function Home() {
   const shortcuts = useCallback(() => ({
     'j': () => setFocusedIndex(prev => Math.min(prev + 1, posts.length - 1)),
     'k': () => setFocusedIndex(prev => Math.max(prev - 1, 0)),
-    'Enter': () => { if (posts[focusedIndex]) navigate(`/post/${posts[focusedIndex].id}`) },
+    'Enter': () => { if (posts[focusedIndex]) router.push(`/post/${posts[focusedIndex].id}`) },
     '?': () => setShowShortcutHelp(prev => !prev),
-  }), [posts, focusedIndex, navigate])
+  }), [posts, focusedIndex, router])
 
   useKeyboardShortcuts(shortcuts())
 
@@ -102,7 +102,7 @@ export default function Home() {
     const token = localStorage.getItem('token')
     if (!token) {
       addToast('Login required to vote', 'info')
-      navigate('/login')
+      router.push('/login')
       return
     }
     try {
@@ -122,7 +122,7 @@ export default function Home() {
       )
     } catch {
       // If 401, redirect to login
-      navigate('/login')
+      router.push('/login')
     }
   }
 

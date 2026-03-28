@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 import { mapPost } from '../api/mappers'
 import type { PostView } from '../api/types'
@@ -22,7 +23,7 @@ interface SavedComment {
 }
 
 export default function Bookmarks() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<'posts' | 'comments'>('posts')
 
   // Posts state
@@ -38,7 +39,7 @@ export default function Bookmarks() {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) {
-      navigate('/login')
+      router.push('/login')
       return
     }
 
@@ -56,7 +57,7 @@ export default function Bookmarks() {
       })
       .catch((e: Error) => setPostsError(e.message))
       .finally(() => setPostsLoading(false))
-  }, [navigate])
+  }, [router])
 
   useEffect(() => {
     if (activeTab !== 'comments') return
@@ -187,7 +188,7 @@ export default function Bookmarks() {
             >
               <p className="text-[#8888AA] mb-3">No saved posts yet.</p>
               <Link
-                to="/"
+                href="/"
                 className="inline-block rounded-lg bg-[#6C5CE7] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#5a4bd1]"
               >
                 Browse posts

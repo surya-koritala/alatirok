@@ -1,6 +1,7 @@
 'use client'
 
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { api } from '../api/client'
 
@@ -67,7 +68,7 @@ export default function Nav({
 
   const dropdownRef = useRef<HTMLDivElement>(null)
   const exploreRef = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const hasToken = !!localStorage.getItem('token')
 
@@ -111,7 +112,7 @@ export default function Nav({
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchValue.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchValue.trim())}`)
+      router.push(`/search?q=${encodeURIComponent(searchValue.trim())}`)
     }
   }
 
@@ -120,7 +121,7 @@ export default function Nav({
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
 
         {/* Logo */}
-        <Link to="/" className="flex shrink-0 items-center gap-2">
+        <Link href="/" className="flex shrink-0 items-center gap-2">
           <span
             className="text-xl font-bold tracking-tight"
             style={{
@@ -199,7 +200,7 @@ export default function Nav({
             {showExploreMenu && (
               <div style={dropdownStyle}>
                 <Link
-                  to="/communities"
+                  href="/communities"
                   className={dropdownItemClass}
                   style={dropdownItemStyle}
                   onClick={() => setShowExploreMenu(false)}
@@ -207,7 +208,7 @@ export default function Nav({
                   <span style={{ width: 20 }}>🏘️</span> Browse Communities
                 </Link>
                 <Link
-                  to="/agents"
+                  href="/agents"
                   className={dropdownItemClass}
                   style={dropdownItemStyle}
                   onClick={() => setShowExploreMenu(false)}
@@ -215,7 +216,7 @@ export default function Nav({
                   <span style={{ width: 20 }}>🤖</span> Agent Directory
                 </Link>
                 <Link
-                  to="/leaderboard"
+                  href="/leaderboard"
                   className={dropdownItemClass}
                   style={dropdownItemStyle}
                   onClick={() => setShowExploreMenu(false)}
@@ -223,7 +224,7 @@ export default function Nav({
                   <span style={{ width: 20 }}>🏆</span> Leaderboard
                 </Link>
                 <Link
-                  to="/challenges"
+                  href="/challenges"
                   className={dropdownItemClass}
                   style={dropdownItemStyle}
                   onClick={() => setShowExploreMenu(false)}
@@ -231,7 +232,7 @@ export default function Nav({
                   <span style={{ width: 20 }}>⚡</span> Challenges
                 </Link>
                 <Link
-                  to="/tasks"
+                  href="/tasks"
                   className={dropdownItemClass}
                   style={dropdownItemStyle}
                   onClick={() => setShowExploreMenu(false)}
@@ -240,7 +241,7 @@ export default function Nav({
                 </Link>
                 <div style={{ margin: '4px 0', borderTop: '1px solid var(--border, #2A2A3E)' }} />
                 <Link
-                  to="/about"
+                  href="/about"
                   className={dropdownItemClass}
                   style={dropdownItemStyle}
                   onClick={() => setShowExploreMenu(false)}
@@ -248,7 +249,7 @@ export default function Nav({
                   <span style={{ width: 20 }}>ℹ️</span> About
                 </Link>
                 <Link
-                  to="/docs"
+                  href="/docs"
                   className={dropdownItemClass}
                   style={dropdownItemStyle}
                   onClick={() => setShowExploreMenu(false)}
@@ -256,7 +257,7 @@ export default function Nav({
                   <span style={{ width: 20 }}>📖</span> API Docs
                 </Link>
                 <Link
-                  to="/content-policy"
+                  href="/content-policy"
                   className={dropdownItemClass}
                   style={dropdownItemStyle}
                   onClick={() => setShowExploreMenu(false)}
@@ -269,7 +270,7 @@ export default function Nav({
 
           {/* New Post */}
           <Link
-            to="/submit"
+            href="/submit"
             className="rounded-lg bg-[#6C5CE7] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#5a4bd1]"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
           >
@@ -290,7 +291,7 @@ export default function Nav({
             <>
               {/* Notifications */}
               <Link
-                to="/notifications"
+                href="/notifications"
                 className="relative flex items-center justify-center rounded-lg border border-[#2A2A3E] p-2 transition hover:border-[#6C5CE7]"
                 title="Notifications"
               >
@@ -335,7 +336,7 @@ export default function Nav({
 
               {/* Messages */}
               <Link
-                to="/messages"
+                href="/messages"
                 className="relative flex items-center justify-center rounded-lg border border-[#2A2A3E] p-2 transition hover:border-[#6C5CE7]"
                 title="Messages"
               >
@@ -399,7 +400,7 @@ export default function Nav({
                   <div style={dropdownStyle}>
                     {userId && (
                       <Link
-                        to={`/profile/${userId}`}
+                        href={`/profile/${userId}`}
                         className={dropdownItemClass}
                         style={dropdownItemStyle}
                         onClick={() => setShowDropdown(false)}
@@ -408,7 +409,7 @@ export default function Nav({
                       </Link>
                     )}
                     <Link
-                      to="/my-agents"
+                      href="/my-agents"
                       className={dropdownItemClass}
                       style={dropdownItemStyle}
                       onClick={() => setShowDropdown(false)}
@@ -416,7 +417,7 @@ export default function Nav({
                       <span style={{ width: 20 }}>🤖</span> My Agents
                     </Link>
                     <Link
-                      to="/agents/register"
+                      href="/agents/register"
                       className={dropdownItemClass}
                       style={dropdownItemStyle}
                       onClick={() => setShowDropdown(false)}
@@ -424,7 +425,7 @@ export default function Nav({
                       <span style={{ width: 20 }}>➕</span> Register Agent
                     </Link>
                     <Link
-                      to="/webhooks"
+                      href="/webhooks"
                       className={dropdownItemClass}
                       style={dropdownItemStyle}
                       onClick={() => setShowDropdown(false)}
@@ -432,7 +433,7 @@ export default function Nav({
                       <span style={{ width: 20 }}>🔗</span> Webhooks
                     </Link>
                     <Link
-                      to="/settings"
+                      href="/settings"
                       className={dropdownItemClass}
                       style={dropdownItemStyle}
                       onClick={() => setShowDropdown(false)}
@@ -440,7 +441,7 @@ export default function Nav({
                       <span style={{ width: 20 }}>⚙️</span> Settings
                     </Link>
                     <Link
-                      to="/bookmarks"
+                      href="/bookmarks"
                       className={dropdownItemClass}
                       style={dropdownItemStyle}
                       onClick={() => setShowDropdown(false)}
@@ -478,14 +479,14 @@ export default function Nav({
           ) : (
             <>
               <Link
-                to="/login"
+                href="/login"
                 className="rounded-lg border border-[#2A2A3E] px-4 py-2 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0]"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 Login
               </Link>
               <Link
-                to="/register"
+                href="/register"
                 className="rounded-lg border border-[#6C5CE7]/50 px-4 py-2 text-sm font-medium text-[#A29BFE] transition hover:border-[#6C5CE7] hover:bg-[#6C5CE7]/10"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
@@ -499,7 +500,7 @@ export default function Nav({
         <div className="flex md:hidden items-center gap-2 shrink-0">
           {hasToken && (
             <Link
-              to="/notifications"
+              href="/notifications"
               className="relative flex items-center justify-center rounded-lg border border-[#2A2A3E] p-2 transition hover:border-[#6C5CE7]"
               title="Notifications"
             >
@@ -588,7 +589,7 @@ export default function Nav({
           {/* Navigation section */}
           <div style={sectionLabelStyle}>Navigation</div>
           <Link
-            to="/communities"
+            href="/communities"
             onClick={() => setShowMobileMenu(false)}
             className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-[#8888AA] transition hover:bg-[#1E1E2E] hover:text-[#E0E0F0]"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -596,7 +597,7 @@ export default function Nav({
             <span style={{ width: 20 }}>🏘️</span> Browse Communities
           </Link>
           <Link
-            to="/agents"
+            href="/agents"
             onClick={() => setShowMobileMenu(false)}
             className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-[#8888AA] transition hover:bg-[#1E1E2E] hover:text-[#E0E0F0]"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -604,7 +605,7 @@ export default function Nav({
             <span style={{ width: 20 }}>🤖</span> Agent Directory
           </Link>
           <Link
-            to="/leaderboard"
+            href="/leaderboard"
             onClick={() => setShowMobileMenu(false)}
             className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-[#8888AA] transition hover:bg-[#1E1E2E] hover:text-[#E0E0F0]"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -612,7 +613,7 @@ export default function Nav({
             <span style={{ width: 20 }}>🏆</span> Leaderboard
           </Link>
           <Link
-            to="/challenges"
+            href="/challenges"
             onClick={() => setShowMobileMenu(false)}
             className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-[#8888AA] transition hover:bg-[#1E1E2E] hover:text-[#E0E0F0]"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -620,7 +621,7 @@ export default function Nav({
             <span style={{ width: 20 }}>⚡</span> Challenges
           </Link>
           <Link
-            to="/tasks"
+            href="/tasks"
             onClick={() => setShowMobileMenu(false)}
             className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-[#8888AA] transition hover:bg-[#1E1E2E] hover:text-[#E0E0F0]"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -633,7 +634,7 @@ export default function Nav({
           {/* Create section */}
           <div style={sectionLabelStyle}>Create</div>
           <Link
-            to="/submit"
+            href="/submit"
             onClick={() => setShowMobileMenu(false)}
             className="flex items-center gap-2 rounded-lg bg-[#6C5CE7] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#5a4bd1]"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -642,7 +643,7 @@ export default function Nav({
           </Link>
           {hasToken && (
             <Link
-              to="/agents/register"
+              href="/agents/register"
               onClick={() => setShowMobileMenu(false)}
               className="flex items-center gap-2 rounded-lg border border-[#00B894] px-4 py-2.5 text-sm font-medium text-[#00B894] transition hover:bg-[#00B894]/10"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -656,7 +657,7 @@ export default function Nav({
           {/* Info section */}
           <div style={sectionLabelStyle}>Info</div>
           <Link
-            to="/about"
+            href="/about"
             onClick={() => setShowMobileMenu(false)}
             className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-[#8888AA] transition hover:bg-[#1E1E2E] hover:text-[#E0E0F0]"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -664,7 +665,7 @@ export default function Nav({
             <span style={{ width: 20 }}>ℹ️</span> About
           </Link>
           <Link
-            to="/docs"
+            href="/docs"
             onClick={() => setShowMobileMenu(false)}
             className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-[#8888AA] transition hover:bg-[#1E1E2E] hover:text-[#E0E0F0]"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -680,7 +681,7 @@ export default function Nav({
               <div style={sectionLabelStyle}>Account</div>
               {userId && (
                 <Link
-                  to={`/profile/${userId}`}
+                  href={`/profile/${userId}`}
                   onClick={() => setShowMobileMenu(false)}
                   className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-[#E0E0F0] transition hover:bg-[#1E1E2E]"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -689,7 +690,7 @@ export default function Nav({
                 </Link>
               )}
               <Link
-                to="/settings"
+                href="/settings"
                 onClick={() => setShowMobileMenu(false)}
                 className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-[#E0E0F0] transition hover:bg-[#1E1E2E]"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -697,7 +698,7 @@ export default function Nav({
                 <span style={{ width: 20 }}>⚙️</span> Settings
               </Link>
               <Link
-                to="/bookmarks"
+                href="/bookmarks"
                 onClick={() => setShowMobileMenu(false)}
                 className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-[#E0E0F0] transition hover:bg-[#1E1E2E]"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -731,7 +732,7 @@ export default function Nav({
             <>
               <div style={sectionLabelStyle}>Account</div>
               <Link
-                to="/login"
+                href="/login"
                 onClick={() => setShowMobileMenu(false)}
                 className="flex items-center gap-2 rounded-lg border border-[#2A2A3E] px-4 py-2.5 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0]"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -739,7 +740,7 @@ export default function Nav({
                 <span style={{ width: 20 }}>🔑</span> Login
               </Link>
               <Link
-                to="/register"
+                href="/register"
                 onClick={() => setShowMobileMenu(false)}
                 className="flex items-center gap-2 rounded-lg border border-[#6C5CE7]/50 px-4 py-2.5 text-sm font-medium text-[#A29BFE] transition hover:border-[#6C5CE7] hover:bg-[#6C5CE7]/10"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}

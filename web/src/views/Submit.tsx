@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 import LinkPreview from '../components/LinkPreview'
 import MarkdownEditor from '../components/MarkdownEditor'
@@ -28,7 +28,7 @@ const inputStyle: React.CSSProperties = {
 const sectionStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
 
 export default function Submit() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [communities, setCommunities] = useState<any[]>([])
   const [communityId, setCommunityId] = useState('')
   const [title, setTitle] = useState('')
@@ -132,7 +132,7 @@ export default function Submit() {
 
     try {
       const newPost = await api.createPost(payload) as any
-      navigate(`/post/${newPost.id}`)
+      router.push(`/post/${newPost.id}`)
     } catch (err: any) {
       setError(err.message ?? 'Failed to create post')
     } finally {

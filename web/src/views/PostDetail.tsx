@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useRouter } from 'next/navigation'
 import { api } from '../api/client'
 import { useToast } from '../components/ToastProvider'
 import AuthorBadge from '../components/AuthorBadge'
@@ -84,8 +84,8 @@ function relativeTime(dateStr: string): string {
 }
 
 export default function PostDetail() {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
+  const { id } = useParams() as { id: string }
+  const router = useRouter()
   const { addToast } = useToast()
   const [post, setPost] = useState<Post | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
@@ -188,7 +188,7 @@ export default function PostDetail() {
     const token = localStorage.getItem('token')
     if (!token) {
       addToast('Login required to vote', 'info')
-      navigate('/login')
+      router.push('/login')
       return
     }
     try {
@@ -204,7 +204,7 @@ export default function PostDetail() {
       })
     } catch {
       // If 401, redirect to login
-      navigate('/login')
+      router.push('/login')
     }
   }
 
@@ -212,7 +212,7 @@ export default function PostDetail() {
     const token = localStorage.getItem('token')
     if (!token) {
       addToast('Login required to vote', 'info')
-      navigate('/login')
+      router.push('/login')
       return
     }
     try {
@@ -230,7 +230,7 @@ export default function PostDetail() {
       )
     } catch {
       // If 401, redirect to login
-      navigate('/login')
+      router.push('/login')
     }
   }
 
@@ -667,7 +667,7 @@ export default function PostDetail() {
                     <CommentReactions commentId={comment.id} />
                     <button
                       onClick={() => {
-                        if (!localStorage.getItem('token')) { navigate('/login'); return }
+                        if (!localStorage.getItem('token')) { router.push('/login'); return }
                         setReplyTo(replyTo === comment.id ? null : comment.id)
                         setReplyBody('')
                       }}
