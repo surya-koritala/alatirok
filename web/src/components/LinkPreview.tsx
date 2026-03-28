@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react'
+
 interface LinkPreviewProps {
   url: string
   title?: string
@@ -6,8 +8,29 @@ interface LinkPreviewProps {
   domain?: string
 }
 
-export default function LinkPreview({ url, title, description, image, domain }: LinkPreviewProps) {
-  const displayDomain = domain || new URL(url).hostname
+export default function LinkPreview({ url, title: initialTitle, description: initialDesc, image: initialImage, domain }: LinkPreviewProps) {
+  const [title, setTitle] = useState(initialTitle)
+  const [description, setDescription] = useState(initialDesc)
+  const [image, setImage] = useState(initialImage)
+  const [fetched, setFetched] = useState(false)
+
+  const displayDomain = domain || (() => { try { return new URL(url).hostname } catch { return url } })()
+
+  // Auto-fetch preview if title/description not provided
+  useEffect(() => {
+    if (fetched || initialTitle || initialDesc || initialImage) return
+    setFetched(true)
+    fetch(`/api/v1/link-preview?url=${encodeURIComponent(url)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data) {
+          if (data.title) setTitle(data.title)
+          if (data.description) setDescription(data.description)
+          if (data.image) setImage(data.image)
+        }
+      })
+      .catch(() => {})
+  }, [url, fetched, initialTitle, initialDesc, initialImage])
 
   return (
     <a
@@ -16,8 +39,8 @@ export default function LinkPreview({ url, title, description, image, domain }: 
       rel="noopener noreferrer"
       style={{
         display: 'block',
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border)',
         borderRadius: 12,
         overflow: 'hidden',
         textDecoration: 'none',
@@ -25,12 +48,10 @@ export default function LinkPreview({ url, title, description, image, domain }: 
         marginTop: 8,
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = 'rgba(108,92,231,0.2)'
-        e.currentTarget.style.background = 'rgba(255,255,255,0.03)'
+        e.currentTarget.style.borderColor = 'rgba(108,92,231,0.3)'
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
-        e.currentTarget.style.background = 'rgba(255,255,255,0.02)'
+        e.currentTarget.style.borderColor = 'var(--border)'
       }}
     >
       <div style={{ display: 'flex', minHeight: 0 }}>
@@ -39,7 +60,7 @@ export default function LinkPreview({ url, title, description, image, domain }: 
             width: 140,
             minHeight: 100,
             flexShrink: 0,
-            background: 'var(--bg-hover, #1A1A2E)',
+            background: 'var(--bg-hover)',
             backgroundImage: `url(${image})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -48,7 +69,7 @@ export default function LinkPreview({ url, title, description, image, domain }: 
         <div style={{ padding: '12px 16px', minWidth: 0, flex: 1 }}>
           <div style={{
             fontSize: 10,
-            color: 'var(--text-muted, #6B6B80)',
+            color: 'var(--text-muted)',
             textTransform: 'uppercase' as const,
             letterSpacing: 0.5,
             fontFamily: "'DM Mono', monospace",
@@ -60,7 +81,7 @@ export default function LinkPreview({ url, title, description, image, domain }: 
             <div style={{
               fontSize: 14,
               fontWeight: 600,
-              color: 'var(--text-primary, #E0E0F0)',
+              color: 'var(--text-primary)',
               fontFamily: "'DM Sans', sans-serif",
               lineHeight: 1.35,
               marginBottom: 4,
@@ -75,7 +96,7 @@ export default function LinkPreview({ url, title, description, image, domain }: 
           {description && (
             <div style={{
               fontSize: 12,
-              color: 'var(--text-secondary, #8888AA)',
+              color: 'var(--text-secondary)',
               lineHeight: 1.45,
               overflow: 'hidden',
               display: '-webkit-box',
