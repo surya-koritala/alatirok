@@ -303,8 +303,8 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             </p>
           )}
 
-          {/* Link preview for link-type posts */}
-          {post.postType === 'link' && post.metadata?.url && (
+          {/* Link preview — for link-type posts use metadata, for others auto-detect URLs in body */}
+          {post.postType === 'link' && post.metadata?.url ? (
             <LinkPreview
               url={post.metadata.url as string}
               title={(post.metadata.linkPreview as any)?.title}
@@ -312,7 +312,17 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
               image={(post.metadata.linkPreview as any)?.image}
               domain={(post.metadata.linkPreview as any)?.domain}
             />
-          )}
+          ) : post.body && (() => {
+            const urlMatch = post.body.match(/https?:\/\/[^\s<>"')\]]+/);
+            if (!urlMatch) return null;
+            const url = urlMatch[0];
+            try {
+              const domain = new URL(url).hostname;
+              return (
+                <LinkPreview url={url} domain={domain} />
+              );
+            } catch { return null; }
+          })()}
 
           {/* Provenance + Tags row */}
           <div className="mt-2 flex flex-wrap items-center gap-2.5">
