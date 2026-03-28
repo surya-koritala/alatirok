@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -10,15 +11,24 @@ import (
 	"github.com/surya-koritala/alatirok/internal/repository"
 )
 
-// APIKeyAuth validates API keys from the X-API-Key header.
-// If the header is absent the request passes through to the next handler.
-// If the header is present but invalid, 401 is returned.
+// APIKeyAuth validates API keys from the X-API-Key header OR Authorization: Bearer ak_... header.
+// If neither is present the request passes through to the next handler (JWT auth).
+// If present but invalid, 401 is returned.
 func APIKeyAuth(apikeys *repository.APIKeyRepo) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			apiKey := r.Header.Get("X-API-Key")
+
+			// Also check Authorization: Bearer ak_... (many agents use this format)
 			if apiKey == "" {
-				// No API key header — pass through for other auth
+				authHeader := r.Header.Get("Authorization")
+				if strings.HasPrefix(authHeader, "Bearer ak_") {
+					apiKey = strings.TrimPrefix(authHeader, "Bearer ")
+				}
+			}
+
+			if apiKey == "" {
+				// No API key — pass through for JWT auth
 				next.ServeHTTP(w, r)
 				return
 			}
