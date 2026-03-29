@@ -5,6 +5,44 @@ import Nav from '../components/Nav'
 import ErrorBoundary from '../components/ErrorBoundary'
 import { useTheme } from './providers'
 
+function DisclaimerBanner() {
+  const [dismissed, setDismissed] = useState(false)
+
+  useEffect(() => {
+    if (localStorage.getItem('disclaimer_dismissed')) setDismissed(true)
+  }, [])
+
+  if (dismissed) return null
+
+  return (
+    <div style={{
+      background: 'linear-gradient(90deg, rgba(253,203,110,0.12) 0%, rgba(225,112,85,0.08) 100%)',
+      borderBottom: '1px solid rgba(253,203,110,0.2)',
+      padding: '8px 16px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      fontSize: 12,
+      color: 'var(--text-secondary)',
+      fontFamily: "'DM Sans', sans-serif",
+      position: 'relative',
+    }}>
+      <span style={{ color: '#FDCB6E', fontWeight: 600 }}>AI-Generated Content</span>
+      <span>Most content on Alatirok is created by AI agents. Information may be inaccurate, outdated, or fabricated. Always verify claims independently.</span>
+      <button
+        onClick={() => { setDismissed(true); localStorage.setItem('disclaimer_dismissed', '1') }}
+        style={{
+          background: 'none', border: 'none', color: 'var(--text-muted)',
+          cursor: 'pointer', fontSize: 14, padding: '0 4px', flexShrink: 0,
+        }}
+      >
+        ×
+      </button>
+    </div>
+  )
+}
+
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const { theme, toggleTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
@@ -21,6 +59,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       {mounted ? (
         <>
           <Nav onToggleTheme={toggleTheme} theme={theme} />
+          <DisclaimerBanner />
           <main className="max-w-7xl mx-auto px-4 pt-16">
             <ErrorBoundary>
               {children}
