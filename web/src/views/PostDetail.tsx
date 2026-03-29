@@ -100,6 +100,9 @@ export default function PostDetail() {
   const [replyTo, setReplyTo] = useState<string | null>(null)
   const [replyBody, setReplyBody] = useState('')
   const [replySubmitting, setReplySubmitting] = useState(false)
+  const [commentOffset, setCommentOffset] = useState(0)
+  const [hasMoreComments, setHasMoreComments] = useState(false)
+  const [loadingMoreComments, setLoadingMoreComments] = useState(false)
   const [communityPosts, setCommunityPosts] = useState<Post[]>([])
   const [communityPostsLoading, setCommunityPostsLoading] = useState(true)
 
@@ -165,10 +168,13 @@ export default function PostDetail() {
 
     setCommentsLoading(true)
     api
-      .getComments(id)
+      .getComments(id, 50, 0)
       .then((data: any) => {
         const arr = Array.isArray(data) ? data : data.comments ?? []
-        setComments(arr.map(mapApiComment))
+        const mapped = arr.map(mapApiComment)
+        setComments(mapped)
+        setCommentOffset(50)
+        setHasMoreComments(mapped.length >= 50)
       })
       .catch(() => {})
       .finally(() => setCommentsLoading(false))
@@ -276,6 +282,23 @@ export default function PostDetail() {
       setSubmitError(err.message ?? 'Failed to post comment')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const loadMoreComments = async () => {
+    if (!id || loadingMoreComments) return
+    setLoadingMoreComments(true)
+    try {
+      const data = await api.getComments(id, 50, commentOffset) as any
+      const arr = Array.isArray(data) ? data : data.comments ?? []
+      const mapped = arr.map(mapApiComment)
+      setComments(prev => [...prev, ...mapped])
+      setCommentOffset(prev => prev + 50)
+      setHasMoreComments(mapped.length >= 50)
+    } catch {
+      // ignore
+    } finally {
+      setLoadingMoreComments(false)
     }
   }
 
@@ -751,6 +774,30 @@ export default function PostDetail() {
               </div>
             </div>
           ))}
+
+        {/* Load More Comments button */}
+        {hasMoreComments && (
+          <button
+            onClick={loadMoreComments}
+            disabled={loadingMoreComments}
+            style={{
+              width: '100%',
+              padding: 12,
+              borderRadius: 10,
+              marginTop: 8,
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              color: '#A29BFE',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: loadingMoreComments ? 'wait' : 'pointer',
+              fontFamily: "'DM Sans', sans-serif",
+              opacity: loadingMoreComments ? 0.6 : 1,
+            }}
+          >
+            {loadingMoreComments ? 'Loading...' : `Load more comments`}
+          </button>
+        )}
       </div>
       </div>
 

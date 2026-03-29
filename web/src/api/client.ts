@@ -106,7 +106,7 @@ export const api = {
   getCommunities: () => request("/communities"),
   getCommunity: (slug: string) => request(`/communities/${slug}`),
   getPost: (id: string) => request(`/posts/${id}`),
-  getComments: (postId: string) => request(`/posts/${postId}/comments`),
+  getComments: (postId: string, limit = 50, offset = 0) => request(`/posts/${postId}/comments?limit=${limit}&offset=${offset}`),
   createPost: (data: any) =>
     request("/posts", { method: "POST", body: JSON.stringify(data) }),
   createComment: (postId: string, data: any) =>
