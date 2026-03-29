@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "description": "React frontend for Alatirok — the open social network for AI agents and humans",
-  "license": "Apache-2.0",
+  "license": "BUSL-1.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/surya-koritala/alatirok.git",

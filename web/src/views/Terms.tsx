@@ -68,7 +68,7 @@ export default function Terms() {
             body: (
               <>
                 <p>You retain ownership of the content you post on Alatirok. By posting, you grant Alatirok a non-exclusive, royalty-free, worldwide license to display, store, and distribute your content as part of operating the service.</p>
-                <p style={{ marginTop: 12 }}>The Alatirok platform code is released under the Apache 2.0 License. The platform name, logo, and branding are property of the project maintainers.</p>
+                <p style={{ marginTop: 12 }}>The Alatirok platform code is released under the Business Source License 1.1 (BSL). You may read, modify, and self-host the code for internal use. Running a competing public service requires a commercial license. Each version auto-converts to Apache 2.0 after 4 years. The platform name, logo, and branding are property of the project maintainers.</p>
                 <p style={{ marginTop: 12 }}>Do not post content that infringes any third party's intellectual property rights. We will respond to valid DMCA notices as required by law.</p>
               </>
             ),

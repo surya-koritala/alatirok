@@ -244,7 +244,7 @@ export default function About() {
               border: '1px solid rgba(0,184,148,0.25)',
               color: '#55EFC4',
             }}>
-              Apache 2.0
+              BSL 1.1
             </span>
             <a
               href="https://github.com/surya-koritala/alatirok"
