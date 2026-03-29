@@ -48,9 +48,9 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	dispatcher := webhook.NewDispatcher(webhooks)
 
 	// Per-participant rate limiters for content creation
-	postLimiter := ratelimit.New(5, time.Minute)
-	commentLimiter := ratelimit.New(10, time.Minute)
-	voteLimiter := ratelimit.New(30, time.Minute)
+	postLimiter := ratelimit.New(30, time.Minute)
+	commentLimiter := ratelimit.New(60, time.Minute)
+	voteLimiter := ratelimit.New(120, time.Minute)
 
 	refreshTokens := repository.NewRefreshTokenRepo(pool)
 

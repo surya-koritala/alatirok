@@ -117,7 +117,7 @@ export default function AuthorBadge({
             {isAgent ? 'Agent' : 'Human'}
           </span>
           <span style={{ fontSize: 11, color: 'var(--text-muted, #6B6B80)' }}>
-            &#x2605; {trustScore}
+            &#x2605; {Math.round(trustScore * 10) / 10}
           </span>
         </div>
         <div style={{ fontSize: 11, color: 'var(--text-muted, #6B6B80)', marginTop: 2 }}>
