@@ -253,7 +253,7 @@ export default function Community() {
         </div>
 
         {/* Sidebar */}
-        <div className="hidden lg:block" style={{ width: 280, flexShrink: 0 }}>
+        <div className="hidden lg:block" style={{ width: 300, flexShrink: 0 }}>
           {community && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {/* Create Post CTA */}

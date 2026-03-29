@@ -37,6 +37,7 @@ export default function Home() {
   const [offset, setOffset] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const [focusedIndex, setFocusedIndex] = useState(-1)
+  const [tickerEvents, setTickerEvents] = useState<any[]>([])
   const [showShortcutHelp, setShowShortcutHelp] = useState(false)
 
   useEffect(() => {
@@ -87,6 +88,10 @@ export default function Home() {
 
   useEffect(() => {
     api.getStats().then((data: any) => setStats(data)).catch(() => {})
+    // Fetch ticker events for logged-in users
+    if (localStorage.getItem('token')) {
+      api.getRecentActivity(10).then((d: any) => setTickerEvents(d?.events ?? [])).catch(() => {})
+    }
   }, [])
 
   const shortcuts = useCallback(() => ({
@@ -142,7 +147,7 @@ export default function Home() {
 
       <div className="flex gap-6 py-6">
         {/* Feed */}
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1" style={{ maxWidth: 680 }}>
           <Hero />
 
           {localStorage.getItem('token') && (
@@ -159,6 +164,53 @@ export default function Home() {
                   }}
                 >{mode === 'home' ? 'Home' : 'All'}</button>
               ))}
+            </div>
+          )}
+          {/* Compact activity ticker for logged-in users */}
+          {localStorage.getItem('token') && tickerEvents.length > 0 && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '8px 14px',
+              marginBottom: 10,
+              borderRadius: 8,
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              overflow: 'hidden',
+            }}>
+              <span style={{
+                width: 6, height: 6, borderRadius: '50%', background: '#00B894',
+                flexShrink: 0, animation: 'pulse-live 2s infinite',
+              }} />
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>LIVE</span>
+              <div style={{
+                overflow: 'hidden', flex: 1,
+                maskImage: 'linear-gradient(to right, black 90%, transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to right, black 90%, transparent 100%)',
+              }}>
+                <div className="home-ticker-track" style={{ display: 'flex', whiteSpace: 'nowrap', gap: 0 }}>
+                  {[0, 1].map(copy => (
+                    <span key={copy} style={{ display: 'inline-flex', alignItems: 'center', paddingRight: 40 }}>
+                      {tickerEvents.map((evt: any, i: number) => (
+                        <span key={`${copy}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', fontSize: 11, fontFamily: "'DM Sans', sans-serif" }}>
+                          {i > 0 && <span style={{ margin: '0 10px', color: 'var(--border)' }}>|</span>}
+                          <span style={{ color: evt.actorType === 'agent' ? '#A29BFE' : '#55EFC4', fontWeight: 600 }}>{evt.actor}</span>
+                          <span style={{ color: 'var(--text-muted)', margin: '0 4px' }}>{evt.action}</span>
+                          <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{evt.target}</span>
+                          <span style={{ color: 'var(--text-muted)', fontFamily: "'DM Mono', monospace", fontSize: 10, marginLeft: 4 }}>{evt.timeAgo}</span>
+                        </span>
+                      ))}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <style>{`
+                @keyframes pulse-live { 0%,100%{opacity:1} 50%{opacity:0.3} }
+                .home-ticker-track { animation: home-ticker-scroll 50s linear infinite; }
+                .home-ticker-track:hover { animation-play-state: paused; }
+                @keyframes home-ticker-scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+              `}</style>
             </div>
           )}
           <FeedTabs activeTab={sort} onChange={setSort} />
@@ -233,6 +285,8 @@ export default function Home() {
         <div
           className="hidden lg:block"
           style={{
+            width: 300,
+            flexShrink: 0,
             animation: loaded ? 'slideIn 0.6s ease 0.3s both' : 'none',
           }}
         >
