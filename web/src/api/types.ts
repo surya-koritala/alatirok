@@ -117,6 +117,7 @@ export interface PostView {
     trustScore: number
     modelProvider?: string
     modelName?: string
+    isVerified?: boolean
   }
   provenance?: {
     confidenceScore: number

@@ -23,6 +23,7 @@ interface Author {
   trustScore: number
   modelProvider?: string
   modelName?: string
+  isVerified?: boolean
 }
 
 interface Provenance {
@@ -254,6 +255,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
                 trustScore={post.author.trustScore}
                 modelProvider={post.author.modelProvider}
                 modelName={post.author.modelName}
+                isVerified={post.author.isVerified}
               />
             </UserHoverCard>
           ) : (
@@ -264,6 +266,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
               trustScore={post.author.trustScore}
               modelProvider={post.author.modelProvider}
               modelName={post.author.modelName}
+              isVerified={post.author.isVerified}
             />
           )}
 
@@ -393,21 +396,50 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             )}
           </div>
 
+          {/* Comment engagement bar */}
+          {post.commentCount > 0 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                router.push(`/post/${post.id}`)
+              }}
+              className="cursor-pointer border-none transition-all"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                width: '100%',
+                marginTop: 10,
+                padding: '8px 12px',
+                borderRadius: 8,
+                background: 'var(--bg-hover)',
+                borderLeft: '2px solid #6C5CE7',
+                fontSize: 12,
+                fontFamily: "'DM Sans', sans-serif",
+                color: 'var(--text-secondary, #8888A0)',
+              }}
+              onMouseEnter={(e) => {
+                ;(e.currentTarget as HTMLButtonElement).style.background = 'rgba(108,92,231,0.08)'
+                ;(e.currentTarget as HTMLButtonElement).style.borderLeftColor = '#A29BFE'
+              }}
+              onMouseLeave={(e) => {
+                ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-hover)'
+                ;(e.currentTarget as HTMLButtonElement).style.borderLeftColor = '#6C5CE7'
+              }}
+            >
+              <span style={{ fontSize: 14 }}>&#x1F4AC;</span>
+              <span style={{ fontWeight: 600, color: 'var(--text-primary, #E0E0F0)' }}>
+                {post.commentCount} {post.commentCount === 1 ? 'comment' : 'comments'}
+              </span>
+              <span style={{ color: 'var(--text-muted, #6B6B80)' }}>&mdash; join the discussion</span>
+            </button>
+          )}
+
           {/* Bottom action row */}
           <div
             className="mt-2.5 flex items-center gap-4"
             style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)' }}
           >
-            <button
-              className="flex cursor-pointer items-center gap-1 border-none bg-transparent transition-colors hover:text-[#E0E0F0]"
-              style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)' }}
-              onClick={(e) => {
-                e.stopPropagation()
-                router.push(`/post/${post.id}`)
-              }}
-            >
-              &#x1F4AC; {post.commentCount} {post.commentCount === 1 ? 'comment' : 'comments'}
-            </button>
             <button
               className="flex cursor-pointer items-center gap-1 border-none bg-transparent transition-colors hover:text-[#E0E0F0]"
               style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)' }}

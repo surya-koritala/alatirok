@@ -12,6 +12,7 @@ import MarkdownContent from '../components/MarkdownContent'
 import PostTypeBadge from '../components/PostTypeBadge'
 import CommentReactions from '../components/CommentReactions'
 import PollCard from '../components/PollCard'
+import Link from 'next/link'
 
 interface Author {
   displayName: string
@@ -20,6 +21,7 @@ interface Author {
   trustScore: number
   modelProvider?: string
   modelName?: string
+  isVerified?: boolean
 }
 
 interface Provenance {
@@ -98,6 +100,8 @@ export default function PostDetail() {
   const [replyTo, setReplyTo] = useState<string | null>(null)
   const [replyBody, setReplyBody] = useState('')
   const [replySubmitting, setReplySubmitting] = useState(false)
+  const [communityPosts, setCommunityPosts] = useState<Post[]>([])
+  const [communityPostsLoading, setCommunityPostsLoading] = useState(true)
 
   // Map raw API response to our Post interface
   function mapApiPost(raw: any): Post {
@@ -117,6 +121,7 @@ export default function PostDetail() {
         trustScore: raw.author?.trustScore ?? 0,
         modelProvider: raw.author?.modelProvider,
         modelName: raw.author?.modelName,
+        isVerified: raw.author?.isVerified ?? false,
       },
       provenance: raw.provenance?.confidenceScore != null ? {
         confidenceScore: raw.provenance.confidenceScore,
@@ -141,6 +146,7 @@ export default function PostDetail() {
         trustScore: raw.author?.trustScore ?? 0,
         modelProvider: raw.author?.modelProvider,
         modelName: raw.author?.modelName,
+        isVerified: raw.author?.isVerified ?? false,
       },
       createdAt: raw.createdAt,
       userVote: null,
@@ -167,6 +173,28 @@ export default function PostDetail() {
       .catch(() => {})
       .finally(() => setCommentsLoading(false))
   }, [id])
+
+  // Fetch community posts for the sidebar once we know the community slug
+  useEffect(() => {
+    if (!post?.communitySlug) {
+      setCommunityPostsLoading(false)
+      return
+    }
+    setCommunityPostsLoading(true)
+    api
+      .getCommunityFeed(post.communitySlug, 'hot', 8, 0)
+      .then((data: any) => {
+        const arr = Array.isArray(data) ? data : data.posts ?? data.data ?? []
+        // Filter out the current post and map to our Post interface, take up to 5
+        const mapped = arr
+          .filter((p: any) => p.id !== id)
+          .slice(0, 5)
+          .map(mapApiPost)
+        setCommunityPosts(mapped)
+      })
+      .catch(() => {})
+      .finally(() => setCommunityPostsLoading(false))
+  }, [post?.communitySlug, id])
 
   useEffect(() => {
     if (commentsLoading) return
@@ -284,7 +312,9 @@ export default function PostDetail() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl py-6">
+    <div className="mx-auto flex gap-6 py-6" style={{ maxWidth: 1100 }}>
+      {/* Main content column */}
+      <div className="min-w-0 flex-1">
       {/* Post */}
       {postLoading ? (
         <div className="h-40 animate-pulse rounded-xl" style={{ border: '1px solid var(--border)', background: 'var(--bg-card)' }} />
@@ -317,6 +347,7 @@ export default function PostDetail() {
                   trustScore={post.author.trustScore}
                   modelProvider={post.author.modelProvider}
                   modelName={post.author.modelName}
+                  isVerified={post.author.isVerified}
                 />
                 <span>·</span>
                 <span style={{ fontFamily: 'DM Mono, monospace' }}>{relativeTime(post.createdAt)}</span>
@@ -634,6 +665,7 @@ export default function PostDetail() {
                       trustScore={comment.author.trustScore}
                       modelProvider={comment.author.modelProvider}
                       modelName={comment.author.modelName}
+                      isVerified={comment.author.isVerified}
                     />
                     <span>·</span>
                     <span style={{ fontFamily: 'DM Mono, monospace' }}>{relativeTime(comment.createdAt)}</span>
@@ -720,6 +752,221 @@ export default function PostDetail() {
             </div>
           ))}
       </div>
+      </div>
+
+      {/* Right sidebar */}
+      <aside className="hidden lg:block" style={{ width: 280, flexShrink: 0 }}>
+        <div style={{ position: 'sticky', top: 72, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* More from community */}
+          {post && post.communitySlug && (
+            <div
+              style={{
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border)',
+                borderRadius: 10,
+                padding: '12px 14px',
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: 'var(--text-muted, #6B6B80)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  fontFamily: "'DM Sans', sans-serif",
+                  margin: '0 0 10px',
+                }}
+              >
+                More from a/{post.communitySlug}
+              </h3>
+
+              {communityPostsLoading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {[...Array(3)].map((_, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        height: 48,
+                        borderRadius: 6,
+                        background: 'linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%)',
+                        backgroundSize: '200% 100%',
+                        animation: 'shimmer 1.5s infinite',
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : communityPosts.length === 0 ? (
+                <div style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Sans', sans-serif" }}>
+                  No other posts yet
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {communityPosts.slice(0, 3).map((p) => (
+                    <Link
+                      key={p.id}
+                      href={`/post/${p.id}`}
+                      style={{ textDecoration: 'none', display: 'block' }}
+                    >
+                      <div
+                        style={{
+                          padding: '8px 6px',
+                          borderRadius: 6,
+                          borderBottom: '1px solid rgba(255,255,255,0.03)',
+                          transition: 'background 0.1s',
+                        }}
+                        onMouseEnter={(e) => {
+                          ;(e.currentTarget as HTMLDivElement).style.background = 'var(--bg-hover)'
+                        }}
+                        onMouseLeave={(e) => {
+                          ;(e.currentTarget as HTMLDivElement).style.background = 'transparent'
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: 'var(--text-primary, #E0E0F0)',
+                            fontFamily: "'DM Sans', sans-serif",
+                            lineHeight: 1.3,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                          }}
+                        >
+                          {p.title}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: 'var(--text-muted, #6B6B80)',
+                            marginTop: 3,
+                            fontFamily: "'DM Mono', monospace",
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                          }}
+                        >
+                          <span>{p.author.displayName}</span>
+                          <span>&middot;</span>
+                          <span>{relativeTime(p.createdAt)}</span>
+                          <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+                            <span>&#x25B2; {p.score}</span>
+                            <span>&#x1F4AC; {p.commentCount}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {/* Up Next - Similar discussions */}
+              {communityPosts.length > 3 && (
+                <>
+                  <h3
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: 'var(--text-muted, #6B6B80)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      fontFamily: "'DM Sans', sans-serif",
+                      margin: '14px 0 8px',
+                    }}
+                  >
+                    Up Next
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                    {communityPosts.slice(3, 5).map((p) => (
+                      <Link
+                        key={p.id}
+                        href={`/post/${p.id}`}
+                        style={{ textDecoration: 'none', display: 'block' }}
+                      >
+                        <div
+                          style={{
+                            padding: '8px 6px',
+                            borderRadius: 6,
+                            borderBottom: '1px solid rgba(255,255,255,0.03)',
+                            transition: 'background 0.1s',
+                          }}
+                          onMouseEnter={(e) => {
+                            ;(e.currentTarget as HTMLDivElement).style.background = 'var(--bg-hover)'
+                          }}
+                          onMouseLeave={(e) => {
+                            ;(e.currentTarget as HTMLDivElement).style.background = 'transparent'
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: 'var(--text-primary, #E0E0F0)',
+                              fontFamily: "'DM Sans', sans-serif",
+                              lineHeight: 1.3,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {p.title}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 11,
+                              color: 'var(--text-muted, #6B6B80)',
+                              marginTop: 3,
+                              fontFamily: "'DM Mono', monospace",
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 6,
+                            }}
+                          >
+                            <span>{p.author.displayName}</span>
+                            <span>&middot;</span>
+                            <span>{relativeTime(p.createdAt)}</span>
+                            <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+                              <span>&#x25B2; {p.score}</span>
+                              <span>&#x1F4AC; {p.commentCount}</span>
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Link to full community */}
+              <Link
+                href={`/a/${post.communitySlug}`}
+                style={{
+                  display: 'block',
+                  marginTop: 12,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: '#A29BFE',
+                  textDecoration: 'none',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                See all posts in a/{post.communitySlug} &rarr;
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Shimmer keyframes for sidebar skeletons */}
+        <style>{`
+          @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+          }
+        `}</style>
+      </aside>
     </div>
   )
 }

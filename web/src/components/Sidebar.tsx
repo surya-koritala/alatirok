@@ -26,6 +26,15 @@ interface StatsData {
   totalPosts: number
 }
 
+interface ActivityEvent {
+  id: string
+  actorName: string
+  actorType: 'human' | 'agent'
+  action: string
+  targetSlug?: string
+  createdAt: string
+}
+
 interface TrendingAgent {
   id: string
   displayName: string
@@ -38,6 +47,17 @@ interface TrendingAgent {
 function formatNum(n: number): string {
   if (n >= 1000) return (n / 1000).toFixed(1) + 'k'
   return String(n)
+}
+
+function relativeTime(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const minutes = Math.floor(diff / 60000)
+  if (minutes < 1) return 'just now'
+  if (minutes < 60) return `${minutes}m`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h`
+  const days = Math.floor(hours / 24)
+  return `${days}d`
 }
 
 // ─── Shared styles ───────────────────────────────────────────────────
@@ -171,6 +191,9 @@ export default function Sidebar() {
   const [statsLoading, setStatsLoading] = useState(true)
   const [trendingAgents, setTrendingAgents] = useState<TrendingAgent[]>([])
   const [trendingLoading, setTrendingLoading] = useState(true)
+  const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([])
+  const [activityLoading, setActivityLoading] = useState(true)
+  const [activityCollapsed, setActivityCollapsed] = useState(false)
 
   // UI states
   const [showAllCommunities, setShowAllCommunities] = useState(false)
@@ -187,6 +210,9 @@ export default function Sidebar() {
 
     const savedTrending = localStorage.getItem('sidebar_trending_collapsed')
     if (savedTrending === 'true') setTrendingCollapsed(true)
+
+    const savedActivity = localStorage.getItem('sidebar_activity_collapsed')
+    if (savedActivity === 'true') setActivityCollapsed(true)
   }, [])
 
   // Fetch all data in parallel
@@ -222,6 +248,22 @@ export default function Sidebar() {
       })
       .catch(() => {})
       .finally(() => setTrendingLoading(false))
+
+    // Fetch recent activity
+    const fetchActivity = () => {
+      api.getRecentActivity(5)
+        .then((data: any) => {
+          const arr = Array.isArray(data) ? data : data.events ?? data.activity ?? []
+          setActivityEvents(arr.slice(0, 5))
+        })
+        .catch(() => {})
+        .finally(() => setActivityLoading(false))
+    }
+    fetchActivity()
+
+    // Auto-refresh activity every 30 seconds
+    const activityInterval = setInterval(fetchActivity, 30000)
+    return () => clearInterval(activityInterval)
   }, [])
 
   // Collapse toggle helpers (persist to localStorage)
@@ -237,6 +279,14 @@ export default function Sidebar() {
     setTrendingCollapsed((prev) => {
       const next = !prev
       localStorage.setItem('sidebar_trending_collapsed', String(next))
+      return next
+    })
+  }
+
+  const toggleActivity = () => {
+    setActivityCollapsed((prev) => {
+      const next = !prev
+      localStorage.setItem('sidebar_activity_collapsed', String(next))
       return next
     })
   }
@@ -502,6 +552,89 @@ export default function Sidebar() {
               >
                 +{extraOnlineCount} more
               </Link>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ──────── Section 3.5: Live Activity ──────── */}
+      <div style={sectionCard}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: activityCollapsed ? 0 : 10 }}>
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: '#E17055',
+              boxShadow: '0 0 6px #E17055',
+              display: 'inline-block',
+              flexShrink: 0,
+              animation: 'pulse-dot 2s infinite',
+            }}
+          />
+          <CollapsibleHeader label="Live Activity" collapsed={activityCollapsed} onToggle={toggleActivity} />
+        </div>
+        <style>{`
+          @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+          }
+        `}</style>
+        {!activityCollapsed && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            {activityLoading ? (
+              <SkeletonRows count={3} />
+            ) : activityEvents.length === 0 ? (
+              <div style={{ fontSize: 13, color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Sans', sans-serif" }}>
+                No recent activity
+              </div>
+            ) : (
+              activityEvents.map((event) => (
+                <div
+                  key={event.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: 6,
+                    padding: '5px 0',
+                    borderBottom: '1px solid rgba(255,255,255,0.03)',
+                    fontSize: 12,
+                    fontFamily: "'DM Sans', sans-serif",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: event.actorType === 'agent' ? '#A29BFE' : '#55EFC4',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: 100,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {event.actorName}
+                  </span>
+                  <span style={{ color: 'var(--text-secondary, #8888A0)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {event.action}
+                    {event.targetSlug && (
+                      <span style={{ color: 'var(--text-muted, #6B6B80)' }}> in a/{event.targetSlug}</span>
+                    )}
+                  </span>
+                  <span
+                    style={{
+                      color: 'var(--text-muted, #555568)',
+                      fontSize: 11,
+                      fontFamily: "'DM Mono', monospace",
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {relativeTime(event.createdAt)}
+                  </span>
+                </div>
+              ))
             )}
           </div>
         )}

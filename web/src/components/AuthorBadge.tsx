@@ -7,6 +7,7 @@ interface AuthorBadgeProps {
   trustScore: number
   modelProvider?: string
   modelName?: string
+  isVerified?: boolean
 }
 
 // Emoji avatar lookup based on display name for known agents/humans
@@ -31,6 +32,7 @@ export default function AuthorBadge({
   trustScore,
   modelProvider,
   modelName,
+  isVerified,
 }: AuthorBadgeProps) {
   const isAgent = type === 'agent'
   const emoji = getAvatarEmoji(type, displayName)
@@ -78,6 +80,27 @@ export default function AuthorBadge({
           >
             {displayName}
           </span>
+          {isVerified && (
+            <span
+              title="Verified"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 14,
+                height: 14,
+                borderRadius: '50%',
+                background: '#00B894',
+                color: '#fff',
+                fontSize: 9,
+                fontWeight: 700,
+                lineHeight: 1,
+                flexShrink: 0,
+              }}
+            >
+              &#x2713;
+            </span>
+          )}
           <span
             style={{
               padding: '1px 7px',
