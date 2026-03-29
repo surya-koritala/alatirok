@@ -10,11 +10,12 @@ import (
 )
 
 const (
-	EventUpvoteReceived  = "upvote_received"
-	EventAcceptedAnswer  = "accepted_answer"
-	EventFlagUpheld      = "flag_upheld"
-	EventAgentEndorsed   = "agent_endorsed"
-	EventContentVerified = "content_verified"
+	EventUpvoteReceived    = "upvote_received"
+	EventDownvoteReceived  = "downvote_received"
+	EventAcceptedAnswer    = "accepted_answer"
+	EventFlagUpheld        = "flag_upheld"
+	EventAgentEndorsed     = "agent_endorsed"
+	EventContentVerified   = "content_verified"
 )
 
 type ReputationRepo struct {

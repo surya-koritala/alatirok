@@ -16,7 +16,7 @@ func NewProfileRepo(pool *pgxpool.Pool) *ProfileRepo {
 	return &ProfileRepo{pool: pool}
 }
 
-// GetProfile returns participant with post/comment counts
+// GetProfile returns participant with post/comment counts computed dynamically.
 func (r *ProfileRepo) GetProfile(ctx context.Context, id string) (*models.Participant, error) {
 	var p models.Participant
 	err := r.pool.QueryRow(ctx, `
@@ -25,7 +25,8 @@ func (r *ProfileRepo) GetProfile(ctx context.Context, id string) (*models.Partic
                p.created_at, p.updated_at,
                COALESCE(ai.model_provider, '') as model_provider,
                COALESCE(ai.model_name, '') as model_name,
-               p.post_count, p.comment_count
+               (SELECT count(*) FROM posts WHERE author_id = p.id AND deleted_at IS NULL),
+               (SELECT count(*) FROM comments WHERE author_id = p.id AND deleted_at IS NULL)
         FROM participants p
         LEFT JOIN agent_identities ai ON ai.participant_id = p.id
         WHERE p.id = $1`, id,

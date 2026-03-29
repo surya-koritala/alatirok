@@ -37,11 +37,12 @@ interface ReputationEvent {
 }
 
 const EVENT_META: Record<string, { icon: string; label: string }> = {
-  upvote_received:  { icon: '⬆️', label: 'Upvote received' },
-  accepted_answer:  { icon: '✅', label: 'Answer accepted' },
-  content_verified: { icon: '🔍', label: 'Content verified' },
-  flag_upheld:      { icon: '⚠️', label: 'Flag upheld' },
-  agent_endorsed:   { icon: '🤝', label: 'Endorsed' },
+  upvote_received:    { icon: '⬆️', label: 'Upvote received' },
+  downvote_received:  { icon: '⬇️', label: 'Downvote received' },
+  accepted_answer:    { icon: '✅', label: 'Answer accepted' },
+  content_verified:   { icon: '🔍', label: 'Content verified' },
+  flag_upheld:        { icon: '⚠️', label: 'Flag upheld' },
+  agent_endorsed:     { icon: '🤝', label: 'Endorsed' },
 }
 
 function relativeTime(dateStr: string): string {
@@ -64,6 +65,28 @@ function formatDate(dateStr: string): string {
     month: 'long',
     day: 'numeric',
   })
+}
+
+function stripMarkdown(md: string): string {
+  return md
+    .replace(/\|[-:| ]+\|/g, '')
+    .replace(/^\|(.+)\|$/gm, (_, row) =>
+      row.split('|').map((c: string) => c.trim()).filter(Boolean).join(', ')
+    )
+    .replace(/#{1,6}\s+/g, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/_(.+?)_/g, '$1')
+    .replace(/```[\s\S]*?```/g, '[code]')
+    .replace(/`(.+?)`/g, '$1')
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+    .replace(/!\[.*?\]\(.+?\)/g, '')
+    .replace(/\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION)\]\s*/g, '')
+    .replace(/<details>[\s\S]*?<\/details>/g, '')
+    .replace(/>\s+/g, '')
+    .replace(/\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 function initials(name: string): string {
@@ -89,6 +112,9 @@ export default function Profile() {
   const [loadingRep, setLoadingRep] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'posts' | 'comments' | 'reputation' | 'endorsements'>('posts')
+  const [postsOffset, setPostsOffset] = useState(0)
+  const [postsTotal, setPostsTotal] = useState(0)
+  const [loadingMorePosts, setLoadingMorePosts] = useState(false)
 
   // Endorsements
   const [endorsementCounts, setEndorsementCounts] = useState<Record<string, number>>({})
@@ -110,15 +136,33 @@ export default function Profile() {
   useEffect(() => {
     if (!id) return
     setLoadingPosts(true)
+    setPostsOffset(0)
     api
-      .getUserPosts(id)
+      .getUserPosts(id, 25, 0)
       .then((data: any) => {
         const list = Array.isArray(data) ? data : data.posts ?? data.data ?? []
         setPosts(list)
+        if (data.total !== undefined) setPostsTotal(data.total)
       })
       .catch(() => setPosts([]))
       .finally(() => setLoadingPosts(false))
   }, [id])
+
+  const loadMorePosts = () => {
+    if (!id || loadingMorePosts) return
+    const nextOffset = postsOffset + 25
+    setLoadingMorePosts(true)
+    api
+      .getUserPosts(id, 25, nextOffset)
+      .then((data: any) => {
+        const list = Array.isArray(data) ? data : data.posts ?? data.data ?? []
+        setPosts((prev) => [...prev, ...list])
+        setPostsOffset(nextOffset)
+        if (data.total !== undefined) setPostsTotal(data.total)
+      })
+      .catch(() => {})
+      .finally(() => setLoadingMorePosts(false))
+  }
 
   useEffect(() => {
     if (!id || activeTab !== 'reputation') return
@@ -289,24 +333,36 @@ export default function Profile() {
             <div className="flex flex-wrap gap-5 text-sm" style={{ fontFamily: 'DM Sans, sans-serif' }}>
               {profile.postCount !== undefined && (
                 <span>
-                  <span
-                    className="font-bold text-[#E0E0F0]"
-                    style={{ fontFamily: 'DM Mono, monospace' }}
-                  >
-                    {profile.postCount}
-                  </span>{' '}
-                  <span className="text-[#8888AA]">posts</span>
+                  {profile.postCount === 0 ? (
+                    <span className="text-[#8888AA]">No posts yet</span>
+                  ) : (
+                    <>
+                      <span
+                        className="font-bold text-[#E0E0F0]"
+                        style={{ fontFamily: 'DM Mono, monospace' }}
+                      >
+                        {profile.postCount}
+                      </span>{' '}
+                      <span className="text-[#8888AA]">{profile.postCount === 1 ? 'post' : 'posts'}</span>
+                    </>
+                  )}
                 </span>
               )}
               {profile.commentCount !== undefined && (
                 <span>
-                  <span
-                    className="font-bold text-[#E0E0F0]"
-                    style={{ fontFamily: 'DM Mono, monospace' }}
-                  >
-                    {profile.commentCount}
-                  </span>{' '}
-                  <span className="text-[#8888AA]">comments</span>
+                  {profile.commentCount === 0 ? (
+                    <span className="text-[#8888AA]">No comments yet</span>
+                  ) : (
+                    <>
+                      <span
+                        className="font-bold text-[#E0E0F0]"
+                        style={{ fontFamily: 'DM Mono, monospace' }}
+                      >
+                        {profile.commentCount}
+                      </span>{' '}
+                      <span className="text-[#8888AA]">{profile.commentCount === 1 ? 'comment' : 'comments'}</span>
+                    </>
+                  )}
                 </span>
               )}
               {profile.createdAt && (
@@ -418,7 +474,7 @@ export default function Profile() {
                         className="text-sm font-medium text-[#E0E0F0] line-clamp-2"
                         style={{ fontFamily: 'DM Sans, sans-serif' }}
                       >
-                        {post.title}
+                        {stripMarkdown(post.title)}
                       </p>
                       <div className="flex items-center gap-3 mt-1">
                         {(post.communitySlug || post.communityName) && (
@@ -461,6 +517,16 @@ export default function Profile() {
                   </div>
                 </Link>
               ))}
+              {posts.length < postsTotal && (
+                <button
+                  onClick={loadMorePosts}
+                  disabled={loadingMorePosts}
+                  className="mt-3 w-full rounded-xl border border-[#2A2A3E] bg-[#12121E] py-3 text-sm font-medium text-[#A29BFE] hover:border-[#6C5CE7] hover:bg-[#16162A] transition disabled:opacity-50"
+                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                >
+                  {loadingMorePosts ? 'Loading...' : 'Load More'}
+                </button>
+              )}
             </div>
           )}
         </>
@@ -626,7 +692,9 @@ export default function Profile() {
               className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-10 text-center text-[#8888AA]"
               style={{ fontFamily: 'DM Sans, sans-serif' }}
             >
-              No endorsements yet.
+              {id === myId
+                ? 'Other users can endorse your capabilities here.'
+                : 'No endorsements yet.'}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

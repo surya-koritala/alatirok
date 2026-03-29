@@ -72,14 +72,39 @@ export default function AgentDirectory() {
   const [sort, setSort] = useState('trust')
   const [minTrust, setMinTrust] = useState(0)
   const [search, setSearch] = useState('')
+  const [offset, setOffset] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const PAGE_SIZE = 20
 
   useEffect(() => {
     setLoading(true)
-    api.listAgentDirectory({ capability, provider, sort, minTrust })
-      .then((data: any) => setAgents(Array.isArray(data) ? data : []))
+    setOffset(0)
+    setHasMore(true)
+    api.listAgentDirectory({ capability, provider, sort, minTrust, limit: PAGE_SIZE, offset: 0 })
+      .then((data: any) => {
+        const list = Array.isArray(data) ? data : []
+        setAgents(list)
+        setHasMore(list.length >= PAGE_SIZE)
+      })
       .catch((err: any) => setError(err.message ?? 'Failed to load agents'))
       .finally(() => setLoading(false))
   }, [capability, provider, sort, minTrust])
+
+  const loadMore = () => {
+    if (loadingMore) return
+    const nextOffset = offset + PAGE_SIZE
+    setLoadingMore(true)
+    api.listAgentDirectory({ capability, provider, sort, minTrust, limit: PAGE_SIZE, offset: nextOffset })
+      .then((data: any) => {
+        const list = Array.isArray(data) ? data : []
+        setAgents((prev) => [...prev, ...list])
+        setOffset(nextOffset)
+        setHasMore(list.length >= PAGE_SIZE)
+      })
+      .catch(() => {})
+      .finally(() => setLoadingMore(false))
+  }
 
   const filtered = agents.filter(a =>
     !search || a.displayName.toLowerCase().includes(search.toLowerCase()) ||
@@ -274,7 +299,7 @@ export default function AgentDirectory() {
             gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
             gap: 16,
           }}>
-            {filtered.map(agent => {
+            {filtered.map((agent) => {
               const initials = agent.displayName.slice(0, 2).toUpperCase()
               const scoreColor = trustScoreColor(agent.trustScore)
               return (
@@ -399,7 +424,7 @@ export default function AgentDirectory() {
                         {agent.trustScore.toFixed(1)}
                       </span>
                     </span>
-                    <span>{agent.postCount} posts</span>
+                    <span>{agent.postCount === 0 ? 'No posts' : `${agent.postCount} posts`}</span>
                     <span style={{
                       borderRadius: 4, padding: '2px 6px', fontSize: 10, fontWeight: 500,
                       border: '1px solid var(--border, #2A2A3E)',
@@ -412,6 +437,41 @@ export default function AgentDirectory() {
               )
             })}
           </div>
+
+          {/* Load More button */}
+          {!loading && !error && hasMore && filtered.length > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                style={{
+                  padding: '10px 32px',
+                  borderRadius: 10,
+                  border: '1px solid var(--border, #2A2A3E)',
+                  background: 'var(--bg-card, #12121E)',
+                  color: '#A29BFE',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  fontFamily: "'DM Sans', sans-serif",
+                  cursor: loadingMore ? 'default' : 'pointer',
+                  opacity: loadingMore ? 0.6 : 1,
+                  transition: 'border-color 0.15s, background 0.15s',
+                }}
+                onMouseEnter={e => {
+                  if (!loadingMore) {
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(108,92,231,0.5)'
+                    ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-hover, #14142A)'
+                  }
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border, #2A2A3E)'
+                  ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-card, #12121E)'
+                }}
+              >
+                {loadingMore ? 'Loading...' : 'Load More'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

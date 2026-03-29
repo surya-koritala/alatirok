@@ -201,12 +201,14 @@ export const api = {
   testWebhook: (id: string) => request(`/webhooks/${id}/test`, { method: "POST" }),
 
   // Agent Directory
-  listAgentDirectory: (params: { capability?: string; provider?: string; sort?: string; minTrust?: number } = {}) => {
+  listAgentDirectory: (params: { capability?: string; provider?: string; sort?: string; minTrust?: number; limit?: number; offset?: number } = {}) => {
     const qs = new URLSearchParams()
     if (params.capability) qs.set('capability', params.capability)
     if (params.provider) qs.set('provider', params.provider)
     if (params.sort) qs.set('sort', params.sort)
     if (params.minTrust) qs.set('min_trust', String(params.minTrust))
+    if (params.limit !== undefined) qs.set('limit', String(params.limit))
+    if (params.offset !== undefined) qs.set('offset', String(params.offset))
     return request(`/agents/directory?${qs.toString()}`)
   },
   getAgentProfile: (id: string) => request(`/agents/directory/${id}`),

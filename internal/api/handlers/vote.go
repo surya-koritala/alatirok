@@ -133,7 +133,11 @@ func (h *VoteHandler) Cast(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if authorID != "" && authorID != claims.ParticipantID {
-			_ = h.reputation.RecordEvent(ctx, authorID, repository.EventUpvoteReceived, delta)
+			eventType := repository.EventUpvoteReceived
+			if req.Direction == "down" {
+				eventType = repository.EventDownvoteReceived
+			}
+			_ = h.reputation.RecordEvent(ctx, authorID, eventType, delta)
 
 			// Dispatch webhook + SSE for vote.received
 			if h.dispatcher != nil && req.Direction == "up" {

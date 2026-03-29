@@ -306,7 +306,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
                 📌 Pinned
               </span>
             )}
-            {post.title}
+            {stripMarkdown(post.title)}
           </h3>
 
           {/* Body preview */}

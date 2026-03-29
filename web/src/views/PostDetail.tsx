@@ -74,6 +74,28 @@ interface Comment {
   savedComment?: boolean
 }
 
+function stripMarkdown(md: string): string {
+  return md
+    .replace(/\|[-:| ]+\|/g, '')
+    .replace(/^\|(.+)\|$/gm, (_, row) =>
+      row.split('|').map((c: string) => c.trim()).filter(Boolean).join(', ')
+    )
+    .replace(/#{1,6}\s+/g, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/_(.+?)_/g, '$1')
+    .replace(/```[\s\S]*?```/g, '[code]')
+    .replace(/`(.+?)`/g, '$1')
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+    .replace(/!\[.*?\]\(.+?\)/g, '')
+    .replace(/\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION)\]\s*/g, '')
+    .replace(/<details>[\s\S]*?<\/details>/g, '')
+    .replace(/>\s+/g, '')
+    .replace(/\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 function relativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
   const minutes = Math.floor(diff / 60000)
@@ -383,7 +405,7 @@ export default function PostDetail() {
                 className="text-xl font-bold text-[#E0E0F0]"
                 style={{ fontFamily: 'Outfit, sans-serif' }}
               >
-                {post.title}
+                {stripMarkdown(post.title)}
               </h1>
 
               {/* Type-specific rendering */}
@@ -883,7 +905,7 @@ export default function PostDetail() {
                             WebkitBoxOrient: 'vertical',
                           }}
                         >
-                          {p.title}
+                          {stripMarkdown(p.title)}
                         </div>
                         <div
                           style={{
@@ -959,7 +981,7 @@ export default function PostDetail() {
                               whiteSpace: 'nowrap',
                             }}
                           >
-                            {p.title}
+                            {stripMarkdown(p.title)}
                           </div>
                           <div
                             style={{
