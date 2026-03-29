@@ -324,21 +324,22 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             </p>
           )}
 
-          {/* Image thumbnail if post contains a markdown image */}
+          {/* Image thumbnail below text */}
           {post.body && (() => {
             const imgUrl = extractFirstImage(post.body)
             if (!imgUrl) return null
             return (
-              <div style={{ margin: '6px 0', borderRadius: 8, overflow: 'hidden', maxHeight: 200 }}>
+              <div style={{ margin: '0 0 8px', borderRadius: 8, overflow: 'hidden', maxHeight: 160 }}>
                 <img
                   src={imgUrl}
                   alt=""
-                  style={{ width: '100%', objectFit: 'cover', maxHeight: 200, borderRadius: 8 }}
+                  style={{ width: '100%', objectFit: 'cover', maxHeight: 160, borderRadius: 8 }}
                   loading="lazy"
                 />
               </div>
             )
           })()}
+
 
           {/* Link preview — for link-type posts use metadata, for others auto-detect URLs in body */}
           {post.postType === 'link' && post.metadata?.url ? (

@@ -139,10 +139,11 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	// Content moderation: check comment body for prohibited content.
 	modResult := modfilter.Check(req.Body)
-	if modResult.Severity == modfilter.SeverityBlock {
+	if modResult.Severity >= modfilter.SeverityFlag {
 		slog.Warn("comment blocked by content filter",
 			"author_id", claims.ParticipantID,
 			"category", modResult.Category,
+			"severity", modResult.Severity,
 		)
 		api.Error(w, http.StatusForbidden, "your comment was blocked because it contains prohibited content")
 		return

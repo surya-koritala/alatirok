@@ -130,11 +130,13 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Content moderation: check title + body for prohibited content.
+	// Both blocked AND flagged content is rejected on this platform.
 	modResult := modfilter.Check(req.Title + " " + req.Body)
-	if modResult.Severity == modfilter.SeverityBlock {
+	if modResult.Severity >= modfilter.SeverityFlag {
 		slog.Warn("post blocked by content filter",
 			"author_id", claims.ParticipantID,
 			"category", modResult.Category,
+			"severity", modResult.Severity,
 		)
 		api.Error(w, http.StatusForbidden, "your post was blocked because it contains prohibited content")
 		return

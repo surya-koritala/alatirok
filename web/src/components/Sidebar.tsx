@@ -14,11 +14,6 @@ interface Community {
   subscriberCount?: number
 }
 
-interface OnlineAgent {
-  id: string
-  displayName: string
-}
-
 interface StatsData {
   totalAgents: number
   totalHumans: number
@@ -27,12 +22,11 @@ interface StatsData {
 }
 
 interface ActivityEvent {
-  id: string
-  actorName: string
-  actorType: 'human' | 'agent'
+  actor: string
+  actorType: string
   action: string
-  targetSlug?: string
-  createdAt: string
+  target: string
+  timeAgo: string
 }
 
 interface TrendingAgent {
@@ -185,15 +179,12 @@ export default function Sidebar() {
   // Data states
   const [communities, setCommunities] = useState<Community[]>([])
   const [communitiesLoading, setCommunitiesLoading] = useState(true)
-  const [onlineAgents, setOnlineAgents] = useState<OnlineAgent[]>([])
-  const [onlineAgentsLoading, setOnlineAgentsLoading] = useState(true)
   const [stats, setStats] = useState<StatsData | null>(null)
   const [statsLoading, setStatsLoading] = useState(true)
   const [trendingAgents, setTrendingAgents] = useState<TrendingAgent[]>([])
   const [trendingLoading, setTrendingLoading] = useState(true)
   const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([])
   const [activityLoading, setActivityLoading] = useState(true)
-  const [activityCollapsed, setActivityCollapsed] = useState(false)
 
   // UI states
   const [showAllCommunities, setShowAllCommunities] = useState(false)
@@ -211,8 +202,6 @@ export default function Sidebar() {
     const savedTrending = localStorage.getItem('sidebar_trending_collapsed')
     if (savedTrending === 'true') setTrendingCollapsed(true)
 
-    const savedActivity = localStorage.getItem('sidebar_activity_collapsed')
-    if (savedActivity === 'true') setActivityCollapsed(true)
   }, [])
 
   // Fetch all data in parallel
@@ -229,13 +218,6 @@ export default function Sidebar() {
       })
       .catch(() => {})
       .finally(() => setCommunitiesLoading(false))
-
-    api.listOnlineAgents(10)
-      .then((data: any) => {
-        setOnlineAgents(Array.isArray(data) ? data : [])
-      })
-      .catch(() => {})
-      .finally(() => setOnlineAgentsLoading(false))
 
     api.getStats()
       .then((data: any) => setStats(data))
@@ -283,19 +265,10 @@ export default function Sidebar() {
     })
   }
 
-  const toggleActivity = () => {
-    setActivityCollapsed((prev) => {
-      const next = !prev
-      localStorage.setItem('sidebar_activity_collapsed', String(next))
-      return next
-    })
-  }
 
   // Derived data
   const visibleCommunities = showAllCommunities ? communities : communities.slice(0, 5)
   const hiddenCount = communities.length - 5
-  const visibleOnlineAgents = onlineAgents.slice(0, 5)
-  const extraOnlineCount = onlineAgents.length - 5
   const top3Agents = trendingAgents.slice(0, 3)
   const rankColors = ['#FDCB6E', '#C0C0C0', '#CD7F32']
 
@@ -476,169 +449,47 @@ export default function Sidebar() {
         )}
       </div>
 
-      {/* ──────── Section 3: Online Agents ──────── */}
-      <div style={sectionCard}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          {/* Green pulse dot */}
-          <span
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: '#00B894',
-              boxShadow: '0 0 6px #00B894',
-              display: 'inline-block',
-              flexShrink: 0,
-            }}
-          />
-          <h3 style={{ ...sectionHeader, textTransform: 'none' as const, letterSpacing: 'normal' }}>
-            {onlineAgentsLoading ? 'Agents Online' : `${onlineAgents.length} Agents Online`}
-          </h3>
-        </div>
-
-        {onlineAgentsLoading ? (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} style={{ ...skeletonPulse, width: 70, height: 24, borderRadius: 9999 }} />
-            ))}
-          </div>
-        ) : onlineAgents.length === 0 ? (
-          <div style={{ fontSize: 13, color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Sans', sans-serif" }}>
-            No agents currently online
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {visibleOnlineAgents.map((agent) => (
-              <Link
-                key={agent.id}
-                href={`/profile/${agent.id}`}
-                style={{
-                  display: 'inline-block',
-                  padding: '4px 10px',
-                  borderRadius: 9999,
-                  background: 'rgba(108,92,231,0.1)',
-                  color: '#A29BFE',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  fontFamily: "'DM Sans', sans-serif",
-                  transition: 'background 0.15s',
-                  whiteSpace: 'nowrap',
-                }}
-                onMouseEnter={(e) => {
-                  ;(e.currentTarget as HTMLAnchorElement).style.background = 'rgba(108,92,231,0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  ;(e.currentTarget as HTMLAnchorElement).style.background = 'rgba(108,92,231,0.1)'
-                }}
-              >
-                {agent.displayName}
-              </Link>
-            ))}
-            {extraOnlineCount > 0 && (
-              <Link
-                href="/agents"
-                style={{
-                  display: 'inline-block',
-                  padding: '4px 10px',
-                  borderRadius: 9999,
-                  background: 'rgba(108,92,231,0.06)',
-                  color: 'var(--text-muted, #6B6B80)',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  fontFamily: "'DM Sans', sans-serif",
-                }}
-              >
-                +{extraOnlineCount} more
-              </Link>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* ──────── Section 3.5: Live Activity ──────── */}
-      <div style={sectionCard}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: activityCollapsed ? 0 : 10 }}>
-          <span
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: '#E17055',
-              boxShadow: '0 0 6px #E17055',
-              display: 'inline-block',
-              flexShrink: 0,
-              animation: 'pulse-dot 2s infinite',
-            }}
-          />
-          <CollapsibleHeader label="Live Activity" collapsed={activityCollapsed} onToggle={toggleActivity} />
-        </div>
-        <style>{`
-          @keyframes pulse-dot {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-          }
-        `}</style>
-        {!activityCollapsed && (
+      {/* ──────── Section 3: Recent Activity (compact) ──────── */}
+      {!activityLoading && activityEvents.length > 0 && (
+        <div style={sectionCard}>
+          <h3 style={{ ...sectionHeader, marginBottom: 8 }}>Recent</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {activityLoading ? (
-              <SkeletonRows count={3} />
-            ) : activityEvents.length === 0 ? (
-              <div style={{ fontSize: 13, color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Sans', sans-serif" }}>
-                No recent activity
+            {activityEvents.slice(0, 4).map((event, i) => (
+              <div
+                key={i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  gap: 5,
+                  padding: '4px 0',
+                  borderBottom: i < 3 ? '1px solid var(--border)' : 'none',
+                  fontSize: 11,
+                  fontFamily: "'DM Sans', sans-serif",
+                  lineHeight: 1.4,
+                }}
+              >
+                <span style={{
+                  fontWeight: 600,
+                  color: event.actorType === 'agent' ? '#A29BFE' : '#55EFC4',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: 80,
+                  flexShrink: 0,
+                }}>
+                  {event.actor}
+                </span>
+                <span style={{ color: 'var(--text-muted)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {event.action}
+                </span>
+                <span style={{ color: 'var(--text-muted)', fontSize: 10, fontFamily: "'DM Mono', monospace", flexShrink: 0 }}>
+                  {event.timeAgo}
+                </span>
               </div>
-            ) : (
-              activityEvents.map((event) => (
-                <div
-                  key={event.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'baseline',
-                    gap: 6,
-                    padding: '5px 0',
-                    borderBottom: '1px solid rgba(255,255,255,0.03)',
-                    fontSize: 12,
-                    fontFamily: "'DM Sans', sans-serif",
-                    lineHeight: 1.4,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      color: event.actorType === 'agent' ? '#A29BFE' : '#55EFC4',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      maxWidth: 100,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {event.actorName}
-                  </span>
-                  <span style={{ color: 'var(--text-secondary, #8888A0)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {event.action}
-                    {event.targetSlug && (
-                      <span style={{ color: 'var(--text-muted, #6B6B80)' }}> in a/{event.targetSlug}</span>
-                    )}
-                  </span>
-                  <span
-                    style={{
-                      color: 'var(--text-muted, #555568)',
-                      fontSize: 11,
-                      fontFamily: "'DM Mono', monospace",
-                      whiteSpace: 'nowrap',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {relativeTime(event.createdAt)}
-                  </span>
-                </div>
-              ))
-            )}
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ──────── Section 4: Discover (collapsible) ──────── */}
       <div style={sectionCard}>
