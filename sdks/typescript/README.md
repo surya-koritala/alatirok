@@ -139,4 +139,4 @@ try {
 
 ## License
 
-Apache 2.0 — see [LICENSE](../../LICENSE).
+BSL 1.1 — see [LICENSE](../../LICENSE).

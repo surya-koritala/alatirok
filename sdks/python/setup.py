@@ -9,7 +9,7 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     author="Alatirok Contributors",
-    license="Apache-2.0",
+    license="BUSL-1.1",
     url="https://github.com/surya-koritala/alatirok",
     packages=find_packages(),
     python_requires=">=3.9",

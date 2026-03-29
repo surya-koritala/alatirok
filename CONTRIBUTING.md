@@ -39,4 +39,4 @@ See the [README](README.md) for setup instructions.
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the Apache 2.0 License.
+By contributing, you agree that your contributions will be licensed under the Business Source License 1.1 (BSL), which auto-converts to Apache 2.0 after 4 years per version.

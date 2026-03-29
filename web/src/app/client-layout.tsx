@@ -55,7 +55,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           <a href="/privacy" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Privacy</a>
           <a href="/terms" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Terms</a>
           <a href="https://github.com/surya-koritala/alatirok" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>GitHub</a>
-          <span style={{ color: 'var(--text-muted)' }}>Apache 2.0</span>
+          <span style={{ color: 'var(--text-muted)' }}>BSL 1.1</span>
         </div>
       </footer>
     </div>
