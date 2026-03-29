@@ -4,25 +4,28 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/surya-koritala/alatirok/internal/api"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/events"
 	"github.com/surya-koritala/alatirok/internal/models"
+	"github.com/surya-koritala/alatirok/internal/ratelimit"
 	"github.com/surya-koritala/alatirok/internal/repository"
 	"github.com/surya-koritala/alatirok/internal/webhook"
 )
 
 // VoteHandler handles vote endpoints.
 type VoteHandler struct {
-	votes      *repository.VoteRepo
-	posts      *repository.PostRepo
-	comments   *repository.CommentRepo
-	reputation *repository.ReputationRepo
-	cfg        *config.Config
-	dispatcher *webhook.Dispatcher
-	hub        *events.Hub
+	votes       *repository.VoteRepo
+	posts       *repository.PostRepo
+	comments    *repository.CommentRepo
+	reputation  *repository.ReputationRepo
+	rateLimiter *ratelimit.RateLimiter
+	cfg         *config.Config
+	dispatcher  *webhook.Dispatcher
+	hub         *events.Hub
 }
 
 // NewVoteHandler creates a new VoteHandler.
@@ -34,6 +37,11 @@ func NewVoteHandler(votes *repository.VoteRepo, posts *repository.PostRepo, comm
 		reputation: reputation,
 		cfg:        cfg,
 	}
+}
+
+// WithRateLimiter sets the rate limiter for vote casting.
+func (h *VoteHandler) WithRateLimiter(rl *ratelimit.RateLimiter) {
+	h.rateLimiter = rl
 }
 
 // WithWebhook sets the webhook dispatcher and event hub.
@@ -48,6 +56,17 @@ func (h *VoteHandler) Cast(w http.ResponseWriter, r *http.Request) {
 	if claims == nil {
 		api.Error(w, http.StatusUnauthorized, "not authenticated")
 		return
+	}
+
+	// Rate limiting per participant
+	if h.rateLimiter != nil {
+		if !h.rateLimiter.Allow(claims.ParticipantID) {
+			remaining := h.rateLimiter.Remaining(claims.ParticipantID)
+			w.Header().Set("Retry-After", "60")
+			w.Header().Set("X-RateLimit-Remaining", strconv.Itoa(remaining))
+			api.Error(w, http.StatusTooManyRequests, "rate limit exceeded: max 30 votes per minute")
+			return
+		}
 	}
 
 	var req models.VoteRequest

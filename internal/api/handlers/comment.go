@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
@@ -14,7 +16,9 @@ import (
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/events"
+	"github.com/surya-koritala/alatirok/internal/modfilter"
 	"github.com/surya-koritala/alatirok/internal/models"
+	"github.com/surya-koritala/alatirok/internal/ratelimit"
 	"github.com/surya-koritala/alatirok/internal/repository"
 	"github.com/surya-koritala/alatirok/internal/webhook"
 )
@@ -54,6 +58,8 @@ type CommentHandler struct {
 	provenances   *repository.ProvenanceRepo
 	notifications *repository.NotificationRepo
 	participants  *repository.ParticipantRepo
+	reports       *repository.ReportRepo
+	rateLimiter   *ratelimit.RateLimiter
 	cfg           *config.Config
 	dispatcher    *webhook.Dispatcher
 	hub           *events.Hub
@@ -74,6 +80,16 @@ func (h *CommentHandler) WithParticipants(participants *repository.ParticipantRe
 	h.participants = participants
 }
 
+// WithReports sets the report repo for auto-flagging moderated content.
+func (h *CommentHandler) WithReports(reports *repository.ReportRepo) {
+	h.reports = reports
+}
+
+// WithRateLimiter sets the rate limiter for comment creation.
+func (h *CommentHandler) WithRateLimiter(rl *ratelimit.RateLimiter) {
+	h.rateLimiter = rl
+}
+
 // WithWebhook sets the webhook dispatcher and event hub.
 func (h *CommentHandler) WithWebhook(dispatcher *webhook.Dispatcher, hub *events.Hub) {
 	h.dispatcher = dispatcher
@@ -86,6 +102,17 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if claims == nil {
 		api.Error(w, http.StatusUnauthorized, "not authenticated")
 		return
+	}
+
+	// Rate limiting per participant
+	if h.rateLimiter != nil {
+		if !h.rateLimiter.Allow(claims.ParticipantID) {
+			remaining := h.rateLimiter.Remaining(claims.ParticipantID)
+			w.Header().Set("Retry-After", "60")
+			w.Header().Set("X-RateLimit-Remaining", strconv.Itoa(remaining))
+			api.Error(w, http.StatusTooManyRequests, "rate limit exceeded: max 10 comments per minute")
+			return
+		}
 	}
 
 	postID := r.PathValue("id")
@@ -110,6 +137,17 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Content moderation: check comment body for prohibited content.
+	modResult := modfilter.Check(req.Body)
+	if modResult.Severity == modfilter.SeverityBlock {
+		slog.Warn("comment blocked by content filter",
+			"author_id", claims.ParticipantID,
+			"category", modResult.Category,
+		)
+		api.Error(w, http.StatusForbidden, "your comment was blocked because it contains prohibited content")
+		return
+	}
+
 	comment := &models.Comment{
 		PostID:          postID,
 		ParentCommentID: req.ParentCommentID,
@@ -127,6 +165,17 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 		}
 		api.ErrorWithDetail(w, http.StatusInternalServerError, "failed to create comment", err)
 		return
+	}
+
+	// Auto-report flagged content for moderator review.
+	if modResult.Severity == modfilter.SeverityFlag && h.reports != nil {
+		_, reportErr := h.reports.Create(r.Context(), "system", result.ID, "comment", "auto_flagged", modResult.Reason)
+		if reportErr != nil {
+			slog.Error("failed to auto-create report for flagged comment",
+				"comment_id", result.ID,
+				"error", reportErr,
+			)
+		}
 	}
 
 	// Notify post author about the new comment (if commenter is not the post author).
@@ -196,7 +245,14 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 
-	api.JSON(w, http.StatusCreated, result)
+	// Return the comment with author data so the frontend can render it properly
+	full, err := h.comments.GetByIDWithAuthor(r.Context(), result.ID)
+	if err != nil {
+		// Fallback to raw comment if join fails
+		api.JSON(w, http.StatusCreated, result)
+		return
+	}
+	api.JSON(w, http.StatusCreated, full)
 }
 
 // ListByPost handles GET /api/v1/posts/{id}/comments.
