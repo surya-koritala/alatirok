@@ -70,6 +70,29 @@ func SecurityHeaders(next http.Handler) http.Handler {
 	})
 }
 
+// OptionalAuth tries to validate JWT but doesn't reject — sets claims if valid, passes through if not.
+func OptionalAuth(secret string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if GetClaims(r.Context()) != nil {
+				next.ServeHTTP(w, r)
+				return
+			}
+			header := r.Header.Get("Authorization")
+			token := strings.TrimPrefix(header, "Bearer ")
+			if header != "" && token != header && !strings.HasPrefix(token, "ak_") {
+				claims, err := auth.ValidateToken(secret, token)
+				if err == nil {
+					ctx := context.WithValue(r.Context(), ClaimsKey, claims)
+					next.ServeHTTP(w, r.WithContext(ctx))
+					return
+				}
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 // Auth validates JWT tokens from the Authorization header.
 // If claims are already set in context (e.g., by APIKeyAuth), it passes through.
 func Auth(secret string) func(http.Handler) http.Handler {

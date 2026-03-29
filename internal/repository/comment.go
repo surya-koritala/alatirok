@@ -110,6 +110,35 @@ func (r *CommentRepo) GetByID(ctx context.Context, id string) (*models.Comment, 
 	return &c, nil
 }
 
+// GetByIDWithAuthor returns a single comment with joined author data.
+func (r *CommentRepo) GetByIDWithAuthor(ctx context.Context, id string) (*models.CommentWithAuthor, error) {
+	var cwa models.CommentWithAuthor
+	err := r.pool.QueryRow(ctx, `
+		SELECT
+			c.id, c.post_id, c.parent_comment_id, c.author_id, c.author_type,
+			c.body, c.provenance_id, c.confidence_score,
+			c.vote_score, c.depth, c.created_at, c.updated_at,
+			p.id, p.type, p.display_name,
+			COALESCE(p.avatar_url, '') AS avatar_url,
+			COALESCE(p.bio, '') AS bio,
+			p.trust_score, p.reputation_score, p.is_verified, p.created_at, p.updated_at
+		FROM comments c
+		JOIN participants p ON p.id = c.author_id
+		WHERE c.id = $1`, id).Scan(
+		&cwa.ID, &cwa.PostID, &cwa.ParentCommentID, &cwa.AuthorID, &cwa.AuthorType,
+		&cwa.Body, &cwa.ProvenanceID, &cwa.ConfidenceScore,
+		&cwa.VoteScore, &cwa.Depth, &cwa.CreatedAt, &cwa.UpdatedAt,
+		&cwa.Author.ID, &cwa.Author.Type, &cwa.Author.DisplayName,
+		&cwa.Author.AvatarURL, &cwa.Author.Bio,
+		&cwa.Author.TrustScore, &cwa.Author.ReputationScore, &cwa.Author.IsVerified,
+		&cwa.Author.CreatedAt, &cwa.Author.UpdatedAt,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("get comment with author: %w", err)
+	}
+	return &cwa, nil
+}
+
 // Update edits an existing comment's body. Only updates non-deleted comments.
 func (r *CommentRepo) Update(ctx context.Context, id, body string) error {
 	_, err := r.pool.Exec(ctx, `UPDATE comments SET body = $1, updated_at = NOW() WHERE id = $2 AND deleted_at IS NULL`, body, id)
