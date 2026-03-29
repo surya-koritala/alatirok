@@ -5,32 +5,24 @@ import Link from 'next/link'
 import { api } from '../api/client'
 
 interface ActivityEvent {
-  actor: string
   type: 'post' | 'comment'
-  community?: string
-  title?: string
-  createdAt: string
+  actor: string
+  actorType: string
+  action: string
+  target: string
+  timeAgo: string
 }
 
-function relativeTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const minutes = Math.floor(diff / 60000)
-  if (minutes < 1) return 'just now'
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  return `${days}d ago`
-}
-
-function formatEventText(event: ActivityEvent): string {
-  if (event.type === 'post' && event.community) {
-    return `${event.actor} posted in a/${event.community} \u00b7 ${relativeTime(event.createdAt)}`
-  }
-  if (event.type === 'comment' && event.title) {
-    return `${event.actor} commented on ${event.title} \u00b7 ${relativeTime(event.createdAt)}`
-  }
-  return `${event.actor} was active \u00b7 ${relativeTime(event.createdAt)}`
+function EventItem({ event }: { event: ActivityEvent }) {
+  const actorColor = event.actorType === 'agent' ? '#A29BFE' : '#55EFC4'
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontFamily: "'DM Sans', sans-serif" }}>
+      <span style={{ color: actorColor, fontWeight: 600 }}>{event.actor}</span>
+      <span style={{ color: 'var(--text-muted, #6B6B80)' }}>{event.action}</span>
+      <span style={{ color: 'var(--text-secondary, #8888AA)', fontWeight: 500 }}>{event.target}</span>
+      <span style={{ color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Mono', monospace", fontSize: 10 }}>{event.timeAgo}</span>
+    </span>
+  )
 }
 
 function formatNum(n: number): string {
@@ -96,9 +88,7 @@ export default function Hero() {
   // Don't render during SSR or before localStorage check
   if (!initialCheckDone || isLoggedIn || dismissed) return null
 
-  const tickerText = events.length > 0
-    ? events.map(formatEventText).join('  |  ')
-    : 'Welcome to Alatirok  |  The open network for AI agents & humans'
+  const tickerEvents = events.length > 0 ? events : []
 
   const statItems = [
     { label: 'Agents online', value: formatNum(onlineCount), color: '#A29BFE' },
@@ -108,10 +98,10 @@ export default function Hero() {
 
   return (
     <div
+      className="hero-container"
       style={{
         position: 'relative',
-        background: 'linear-gradient(135deg, #0C0C14 0%, #1A1A2E 100%)',
-        border: '1px solid rgba(108,92,231,0.12)',
+        border: '1px solid var(--border)',
         borderRadius: 12,
         marginBottom: 16,
         overflow: 'hidden',
@@ -202,7 +192,7 @@ export default function Hero() {
               Join the conversation
             </Link>
             <Link
-              href="/docs"
+              href="/connect"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -247,7 +237,7 @@ export default function Hero() {
               style={{
                 textAlign: 'center',
                 padding: '0 20px',
-                borderLeft: i > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                borderLeft: i > 0 ? '1px solid var(--border)' : 'none',
               }}
             >
               <div
@@ -278,79 +268,86 @@ export default function Hero() {
       </div>
 
       {/* Bottom activity ticker */}
-      <div
-        style={{
-          borderTop: '1px solid rgba(255,255,255,0.05)',
-          padding: '8px 0',
-          overflow: 'hidden',
-          position: 'relative',
-        }}
-      >
+      {tickerEvents.length > 0 && (
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            paddingLeft: 28,
-            gap: 10,
+            borderTop: '1px solid var(--border)',
+            padding: '10px 0',
+            overflow: 'hidden',
+            position: 'relative',
           }}
         >
-          {/* Green pulse dot */}
-          <span
-            className="hero-pulse-dot"
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              background: '#00B894',
-              flexShrink: 0,
-              display: 'inline-block',
-            }}
-          />
-
-          {/* Marquee container */}
           <div
             style={{
-              overflow: 'hidden',
-              flex: 1,
-              maskImage: 'linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              paddingLeft: 28,
+              gap: 12,
             }}
           >
-            <div
-              className="hero-ticker-track"
+            {/* Green pulse dot */}
+            <span
+              className="hero-pulse-dot"
               style={{
-                display: 'flex',
-                whiteSpace: 'nowrap',
-                willChange: 'transform',
+                width: 7,
+                height: 7,
+                borderRadius: '50%',
+                background: '#00B894',
+                flexShrink: 0,
+                display: 'inline-block',
+              }}
+            />
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>Live</span>
+
+            {/* Marquee container */}
+            <div
+              style={{
+                overflow: 'hidden',
+                flex: 1,
+                maskImage: 'linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%)',
               }}
             >
-              <span
+              <div
+                className="hero-ticker-track"
                 style={{
-                  fontSize: 11,
-                  color: 'var(--text-muted, #6B6B80)',
-                  fontFamily: "'DM Sans', sans-serif",
-                  paddingRight: 60,
+                  display: 'flex',
+                  alignItems: 'center',
+                  whiteSpace: 'nowrap',
+                  willChange: 'transform',
+                  gap: 0,
                 }}
               >
-                {tickerText}
-              </span>
-              <span
-                style={{
-                  fontSize: 11,
-                  color: 'var(--text-muted, #6B6B80)',
-                  fontFamily: "'DM Sans', sans-serif",
-                  paddingRight: 60,
-                }}
-              >
-                {tickerText}
-              </span>
+                {/* Duplicate the list for seamless loop */}
+                {[0, 1].map((copy) => (
+                  <span key={copy} style={{ display: 'inline-flex', alignItems: 'center', paddingRight: 40 }}>
+                    {tickerEvents.map((evt, i) => (
+                      <span key={`${copy}-${i}`} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                        {i > 0 && (
+                          <span style={{ margin: '0 14px', color: 'var(--border)', fontSize: 10 }}>|</span>
+                        )}
+                        <EventItem event={evt} />
+                      </span>
+                    ))}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Keyframes and responsive styles */}
       <style dangerouslySetInnerHTML={{ __html: `
+        .hero-container {
+          background: linear-gradient(135deg, rgba(108,92,231,0.08) 0%, rgba(0,184,148,0.05) 50%, rgba(12,12,20,0.02) 100%);
+        }
+        [data-theme="dark"] .hero-container {
+          background: linear-gradient(135deg, #0C0C14 0%, #1A1A2E 100%);
+        }
+        [data-theme="light"] .hero-container {
+          background: linear-gradient(135deg, rgba(108,92,231,0.06) 0%, rgba(0,184,148,0.04) 50%, #FAFAFA 100%);
+        }
         @keyframes hero-pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.3; }
@@ -363,7 +360,10 @@ export default function Hero() {
           100% { transform: translateX(-50%); }
         }
         .hero-ticker-track {
-          animation: hero-ticker-scroll 45s linear infinite;
+          animation: hero-ticker-scroll 50s linear infinite;
+        }
+        .hero-ticker-track:hover {
+          animation-play-state: paused;
         }
         @media (max-width: 768px) {
           .hero-main {
