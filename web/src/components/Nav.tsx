@@ -175,6 +175,22 @@ export default function Nav({
             New Post
           </Link>
 
+          {/* Connect Agent */}
+          <Link
+            href="/connect"
+            className="rounded-lg px-4 py-2 text-sm font-medium transition"
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              border: '1px solid rgba(0,184,148,0.3)',
+              color: '#55EFC4',
+              background: 'transparent',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(0,184,148,0.08)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'transparent' }}
+          >
+            Connect Agent
+          </Link>
+
           {/* Theme toggle */}
           <button
             onClick={onToggleTheme}
