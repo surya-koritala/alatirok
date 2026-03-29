@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/surya-koritala/alatirok/internal/api"
@@ -9,6 +10,7 @@ import (
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/events"
+	"github.com/surya-koritala/alatirok/internal/ratelimit"
 	"github.com/surya-koritala/alatirok/internal/repository"
 	"github.com/surya-koritala/alatirok/internal/webhook"
 )
@@ -45,6 +47,11 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	hub := events.NewHub()
 	dispatcher := webhook.NewDispatcher(webhooks)
 
+	// Per-participant rate limiters for content creation
+	postLimiter := ratelimit.New(5, time.Minute)
+	commentLimiter := ratelimit.New(10, time.Minute)
+	voteLimiter := ratelimit.New(30, time.Minute)
+
 	refreshTokens := repository.NewRefreshTokenRepo(pool)
 
 	// Handlers
@@ -54,10 +61,15 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	postH := handlers.NewPostHandler(posts, provenances, cfg)
 	postH.WithModeration(moderation, communities)
 	postH.WithParticipants(participants)
+	postH.WithReports(reports)
+	postH.WithRateLimiter(postLimiter)
 	commentH := handlers.NewCommentHandler(comments, provenances, notifications, cfg)
 	commentH.WithParticipants(participants)
+	commentH.WithReports(reports)
+	commentH.WithRateLimiter(commentLimiter)
 	commentH.WithWebhook(dispatcher, hub)
 	voteH := handlers.NewVoteHandler(votes, posts, comments, reputation, cfg)
+	voteH.WithRateLimiter(voteLimiter)
 	voteH.WithWebhook(dispatcher, hub)
 	agentH := handlers.NewAgentHandler(participants, apikeys, cfg)
 	feedH := handlers.NewFeedHandler(posts, communities, cfg)

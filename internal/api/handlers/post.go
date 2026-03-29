@@ -3,13 +3,17 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/surya-koritala/alatirok/internal/api"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
 	"github.com/surya-koritala/alatirok/internal/config"
+	"github.com/surya-koritala/alatirok/internal/modfilter"
 	"github.com/surya-koritala/alatirok/internal/models"
+	"github.com/surya-koritala/alatirok/internal/ratelimit"
 	"github.com/surya-koritala/alatirok/internal/repository"
 )
 
@@ -20,12 +24,24 @@ type PostHandler struct {
 	moderation   *repository.ModerationRepo
 	communities  *repository.CommunityRepo
 	participants *repository.ParticipantRepo
+	reports      *repository.ReportRepo
+	rateLimiter  *ratelimit.RateLimiter
 	cfg          *config.Config
 }
 
 // WithParticipants sets the participant repo for agent policy enforcement.
 func (h *PostHandler) WithParticipants(participants *repository.ParticipantRepo) {
 	h.participants = participants
+}
+
+// WithReports sets the report repo for auto-flagging moderated content.
+func (h *PostHandler) WithReports(reports *repository.ReportRepo) {
+	h.reports = reports
+}
+
+// WithRateLimiter sets the rate limiter for post creation.
+func (h *PostHandler) WithRateLimiter(rl *ratelimit.RateLimiter) {
+	h.rateLimiter = rl
 }
 
 // NewPostHandler creates a new PostHandler.
@@ -49,6 +65,17 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if claims == nil {
 		api.Error(w, http.StatusUnauthorized, "not authenticated")
 		return
+	}
+
+	// Rate limiting per participant
+	if h.rateLimiter != nil {
+		if !h.rateLimiter.Allow(claims.ParticipantID) {
+			remaining := h.rateLimiter.Remaining(claims.ParticipantID)
+			w.Header().Set("Retry-After", "60")
+			w.Header().Set("X-RateLimit-Remaining", strconv.Itoa(remaining))
+			api.Error(w, http.StatusTooManyRequests, "rate limit exceeded: max 5 posts per minute")
+			return
+		}
 	}
 
 	var req models.CreatePostRequest
@@ -102,6 +129,17 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Content moderation: check title + body for prohibited content.
+	modResult := modfilter.Check(req.Title + " " + req.Body)
+	if modResult.Severity == modfilter.SeverityBlock {
+		slog.Warn("post blocked by content filter",
+			"author_id", claims.ParticipantID,
+			"category", modResult.Category,
+		)
+		api.Error(w, http.StatusForbidden, "your post was blocked because it contains prohibited content")
+		return
+	}
+
 	// Enforce community agent_policy for agent authors
 	if claims.ParticipantType == string(models.ParticipantAgent) && h.communities != nil {
 		community, err := h.communities.GetByID(r.Context(), req.CommunityID)
@@ -145,6 +183,17 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		api.ErrorWithDetail(w, http.StatusInternalServerError, "failed to create post", err)
 		return
+	}
+
+	// Auto-report flagged content for moderator review.
+	if modResult.Severity == modfilter.SeverityFlag && h.reports != nil {
+		_, reportErr := h.reports.Create(r.Context(), "system", result.ID, "post", "auto_flagged", modResult.Reason)
+		if reportErr != nil {
+			slog.Error("failed to auto-create report for flagged post",
+				"post_id", result.ID,
+				"error", reportErr,
+			)
+		}
 	}
 
 	// If author is an agent and sources/confidence are provided, auto-create provenance.
