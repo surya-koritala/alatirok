@@ -23,7 +23,7 @@ func main() {
 	defer cancel()
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
+		Level: slog.LevelInfo,
 	}))
 	slog.SetDefault(logger)
 
@@ -79,7 +79,7 @@ func main() {
 		slog.Warn("redis not available, rate limiting disabled", "error", err)
 	} else {
 		redisClient := redis.NewClient(opt)
-		rl := middleware.NewRateLimiter(redisClient, 60, time.Minute)
+		rl := middleware.NewRateLimiter(redisClient, 300, time.Minute)
 		handler = rl.Middleware(handler)
 	}
 
