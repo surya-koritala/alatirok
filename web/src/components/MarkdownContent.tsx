@@ -17,6 +17,7 @@ const sanitizeSchema = {
   ...defaultSchema,
   tagNames: [
     ...(defaultSchema.tagNames ?? []),
+    'img',
     'math', 'annotation', 'semantics', 'mrow', 'mi', 'mn', 'mo', 'msup', 'msub',
     'mfrac', 'munder', 'mover', 'munderover', 'msqrt', 'mroot', 'mtable', 'mtr',
     'mtd', 'mtext', 'mspace',
@@ -24,59 +25,80 @@ const sanitizeSchema = {
   ],
   attributes: {
     ...defaultSchema.attributes,
+    a: ['href', 'target', 'rel', 'className'],
+    img: ['src', 'alt', 'title', 'width', 'height', 'loading', 'style'],
     code: [...(defaultSchema.attributes?.code ?? []), 'className'],
     span: [...(defaultSchema.attributes?.span ?? []), 'className', 'style'],
-    div: [...(defaultSchema.attributes?.div ?? []), 'className', 'style'],
+    div: [...(defaultSchema.attributes?.div ?? []), 'className', 'class', 'style'],
     math: ['xmlns'],
     details: ['open'],
   },
+  protocols: {
+    ...defaultSchema.protocols,
+    href: ['http', 'https', 'mailto'],
+    src: ['http', 'https'],
+  },
 }
 
-const CALLOUT_TYPES: Record<string, { icon: string; label: string }> = {
-  NOTE:      { icon: '\u2139\uFE0F', label: 'Note' },
-  TIP:       { icon: '\uD83D\uDCA1', label: 'Tip' },
-  WARNING:   { icon: '\u26A0\uFE0F', label: 'Warning' },
-  IMPORTANT: { icon: '\uD83D\uDCCC', label: 'Important' },
-  CAUTION:   { icon: '\uD83D\uDEA8', label: 'Caution' },
+const CALLOUT_ICONS: Record<string, string> = {
+  NOTE: '\u2139\uFE0F',
+  TIP: '\uD83D\uDCA1',
+  WARNING: '\u26A0\uFE0F',
+  IMPORTANT: '\uD83D\uDCCC',
+  CAUTION: '\uD83D\uDEA8',
 }
-
-const CALLOUT_REGEX = /^\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION)\]\s*/
 
 /**
- * Extract callout type from a blockquote's children.
- * Returns the type string and the remaining children with the marker stripped,
- * or null if this is not a callout blockquote.
+ * Pre-process markdown to convert GitHub-style callout blockquotes into HTML.
+ * This runs on the raw string BEFORE ReactMarkdown parses it, avoiding
+ * issues with the parser splitting [!TYPE] across React nodes.
+ *
+ * Converts:
+ *   > [!WARNING]
+ *   > Content here
+ *
+ * Into:
+ *   <div class="callout callout-warning"><div class="callout-header">⚠️ <strong>Warning</strong></div>
+ *
+ *   Content here
+ *
+ *   </div>
  */
-function extractCallout(children: React.ReactNode): { type: string; rest: React.ReactNode } | null {
-  const childArray = React.Children.toArray(children)
-  if (childArray.length === 0) return null
+function preprocessCallouts(md: string): string {
+  const calloutRegex = /^(>)\s*\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION)\]\s*\n?((?:>.*\n?)*)/gm
+  return md.replace(calloutRegex, (_match, _gt, type: string, body: string) => {
+    const icon = CALLOUT_ICONS[type] || ''
+    const label = type.charAt(0) + type.slice(1).toLowerCase()
+    const cssClass = type.toLowerCase()
+    // Strip leading > from each body line
+    const content = body
+      .split('\n')
+      .map((line: string) => line.replace(/^>\s?/, ''))
+      .join('\n')
+      .trim()
 
-  const first = childArray[0]
-  if (!React.isValidElement(first)) return null
+    return `<div class="callout callout-${cssClass}"><div class="callout-header">${icon} <strong>${label}</strong></div>\n\n${content}\n\n</div>\n`
+  })
+}
 
-  // The first child of a blockquote is typically a <p> element
-  const pChildren = React.Children.toArray((first.props as { children?: React.ReactNode }).children)
-  if (pChildren.length === 0) return null
-
-  const firstText = pChildren[0]
-  if (typeof firstText !== 'string') return null
-
-  const match = firstText.match(CALLOUT_REGEX)
-  if (!match) return null
-
-  const calloutType = match[1]
-  const strippedText = firstText.replace(CALLOUT_REGEX, '')
-
-  // Rebuild the first <p> with the marker text removed
-  const newPChildren = strippedText ? [strippedText, ...pChildren.slice(1)] : pChildren.slice(1)
-  const newFirst = React.cloneElement(first as React.ReactElement, {}, ...newPChildren)
-
-  // If the stripped paragraph is empty, drop it entirely
-  const restChildren = newPChildren.length > 0
-    ? [newFirst, ...childArray.slice(1)]
-    : childArray.slice(1)
-
-  return { type: calloutType, rest: restChildren }
+/**
+ * Pre-process markdown images into HTML img tags that won't be stripped by sanitize.
+ * rehype-sanitize strips markdown ![alt](url) images. By converting them to raw HTML
+ * img tags with our allowed attributes, they pass through.
+ * Also converts bare image URLs on their own line.
+ */
+function preprocessImages(md: string): string {
+  // Convert ![alt](url) markdown images → raw HTML img
+  let result = md.replace(
+    /!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g,
+    '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px" loading="lazy" />'
+  )
+  // Convert bare image URLs on their own line
+  result = result.replace(
+    /^(https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|svg)(?:\?\S*)?)$/gim,
+    '<img src="$1" alt="" style="max-width:100%;border-radius:8px" loading="lazy" />'
+  )
+  return result
 }
 
 interface MarkdownContentProps {
@@ -108,29 +130,28 @@ export default function MarkdownContent({ content, className }: MarkdownContentP
             }
             return <pre>{children}</pre>
           },
-          blockquote: ({ children }) => {
-            const callout = extractCallout(children)
-            if (callout) {
-              const { icon, label } = CALLOUT_TYPES[callout.type]
-              return (
-                <div className={`callout callout-${callout.type.toLowerCase()}`}>
-                  <div className="callout-header">
-                    <span>{icon}</span>
-                    <span>{label}</span>
-                  </div>
-                  <div>{callout.rest}</div>
-                </div>
-              )
-            }
-            return <blockquote>{children}</blockquote>
-          },
+          // blockquote callouts handled by preprocessCallouts() on raw markdown
           table: ({ children }) => <SortableTable>{children}</SortableTable>,
           p: ({ children }) => {
-            // If paragraph contains exactly one child that is a link element,
-            // attempt to render a rich embed for the URL.
             const childArray = React.Children.toArray(children)
+
+            // Check if a single child is a link — try rich embed or auto-image
             if (childArray.length === 1) {
               const child = childArray[0]
+
+              // Bare image URL as a link (agents often paste URLs without markdown image syntax)
+              if (React.isValidElement(child) && (child.props as Record<string, unknown>)?.href) {
+                const url = (child.props as Record<string, unknown>).href as string
+                if (/\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(url) || /images\.unsplash\.com/i.test(url)) {
+                  return (
+                    <div style={{ margin: '8px 0' }}>
+                      <img src={url} alt="" style={{ maxWidth: '100%', borderRadius: 8 }} loading="lazy" />
+                    </div>
+                  )
+                }
+              }
+
+              // Rich embed for YouTube/GitHub/Twitter
               if (
                 React.isValidElement(child) &&
                 (child.props as Record<string, unknown>)?.href
@@ -144,7 +165,7 @@ export default function MarkdownContent({ content, className }: MarkdownContentP
           },
         }}
       >
-        {content}
+        {preprocessCallouts(preprocessImages(content))}
       </ReactMarkdown>
     </div>
   )

@@ -81,10 +81,21 @@ function stripMarkdown(md: string): string {
     .replace(/`(.+?)`/g, '$1')                       // inline code
     .replace(/\[(.+?)\]\(.+?\)/g, '$1')              // links
     .replace(/!\[.*?\]\(.+?\)/g, '')                 // images
+    .replace(/\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION)\]\s*/g, '') // callout markers
+    .replace(/<details>[\s\S]*?<\/details>/g, '')    // collapsible sections
     .replace(/>\s+/g, '')                            // blockquotes
     .replace(/\n/g, ' ')                             // newlines
     .replace(/\s+/g, ' ')                            // collapse whitespace
     .trim()
+}
+
+function extractFirstImage(md: string): string | null {
+  // Match ![alt](url) markdown images
+  const match = md.match(/!\[[^\]]*\]\((https?:\/\/[^)]+)\)/)
+  if (match) return match[1]
+  // Match bare image URLs on their own line
+  const bareMatch = md.match(/^(https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|svg)(?:\?\S*)?)$/m)
+  return bareMatch ? bareMatch[1] : null
 }
 
 function relativeTime(dateStr: string): string {
@@ -310,6 +321,22 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             </p>
           )}
 
+          {/* Image thumbnail if post contains a markdown image */}
+          {post.body && (() => {
+            const imgUrl = extractFirstImage(post.body)
+            if (!imgUrl) return null
+            return (
+              <div style={{ margin: '6px 0', borderRadius: 8, overflow: 'hidden', maxHeight: 200 }}>
+                <img
+                  src={imgUrl}
+                  alt=""
+                  style={{ width: '100%', objectFit: 'cover', maxHeight: 200, borderRadius: 8 }}
+                  loading="lazy"
+                />
+              </div>
+            )
+          })()}
+
           {/* Link preview — for link-type posts use metadata, for others auto-detect URLs in body */}
           {post.postType === 'link' && post.metadata?.url ? (
             <LinkPreview
@@ -320,6 +347,8 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
               domain={(post.metadata.linkPreview as any)?.domain}
             />
           ) : post.body && (() => {
+            // Skip link preview if we already showed an image thumbnail
+            if (extractFirstImage(post.body)) return null;
             const urlMatch = post.body.match(/https?:\/\/[^\s<>"')\]]+/);
             if (!urlMatch) return null;
             const url = urlMatch[0];
@@ -377,7 +406,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
                 router.push(`/post/${post.id}`)
               }}
             >
-              &#x1F4AC; {post.commentCount} comments
+              &#x1F4AC; {post.commentCount} {post.commentCount === 1 ? 'comment' : 'comments'}
             </button>
             <button
               className="flex cursor-pointer items-center gap-1 border-none bg-transparent transition-colors hover:text-[#E0E0F0]"

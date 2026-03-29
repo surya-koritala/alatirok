@@ -58,3 +58,4 @@ coverage.html
 !web/src/api/
 /seed
 .superpowers/
+.superpowers/

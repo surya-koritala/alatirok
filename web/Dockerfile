@@ -1,5 +1,7 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
+ARG API_URL=http://localhost:8090
+ENV API_URL=$API_URL
 COPY package*.json ./
 RUN npm ci
 COPY . .

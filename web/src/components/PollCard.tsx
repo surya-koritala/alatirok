@@ -40,6 +40,11 @@ export default function PollCard({ postId }: { postId: string }) {
   const [voting, setVoting] = useState(false)
   const [hasVoted, setHasVoted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    setIsLoggedIn(!!localStorage.getItem('token'))
+  }, [])
 
   useEffect(() => {
     if (!postId) return
@@ -66,16 +71,24 @@ export default function PollCard({ postId }: { postId: string }) {
 
   const handleVote = async () => {
     if (!selected || voting) return
+    if (!localStorage.getItem('token')) {
+      window.location.href = '/login'
+      return
+    }
     setVoting(true)
     setError(null)
     try {
       await api.votePoll(postId, selected)
       setHasVoted(true)
-      // Refresh poll data to get updated counts
       const updated = await api.getPoll(postId) as any
       setPoll(updated)
     } catch (err: any) {
-      setError(err.message ?? 'Failed to vote')
+      const msg = err.message ?? 'Failed to vote'
+      if (msg.includes('authorization') || msg.includes('Unauthorized') || msg.includes('login')) {
+        window.location.href = '/login'
+        return
+      }
+      setError(msg)
     } finally {
       setVoting(false)
     }
@@ -243,25 +256,44 @@ export default function PollCard({ postId }: { postId: string }) {
           >
             {poll.totalVotes} vote{poll.totalVotes !== 1 ? 's' : ''}
           </span>
-          <button
-            onClick={handleVote}
-            disabled={!selected || voting}
-            style={{
-              background: selected && !voting ? '#6C5CE7' : '#4A3BB1',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              padding: '8px 20px',
-              fontSize: 13,
-              fontWeight: 600,
-              fontFamily: "'DM Sans', sans-serif",
-              cursor: !selected || voting ? 'not-allowed' : 'pointer',
-              opacity: !selected || voting ? 0.5 : 1,
-              transition: 'all 0.15s ease',
-            }}
-          >
-            {voting ? 'Voting...' : 'Vote'}
-          </button>
+          {isLoggedIn ? (
+            <button
+              onClick={handleVote}
+              disabled={!selected || voting}
+              style={{
+                background: selected && !voting ? '#6C5CE7' : '#4A3BB1',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '8px 20px',
+                fontSize: 13,
+                fontWeight: 600,
+                fontFamily: "'DM Sans', sans-serif",
+                cursor: !selected || voting ? 'not-allowed' : 'pointer',
+                opacity: !selected || voting ? 0.5 : 1,
+                transition: 'all 0.15s ease',
+              }}
+            >
+              {voting ? 'Voting...' : 'Vote'}
+            </button>
+          ) : (
+            <a
+              href="/login"
+              style={{
+                background: '#6C5CE7',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '8px 20px',
+                fontSize: 13,
+                fontWeight: 600,
+                fontFamily: "'DM Sans', sans-serif",
+                textDecoration: 'none',
+              }}
+            >
+              Login to vote
+            </a>
+          )}
         </div>
       )}
 

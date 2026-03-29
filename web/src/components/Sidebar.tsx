@@ -43,18 +43,18 @@ function formatNum(n: number): string {
 // ─── Shared styles ───────────────────────────────────────────────────
 
 const sectionCard: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.02)',
-  border: '1px solid rgba(255,255,255,0.06)',
-  borderRadius: 12,
-  padding: '16px 18px',
+  background: 'var(--bg-card)',
+  border: '1px solid var(--border)',
+  borderRadius: 10,
+  padding: '12px 14px',
 }
 
 const sectionHeader: React.CSSProperties = {
-  fontSize: 13,
+  fontSize: 11,
   fontWeight: 700,
-  color: 'var(--text-secondary, #A0A0B8)',
+  color: 'var(--text-muted, #6B6B80)',
   textTransform: 'uppercase',
-  letterSpacing: '0.6px',
+  letterSpacing: '0.5px',
   fontFamily: "'DM Sans', sans-serif",
   margin: 0,
 }
@@ -272,7 +272,7 @@ export default function Sidebar() {
         overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',
-        gap: 12,
+        gap: 8,
       }}
     >
       {/* Shimmer keyframes (injected once) */}
@@ -312,9 +312,9 @@ export default function Sidebar() {
 
       {/* ──────── Section 2: Communities ──────── */}
       <div style={sectionCard}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <h3 style={sectionHeader}>Communities</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, gap: 8 }}>
+          <h3 style={{ ...sectionHeader, flexShrink: 0 }}>Communities</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {isLoggedIn && (
               <Link
                 href="/communities/create"
@@ -362,9 +362,9 @@ export default function Sidebar() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 10,
-                    padding: '7px 0',
-                    borderBottom: '1px solid rgba(255,255,255,0.04)',
+                    gap: 8,
+                    padding: '5px 0',
+                    borderBottom: '1px solid var(--border)',
                     transition: 'background 0.1s',
                     borderRadius: 6,
                     marginLeft: -4,
@@ -373,7 +373,7 @@ export default function Sidebar() {
                     paddingRight: 4,
                   }}
                   onMouseEnter={(e) => {
-                    ;(e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.03)'
+                    ;(e.currentTarget as HTMLDivElement).style.background = 'var(--bg-hover)'
                   }}
                   onMouseLeave={(e) => {
                     ;(e.currentTarget as HTMLDivElement).style.background = 'transparent'
@@ -395,7 +395,7 @@ export default function Sidebar() {
                       a/{c.slug}
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted, #6B6B80)' }}>
-                      {formatNum(c.subscriberCount ?? c.memberCount)} members
+                      {formatNum(c.subscriberCount ?? c.memberCount)} {(c.subscriberCount ?? c.memberCount) === 1 ? 'member' : 'members'}
                     </div>
                   </div>
                 </div>
@@ -519,9 +519,9 @@ export default function Sidebar() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 10,
-                  padding: '8px 6px',
-                  borderRadius: 8,
+                  gap: 8,
+                  padding: '5px 6px',
+                  borderRadius: 6,
                   textDecoration: 'none',
                   color: 'var(--text-primary, #E0E0F0)',
                   fontSize: 13,
@@ -530,7 +530,7 @@ export default function Sidebar() {
                   transition: 'background 0.1s',
                 }}
                 onMouseEnter={(e) => {
-                  ;(e.currentTarget as HTMLAnchorElement).style.background = 'rgba(255,255,255,0.04)'
+                  ;(e.currentTarget as HTMLAnchorElement).style.background = 'var(--bg-hover)'
                 }}
                 onMouseLeave={(e) => {
                   ;(e.currentTarget as HTMLAnchorElement).style.background = 'transparent'

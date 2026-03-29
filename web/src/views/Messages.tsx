@@ -46,8 +46,15 @@ export default function Messages() {
   // New conversation
   const [showNewConv, setShowNewConv] = useState(false)
   const [recipientId, setRecipientId] = useState(searchParams.get('to') ?? '')
+  const [recipientName, setRecipientName] = useState('')
+  const [recipientQuery, setRecipientQuery] = useState('')
+  const [recipientResults, setRecipientResults] = useState<any[]>([])
+  const [showRecipientDropdown, setShowRecipientDropdown] = useState(false)
+  const [searchingRecipient, setSearchingRecipient] = useState(false)
+  const recipientDropdownRef = useRef<HTMLDivElement>(null)
   const [newConvBody, setNewConvBody] = useState('')
   const [newConvError, setNewConvError] = useState<string | null>(null)
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (!token) { router.push('/login'); return }
@@ -120,10 +127,55 @@ export default function Messages() {
     }
   }
 
+  // Search for recipients as user types
+  const handleRecipientSearch = (query: string) => {
+    setRecipientQuery(query)
+    setRecipientId('')
+    setRecipientName('')
+    if (searchTimeout.current) clearTimeout(searchTimeout.current)
+    if (query.trim().length < 2) {
+      setRecipientResults([])
+      setShowRecipientDropdown(false)
+      return
+    }
+    setSearchingRecipient(true)
+    searchTimeout.current = setTimeout(() => {
+      api.search(query.trim(), 10, 0)
+        .then((data: any) => {
+          // Filter for participants (users/agents) from search results
+          const results = (data?.data ?? data ?? []).filter((r: any) =>
+            r.type === 'participant' || r.displayName || r.display_name
+          )
+          setRecipientResults(results)
+          setShowRecipientDropdown(results.length > 0)
+        })
+        .catch(() => setRecipientResults([]))
+        .finally(() => setSearchingRecipient(false))
+    }, 300)
+  }
+
+  const selectRecipient = (r: any) => {
+    setRecipientId(r.id)
+    setRecipientName(r.displayName || r.display_name || r.id)
+    setRecipientQuery(r.displayName || r.display_name || '')
+    setShowRecipientDropdown(false)
+  }
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (recipientDropdownRef.current && !recipientDropdownRef.current.contains(e.target as Node)) {
+        setShowRecipientDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
   const handleNewConversation = async (e: React.FormEvent) => {
     e.preventDefault()
     setNewConvError(null)
-    if (!recipientId.trim()) { setNewConvError('Recipient ID is required'); return }
+    if (!recipientId.trim()) { setNewConvError('Select a recipient'); return }
     if (!newConvBody.trim()) { setNewConvError('Message body is required'); return }
     setSending(true)
     try {
@@ -158,13 +210,64 @@ export default function Messages() {
         <form onSubmit={handleNewConversation} className="mb-4 rounded-2xl border border-[#6C5CE7]/30 bg-[#12121E] p-4">
           <h3 className="mb-3 font-semibold text-[#E0E0F0]" style={{ fontFamily: 'Outfit, sans-serif' }}>New Conversation</h3>
           {newConvError && <div className="mb-2 rounded bg-[#E17055]/10 px-3 py-2 text-sm text-[#E17055]">{newConvError}</div>}
-          <input
-            type="text"
-            value={recipientId}
-            onChange={e => setRecipientId(e.target.value)}
-            placeholder="Recipient ID (UUID)"
-            className="mb-2 w-full rounded-lg border border-[#2A2A3E] bg-[#0C0C14] px-3 py-2 text-sm text-[#E0E0F0] outline-none focus:border-[#6C5CE7]"
-          />
+          <div ref={recipientDropdownRef} style={{ position: 'relative', marginBottom: 8 }}>
+            <input
+              type="text"
+              value={recipientQuery}
+              onChange={e => handleRecipientSearch(e.target.value)}
+              onFocus={() => { if (recipientResults.length > 0) setShowRecipientDropdown(true) }}
+              placeholder="Search for a user or agent..."
+              className="w-full rounded-lg px-3 py-2 text-sm outline-none focus:border-[#6C5CE7]"
+              style={{ border: '1px solid var(--border)', background: 'var(--bg-page)', color: 'var(--text-primary)' }}
+            />
+            {recipientId && (
+              <div style={{ fontSize: 11, color: '#55EFC4', marginTop: 4, fontFamily: "'DM Mono', monospace" }}>
+                Selected: {recipientName}
+              </div>
+            )}
+            {showRecipientDropdown && (
+              <div style={{
+                position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
+                background: 'var(--bg-card)', border: '1px solid var(--border)',
+                borderRadius: 8, marginTop: 4, maxHeight: 200, overflowY: 'auto',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+              }}>
+                {recipientResults.map((r: any) => (
+                  <button
+                    key={r.id}
+                    onClick={() => selectRecipient(r)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      width: '100%', padding: '8px 12px', border: 'none',
+                      background: 'transparent', cursor: 'pointer', textAlign: 'left',
+                      fontSize: 13, color: 'var(--text-primary)',
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                    onMouseEnter={e => { (e.currentTarget).style.background = 'var(--bg-hover)' }}
+                    onMouseLeave={e => { (e.currentTarget).style.background = 'transparent' }}
+                  >
+                    <span style={{
+                      width: 24, height: 24, borderRadius: r.type === 'agent' ? 6 : 12,
+                      background: r.type === 'agent' ? 'linear-gradient(135deg,#6C5CE7,#5B4BD6)' : 'linear-gradient(135deg,#00B894,#009B7D)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 10, fontWeight: 700, color: '#fff', flexShrink: 0,
+                    }}>
+                      {(r.displayName || r.display_name || '?')[0]?.toUpperCase()}
+                    </span>
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{r.displayName || r.display_name}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                        {r.type === 'agent' ? 'Agent' : 'Human'}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+                {searchingRecipient && (
+                  <div style={{ padding: '8px 12px', fontSize: 12, color: 'var(--text-muted)' }}>Searching...</div>
+                )}
+              </div>
+            )}
+          </div>
           <textarea
             value={newConvBody}
             onChange={e => setNewConvBody(e.target.value)}

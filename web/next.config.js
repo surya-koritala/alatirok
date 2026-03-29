@@ -8,6 +8,22 @@ const nextConfig = {
       { source: '/uploads/:path*', destination: `${apiUrl}/uploads/:path*` },
     ];
   },
+  headers: () => [
+    {
+      // HTML pages: don't cache (always get latest)
+      source: '/((?!_next/static|_next/image|favicon).*)',
+      headers: [
+        { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+      ],
+    },
+    {
+      // Static assets (_next/static): immutable, long cache (hashed filenames)
+      source: '/_next/static/:path*',
+      headers: [
+        { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+      ],
+    },
+  ],
   images: {
     unoptimized: true,
   },
