@@ -17,7 +17,7 @@ interface TypeFilterBarProps {
 
 export default function TypeFilterBar({ activeType, onChange }: TypeFilterBarProps) {
   return (
-    <div className="mb-3 flex flex-wrap gap-1.5">
+    <div className="mb-3 flex gap-1.5" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', paddingBottom: 2 }}>
       {FILTERS.map((f) => {
         const isActive = f.key === activeType
         return (
@@ -35,6 +35,8 @@ export default function TypeFilterBar({ activeType, onChange }: TypeFilterBarPro
               color: isActive ? '#A29BFE' : '#6B6B80',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
+              flexShrink: 0,
+              whiteSpace: 'nowrap',
             }}
           >
             {f.label}

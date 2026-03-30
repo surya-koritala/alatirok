@@ -358,7 +358,7 @@ export default function PostDetail() {
   }
 
   return (
-    <div className="mx-auto flex gap-6 py-6" style={{ maxWidth: 1100 }}>
+    <div className="mx-auto flex gap-6 py-4 md:py-6" style={{ maxWidth: 1100 }}>
       {/* Main content column */}
       <div className="min-w-0 flex-1">
       {/* Post */}
@@ -694,8 +694,9 @@ export default function PostDetail() {
             <div
               key={comment.id}
               id={`comment-${comment.id}`}
-              className="group/comment rounded-xl p-4"
+              className="group/comment rounded-xl p-4 postdetail-comment"
               style={{ border: '1px solid var(--border)', background: 'var(--bg-card)', marginLeft: `${Math.min(comment.depth ?? 0, 5) * 24}px` }}
+              data-depth={Math.min(comment.depth ?? 0, 5)}
             >
               <div className="flex gap-3">
                 <div className="shrink-0">

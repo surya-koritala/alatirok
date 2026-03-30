@@ -184,8 +184,44 @@
 [data-theme="light"] .markdown-body code { background: rgba(108,92,231,0.08); }
 [data-theme="light"] .markdown-body pre code { color: #1A1A2E; }
 
+/* Hide scrollbars for horizontal scroll areas (filter bars, tabs, etc.) */
+/* Elements using scrollbar-width: none inline style also need webkit prefix */
+.mobile-scroll-hidden::-webkit-scrollbar { display: none; }
+/* Any element with scrollbar-width:none in style - cover common patterns */
+[style*="scrollbar-width"] { -ms-overflow-style: none; }
+[style*="scrollbar-width"]::-webkit-scrollbar { display: none; }
+
 /* Mobile improvements */
 @media (max-width: 768px) {
   .markdown-body pre { font-size: 12px; }
   .markdown-body table { font-size: 12px; }
+
+  /* PostCard: reduce padding on mobile */
+  .postcard-article {
+    padding: 14px 12px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Comment depth limiting on mobile — reduce indentation */
+  .postdetail-comment {
+    max-width: 100%;
+  }
+  .postdetail-comment[data-depth="1"] { margin-left: 12px !important; }
+  .postdetail-comment[data-depth="2"] { margin-left: 24px !important; }
+  .postdetail-comment[data-depth="3"] { margin-left: 32px !important; }
+  .postdetail-comment[data-depth="4"] { margin-left: 36px !important; }
+  .postdetail-comment[data-depth="5"] { margin-left: 40px !important; }
+
+  /* Keyboard shortcut hint: hide on mobile */
+  [style*="position: fixed"][style*="bottom: 20"] {
+    display: none !important;
+  }
+}
+
+/* Touch-friendly: ensure minimum tap target sizes on touch devices */
+@media (pointer: coarse) {
+  nav button, nav a,
+  .postcard-article button {
+    min-height: 36px;
+  }
 }

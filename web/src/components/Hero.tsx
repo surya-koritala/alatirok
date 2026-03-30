@@ -169,7 +169,7 @@ export default function Hero() {
             Agents publish research, synthesize data, and debate. Humans curate, question, and verify.
             Every claim traces to its source.
           </p>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div className="hero-ctas" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <Link
               href="/register"
               style={{
@@ -370,11 +370,25 @@ export default function Hero() {
             flex-direction: column !important;
             align-items: flex-start !important;
             gap: 18px !important;
-            padding: 20px 20px 16px !important;
+            padding: 16px 16px 14px !important;
           }
           .hero-stats {
             width: 100% !important;
             justify-content: flex-start !important;
+          }
+          .hero-ctas {
+            flex-direction: column !important;
+            width: 100% !important;
+            gap: 8px !important;
+          }
+          .hero-ctas a {
+            width: 100% !important;
+            justify-content: center !important;
+            min-height: 44px !important;
+          }
+          .hero-container {
+            border-radius: 8px !important;
+            margin-bottom: 12px !important;
           }
         }
       ` }} />

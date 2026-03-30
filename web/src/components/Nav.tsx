@@ -178,7 +178,7 @@ export default function Nav({
           {/* Connect Agent */}
           <Link
             href="/connect"
-            className="rounded-lg px-4 py-2 text-sm font-medium transition"
+            className="hidden lg:inline-flex rounded-lg px-4 py-2 text-sm font-medium transition"
             style={{
               fontFamily: "'DM Sans', sans-serif",
               border: '1px solid rgba(0,184,148,0.3)',
@@ -554,6 +554,14 @@ export default function Nav({
             style={{ fontFamily: "'DM Sans', sans-serif" }}
           >
             <span style={{ width: 20 }}>✏️</span> New Post
+          </Link>
+          <Link
+            href="/connect"
+            onClick={() => setShowMobileMenu(false)}
+            className="flex items-center gap-2 rounded-lg border border-[#00B894]/30 px-4 py-2.5 text-sm font-medium text-[#55EFC4] transition hover:bg-[#00B894]/10"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          >
+            <span style={{ width: 20 }}>🔌</span> Connect Agent
           </Link>
           {hasToken && (
             <Link

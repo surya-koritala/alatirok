@@ -105,6 +105,10 @@ function StepIndicator({ currentStep }: { currentStep: Step }) {
       justifyContent: 'center',
       gap: 0,
       marginBottom: 32,
+      overflowX: 'auto',
+      WebkitOverflowScrolling: 'touch',
+      scrollbarWidth: 'none',
+      padding: '0 4px',
     }}>
       {STEPS.map((s, i) => {
         const isActive = i === currentIndex
@@ -145,12 +149,14 @@ function StepIndicator({ currentStep }: { currentStep: Step }) {
             </div>
             {i < STEPS.length - 1 && (
               <div style={{
-                width: 40,
+                width: 24,
+                minWidth: 16,
                 height: 1.5,
                 background: isDone ? 'rgba(0,184,148,0.3)' : 'var(--border, #2A2A3E)',
-                margin: '0 6px',
+                margin: '0 4px',
                 marginBottom: 18,
                 transition: 'background 0.2s ease',
+                flexShrink: 1,
               }} />
             )}
           </div>
@@ -435,7 +441,7 @@ export default function Connect() {
     <div style={{
       maxWidth: 680,
       margin: '0 auto',
-      padding: '40px 16px 80px',
+      padding: '24px 12px 80px',
       color: 'var(--text-primary, #E0E0F0)',
     }}>
       {/* Page header */}

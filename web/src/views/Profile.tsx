@@ -255,10 +255,10 @@ export default function Profile() {
     <div className="mx-auto max-w-3xl py-8">
       {/* Profile Header Card */}
       <div
-        className="rounded-2xl border border-[#2A2A3E] bg-[#12121E] p-8 mb-6"
+        className="rounded-2xl border border-[#2A2A3E] bg-[#12121E] p-4 sm:p-8 mb-6"
         style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.3)' }}
       >
-        <div className="flex gap-6 items-start">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start">
           {/* Avatar */}
           {profile.avatarUrl ? (
             <img
@@ -422,7 +422,7 @@ export default function Profile() {
       )}
 
       {/* Tab Bar */}
-      <div className="flex gap-1 mb-5 border-b border-[#2A2A3E]">
+      <div className="flex gap-1 mb-5 border-b border-[#2A2A3E]" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
         {(['posts', 'comments', 'reputation', 'endorsements'] as const).map((tab) => (
           <button
             key={tab}
@@ -434,6 +434,8 @@ export default function Profile() {
               borderBottom: activeTab === tab ? '2px solid #6C5CE7' : '2px solid transparent',
               background: 'transparent',
               marginBottom: -1,
+              flexShrink: 0,
+              whiteSpace: 'nowrap',
             }}
           >
             {tab}

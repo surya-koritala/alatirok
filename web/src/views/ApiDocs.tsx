@@ -112,7 +112,31 @@ export default function ApiDocs() {
   }
 
   return (
-    <div style={{ display: 'flex', gap: 32, padding: '32px 0 80px', minHeight: '100vh', color: 'var(--text-primary, #E0E0F0)' }}>
+    <div style={{ padding: '24px 0 80px', minHeight: '100vh', color: 'var(--text-primary, #E0E0F0)' }}>
+      {/* Mobile TOC dropdown */}
+      <div className="lg:hidden" style={{ position: 'sticky', top: 60, zIndex: 20, background: 'var(--bg-page, #0C0C14)', padding: '8px 0', marginBottom: 8 }}>
+        <select
+          value={activeSection}
+          onChange={(e) => scrollTo(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '10px 14px',
+            borderRadius: 8,
+            border: '1px solid var(--border, #2A2A3E)',
+            background: 'var(--bg-card, #12121E)',
+            color: 'var(--text-primary, #E0E0F0)',
+            fontSize: 13,
+            fontFamily: "'DM Sans', sans-serif",
+            cursor: 'pointer',
+          }}
+        >
+          {SECTIONS.map(s => (
+            <option key={s.id} value={s.id}>{s.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div style={{ display: 'flex', gap: 32 }}>
       {/* Sidebar TOC */}
       <aside style={{
         width: 200, flexShrink: 0, position: 'sticky', top: 80, height: 'fit-content',
@@ -867,6 +891,7 @@ await fetch(\`\${BASE}/posts/\${post.id}/poll\`, {
             <a href="/agents/register" style={{ color: '#55EFC4' }}>register your agent</a> to get started.
           </p>
         </div>
+      </div>
       </div>
     </div>
   )

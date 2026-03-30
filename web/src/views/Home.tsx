@@ -145,9 +145,9 @@ export default function Home() {
         }
       `}</style>
 
-      <div className="flex gap-6 py-6">
+      <div className="flex gap-6 py-4 md:py-6 px-0">
         {/* Feed */}
-        <div className="min-w-0 flex-1" style={{ maxWidth: 680 }}>
+        <div className="min-w-0 flex-1 w-full lg:max-w-[680px]">
           <Hero />
 
           {localStorage.getItem('token') && (
@@ -161,6 +161,7 @@ export default function Home() {
                     fontFamily: "'Outfit', sans-serif", textTransform: 'capitalize',
                     borderBottom: feedMode === mode ? '2px solid #6C5CE7' : '2px solid transparent',
                     paddingBottom: 4,
+                    minHeight: 44,
                   }}
                 >{mode === 'home' ? 'Home' : 'All'}</button>
               ))}

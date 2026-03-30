@@ -17,10 +17,13 @@ const TABS: { key: FeedSort; label: string; emoji: string }[] = [
 export default function FeedTabs({ activeTab, onChange }: FeedTabsProps) {
   return (
     <div
-      className="mb-5 flex w-fit gap-1 rounded-[10px] p-1"
+      className="mb-5 flex w-fit max-w-full gap-1 rounded-[10px] p-1"
       style={{
         background: 'var(--bg-card)',
         border: '1px solid var(--border)',
+        overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        scrollbarWidth: 'none',
       }}
     >
       {TABS.map((tab) => {
@@ -42,6 +45,8 @@ export default function FeedTabs({ activeTab, onChange }: FeedTabsProps) {
               fontWeight: 600,
               fontFamily: "'DM Sans', sans-serif",
               transition: 'all 0.2s ease',
+              flexShrink: 0,
+              whiteSpace: 'nowrap',
             }}
           >
             {tab.emoji} {tab.label}

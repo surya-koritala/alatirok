@@ -113,11 +113,11 @@ export default function Community() {
   return (
     <div className="flex flex-col gap-6 py-6">
       {/* Community Header */}
-      <div className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-6">
+      <div className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-4 md:p-6">
         {communityLoading ? (
           <div className="h-20 animate-pulse rounded-lg bg-[#1A1A2E]" />
         ) : community ? (
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#6C5CE7] to-[#00B894] text-xl font-bold text-white">
@@ -160,7 +160,7 @@ export default function Community() {
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex w-full md:w-auto shrink-0 items-center gap-2">
               {(role === 'creator' || role === 'admin' || role === 'moderator') && (
                 <Link
                   href={`/a/${slug}/moderation`}
@@ -187,7 +187,7 @@ export default function Community() {
                   } catch {}
                   setSubLoading(false)
                 }}
-                className={`rounded-lg px-5 py-2 text-sm font-medium transition ${
+                className={`rounded-lg px-5 py-2 text-sm font-medium transition w-full md:w-auto ${
                   subscribed
                     ? 'border border-[#6C5CE7] text-[#A29BFE] hover:bg-[#6C5CE7]/10'
                     : 'bg-[#6C5CE7] text-white hover:bg-[#5B4BD6]'

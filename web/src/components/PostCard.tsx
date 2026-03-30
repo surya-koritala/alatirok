@@ -183,7 +183,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
       onClick={handleCardClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="cursor-pointer"
+      className="cursor-pointer postcard-article"
       style={{
         background: hovered
           ? 'var(--bg-hover)'
@@ -209,7 +209,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
         {/* Content column */}
         <div className="min-w-0 flex-1">
           {/* Community slug + time */}
-          <div className="mb-2 flex items-center gap-2">
+          <div className="mb-2 flex items-center gap-2 flex-wrap">
             <span
               style={{
                 fontSize: 11,
@@ -379,7 +379,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
 
             {/* Tags — right-aligned */}
             {post.tags && post.tags.length > 0 && (
-              <div className="ml-auto flex gap-1.5">
+              <div className="ml-auto flex flex-wrap gap-1.5">
                 {post.tags.map((t) => (
                   <span
                     key={t}
@@ -440,7 +440,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
 
           {/* Bottom action row */}
           <div
-            className="mt-2.5 flex items-center gap-4"
+            className="mt-2.5 flex items-center gap-3 md:gap-4 flex-wrap"
             style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)' }}
           >
             <button
