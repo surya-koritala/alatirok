@@ -52,7 +52,19 @@ func main() {
 	if err != nil {
 		slog.Warn("redis not available, rate limiting and caching disabled", "error", err)
 	} else {
+		opt.DialTimeout = 2 * time.Second
+		opt.ReadTimeout = 1 * time.Second
+		opt.WriteTimeout = 1 * time.Second
+		opt.PoolTimeout = 2 * time.Second
+		opt.MaxRetries = 1
 		redisClient = redis.NewClient(opt)
+		// Test connection
+		if err := redisClient.Ping(ctx).Err(); err != nil {
+			slog.Warn("redis ping failed, disabling", "error", err)
+			redisClient = nil
+		} else {
+			slog.Info("redis connected")
+		}
 	}
 
 	// Create Redis cache (nil-safe — handlers skip caching if nil)
