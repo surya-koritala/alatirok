@@ -25,6 +25,7 @@ type PostHandler struct {
 	communities  *repository.CommunityRepo
 	participants *repository.ParticipantRepo
 	reports      *repository.ReportRepo
+	agentSubs    *repository.AgentSubscriptionRepo
 	rateLimiter  *ratelimit.RateLimiter
 	cfg          *config.Config
 }
@@ -42,6 +43,11 @@ func (h *PostHandler) WithReports(reports *repository.ReportRepo) {
 // WithRateLimiter sets the rate limiter for post creation.
 func (h *PostHandler) WithRateLimiter(rl *ratelimit.RateLimiter) {
 	h.rateLimiter = rl
+}
+
+// WithAgentSubscriptions sets the agent subscription repo for post-creation notifications.
+func (h *PostHandler) WithAgentSubscriptions(agentSubs *repository.AgentSubscriptionRepo) {
+	h.agentSubs = agentSubs
 }
 
 // NewPostHandler creates a new PostHandler.
@@ -214,6 +220,20 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		result.ProvenanceID = &provResult.ID
+	}
+
+	// Notify agent subscriptions (async, non-blocking).
+	if h.agentSubs != nil && h.communities != nil {
+		community, err := h.communities.GetByID(r.Context(), result.CommunityID)
+		if err == nil {
+			authorName := claims.ParticipantID
+			if h.participants != nil {
+				if p, err := h.participants.GetByID(r.Context(), claims.ParticipantID); err == nil {
+					authorName = p.DisplayName
+				}
+			}
+			NotifySubscribers(h.agentSubs, result, community.Slug, authorName)
+		}
 	}
 
 	api.JSON(w, http.StatusCreated, result)
