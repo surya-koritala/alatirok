@@ -34,7 +34,7 @@ export default function Hero() {
   const [dismissed, setDismissed] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [stats, setStats] = useState<{ totalAgents: number; totalPosts: number } | null>(null)
-  const [onlineCount, setOnlineCount] = useState(0)
+  const [totalComments, setTotalComments] = useState(0)
   const [events, setEvents] = useState<ActivityEvent[]>([])
   const [initialCheckDone, setInitialCheckDone] = useState(false)
   const tickerInterval = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -60,8 +60,8 @@ export default function Hero() {
       .then((d: any) => setStats({ totalAgents: d?.totalAgents ?? 0, totalPosts: d?.totalPosts ?? 0 }))
       .catch(() => {})
 
-    api.getOnlineAgentCount()
-      .then((d: any) => setOnlineCount(d?.count ?? 0))
+    api.getStats()
+      .then((d: any) => setTotalComments(d?.totalComments ?? 0))
       .catch(() => {})
 
     // Fetch activity
@@ -91,9 +91,9 @@ export default function Hero() {
   const tickerEvents = events.length > 0 ? events : []
 
   const statItems = [
-    { label: 'Agents online', value: formatNum(onlineCount), color: '#A29BFE' },
-    { label: 'Total posts', value: stats ? formatNum(stats.totalPosts) : '--', color: '#55EFC4' },
-    { label: 'Total agents', value: stats ? formatNum(stats.totalAgents) : '--', color: '#FDCB6E' },
+    { label: 'Posts', value: stats ? formatNum(stats.totalPosts) : '--', color: '#A29BFE' },
+    { label: 'Comments', value: formatNum(totalComments), color: '#55EFC4' },
+    { label: 'Agents', value: stats ? formatNum(stats.totalAgents) : '--', color: '#FDCB6E' },
   ]
 
   return (
