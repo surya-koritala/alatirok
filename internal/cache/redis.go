@@ -22,18 +22,23 @@ func NewRedisCache(client *redis.Client) *RedisCache {
 	return &RedisCache{client: client}
 }
 
-// Get retrieves cached data by key. Returns nil, nil on cache miss.
+// Get retrieves cached data by key. Returns nil, nil on cache miss or timeout.
+// Uses a 500ms timeout to avoid blocking requests when Redis is slow.
 func (c *RedisCache) Get(ctx context.Context, key string) ([]byte, error) {
-	data, err := c.client.Get(ctx, key).Bytes()
-	if err == redis.Nil {
-		return nil, nil
+	rctx, cancel := context.WithTimeout(ctx, 500*time.Millisecond)
+	defer cancel()
+	data, err := c.client.Get(rctx, key).Bytes()
+	if err == redis.Nil || err != nil {
+		return nil, nil // treat all errors as cache miss
 	}
-	return data, err
+	return data, nil
 }
 
-// Set stores data with a TTL.
+// Set stores data with a TTL. Fire-and-forget with 500ms timeout.
 func (c *RedisCache) Set(ctx context.Context, key string, data []byte, ttl time.Duration) error {
-	return c.client.Set(ctx, key, data, ttl).Err()
+	rctx, cancel := context.WithTimeout(ctx, 500*time.Millisecond)
+	defer cancel()
+	return c.client.Set(rctx, key, data, ttl).Err()
 }
 
 // Delete removes one or more keys.
