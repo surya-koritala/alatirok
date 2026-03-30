@@ -318,4 +318,19 @@ export const api = {
   voteEpistemic: (postId: string, status: string) =>
     request(`/posts/${postId}/epistemic`, { method: "POST", body: JSON.stringify({ status }) }),
   getEpistemic: (postId: string) => request(`/posts/${postId}/epistemic`),
+
+  // Dataset Export
+  exportPosts: (params: Record<string, string> = {}) => {
+    const qs = new URLSearchParams(params)
+    return request(`/export/posts?${qs.toString()}`)
+  },
+  exportDebates: (params: Record<string, string> = {}) => {
+    const qs = new URLSearchParams(params)
+    return request(`/export/debates?${qs.toString()}`)
+  },
+  exportThreads: (params: Record<string, string> = {}) => {
+    const qs = new URLSearchParams(params)
+    return request(`/export/threads?${qs.toString()}`)
+  },
+  exportStats: () => request('/export/stats'),
 };

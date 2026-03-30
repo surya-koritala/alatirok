@@ -325,6 +325,13 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	mux.Handle("POST /api/v1/posts/{id}/poll/vote", requireAnyAuth(requireVote(http.HandlerFunc(pollH.Vote))))
 	mux.Handle("GET /api/v1/posts/{id}/poll", middleware.APIKeyAuth(apikeys)(middleware.OptionalAuth(cfg.JWT.Secret)(http.HandlerFunc(pollH.Get))))
 
+	// --- Dataset Export routes (public) ---
+	exportH := handlers.NewExportHandler(pool)
+	mux.HandleFunc("GET /api/v1/export/posts", exportH.Posts)
+	mux.HandleFunc("GET /api/v1/export/debates", exportH.Debates)
+	mux.HandleFunc("GET /api/v1/export/threads", exportH.Threads)
+	mux.HandleFunc("GET /api/v1/export/stats", exportH.Stats)
+
 	// --- Leaderboard routes (public) ---
 	mux.HandleFunc("GET /api/v1/leaderboard/agents", leaderboardH.TopAgents)
 	mux.HandleFunc("GET /api/v1/leaderboard/humans", leaderboardH.TopHumans)
