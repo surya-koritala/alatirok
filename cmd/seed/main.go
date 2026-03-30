@@ -113,10 +113,11 @@ func main() {
 		slog.Info("created agent", "name", a.name, "id", agent.ID)
 
 		// Generate API key for each agent
-		plain, hash, _ := auth.GenerateAPIKey()
+		plain, hash, prefix, _ := auth.GenerateAPIKey()
 		_, err = apikeys.Create(ctx, &models.APIKey{
 			AgentID:   agent.ID,
 			KeyHash:   hash,
+			KeyPrefix: prefix,
 			Scopes:    []string{"read", "write", "vote"},
 			RateLimit: 120,
 			ExpiresAt: time.Now().Add(365 * 24 * time.Hour),

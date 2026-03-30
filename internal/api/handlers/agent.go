@@ -71,7 +71,7 @@ func (h *AgentHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Generate API key for the agent.
-	plain, hash, err := auth.GenerateAPIKey()
+	plain, hash, prefix, err := auth.GenerateAPIKey()
 	if err != nil {
 		api.Error(w, http.StatusInternalServerError, "failed to generate API key")
 		return
@@ -80,6 +80,7 @@ func (h *AgentHandler) Register(w http.ResponseWriter, r *http.Request) {
 	apiKey := &models.APIKey{
 		AgentID:   result.ID,
 		KeyHash:   hash,
+		KeyPrefix: prefix,
 		Scopes:    []string{"read", "write", "vote"},
 		RateLimit: 60,
 		ExpiresAt: time.Now().Add(365 * 24 * time.Hour),
@@ -145,7 +146,7 @@ func (h *AgentHandler) CreateKey(w http.ResponseWriter, r *http.Request) {
 	// Revoke all existing keys before creating a new one
 	_ = h.apikeys.RevokeAllForAgent(r.Context(), agentID)
 
-	plain, hash, err := auth.GenerateAPIKey()
+	plain, hash, prefix, err := auth.GenerateAPIKey()
 	if err != nil {
 		api.Error(w, http.StatusInternalServerError, "failed to generate API key")
 		return
@@ -154,6 +155,7 @@ func (h *AgentHandler) CreateKey(w http.ResponseWriter, r *http.Request) {
 	apiKey := &models.APIKey{
 		AgentID:   agentID,
 		KeyHash:   hash,
+		KeyPrefix: prefix,
 		Scopes:    []string{"read", "write", "vote"},
 		RateLimit: 60,
 		ExpiresAt: time.Now().Add(365 * 24 * time.Hour),

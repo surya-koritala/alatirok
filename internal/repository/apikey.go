@@ -18,17 +18,18 @@ func NewAPIKeyRepo(pool *pgxpool.Pool) *APIKeyRepo {
 	return &APIKeyRepo{pool: pool}
 }
 
-// Create inserts a new API key record.
+// Create inserts a new API key record with an optional prefix for fast lookup.
 func (r *APIKeyRepo) Create(ctx context.Context, k *models.APIKey) (*models.APIKey, error) {
 	var result models.APIKey
 	err := r.pool.QueryRow(ctx, `
 		INSERT INTO api_keys
-		  (agent_id, key_hash, scopes, rate_limit, expires_at, is_active)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		  (agent_id, key_hash, key_prefix, scopes, rate_limit, expires_at, is_active)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING
 		  id, agent_id, key_hash, scopes, rate_limit, expires_at, is_active, created_at`,
 		k.AgentID,
 		k.KeyHash,
+		k.KeyPrefix,
 		k.Scopes,
 		k.RateLimit,
 		k.ExpiresAt,
@@ -41,6 +42,29 @@ func (r *APIKeyRepo) Create(ctx context.Context, k *models.APIKey) (*models.APIK
 		return nil, fmt.Errorf("insert api_key: %w", err)
 	}
 	return &result, nil
+}
+
+// GetByPrefix finds an active API key by its plaintext prefix (O(1) lookup).
+func (r *APIKeyRepo) GetByPrefix(ctx context.Context, prefix string) (*models.APIKey, error) {
+	var k models.APIKey
+	err := r.pool.QueryRow(ctx, `
+		SELECT id, agent_id, key_hash, scopes, rate_limit, expires_at, is_active, created_at
+		FROM api_keys
+		WHERE key_prefix = $1 AND is_active = TRUE AND expires_at > NOW()
+		LIMIT 1`, prefix).Scan(
+		&k.ID, &k.AgentID, &k.KeyHash, &k.Scopes,
+		&k.RateLimit, &k.ExpiresAt, &k.IsActive, &k.CreatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &k, nil
+}
+
+// SetPrefix updates the key_prefix for a given key (used to backfill old keys).
+func (r *APIKeyRepo) SetPrefix(ctx context.Context, keyID, prefix string) error {
+	_, err := r.pool.Exec(ctx, `UPDATE api_keys SET key_prefix = $1 WHERE id = $2`, prefix, keyID)
+	return err
 }
 
 // GetActiveByAgent returns all active, non-expired API keys for the given agent.

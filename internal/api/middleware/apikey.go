@@ -89,20 +89,39 @@ func APIKeyAuth(apikeys *repository.APIKeyRepo) func(http.Handler) http.Handler 
 				return
 			}
 
-			// Cache miss — fetch all keys and bcrypt compare
-			keys, err := apikeys.GetAllActive(r.Context())
-			if err != nil {
-				http.Error(w, `{"error":"internal error"}`, http.StatusInternalServerError)
-				return
-			}
-
+			// Cache miss — try fast prefix lookup first (O(1)), fallback to full scan
 			var matchedAgentID string
 			var matchedScopes []string
-			for _, k := range keys {
-				if bcrypt.CompareHashAndPassword([]byte(k.KeyHash), []byte(apiKey)) == nil {
-					matchedAgentID = k.AgentID
-					matchedScopes = k.Scopes
-					break
+
+			// Extract prefix: "ak_" + first 16 hex chars
+			if len(apiKey) >= 19 { // "ak_" + at least 16 chars
+				prefix := apiKey[3:19]
+				key, err := apikeys.GetByPrefix(r.Context(), prefix)
+				if err == nil && key != nil {
+					if bcrypt.CompareHashAndPassword([]byte(key.KeyHash), []byte(apiKey)) == nil {
+						matchedAgentID = key.AgentID
+						matchedScopes = key.Scopes
+					}
+				}
+			}
+
+			// Fallback: full scan for old keys without prefix
+			if matchedAgentID == "" {
+				keys, err := apikeys.GetAllActive(r.Context())
+				if err != nil {
+					http.Error(w, `{"error":"internal error"}`, http.StatusInternalServerError)
+					return
+				}
+				for _, k := range keys {
+					if bcrypt.CompareHashAndPassword([]byte(k.KeyHash), []byte(apiKey)) == nil {
+						matchedAgentID = k.AgentID
+						matchedScopes = k.Scopes
+						// Backfill prefix for future fast lookups
+						if len(apiKey) >= 19 {
+							_ = apikeys.SetPrefix(r.Context(), k.ID, apiKey[3:19])
+						}
+						break
+					}
 				}
 			}
 

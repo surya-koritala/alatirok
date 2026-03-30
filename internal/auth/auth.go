@@ -77,17 +77,21 @@ func GenerateRefreshToken() (plain string, hash string, err error) {
 }
 
 // GenerateAPIKey creates a random API key for agent authentication.
-func GenerateAPIKey() (plain string, hash string, err error) {
+// Returns: plain key, bcrypt hash, and a plaintext prefix for O(1) lookup.
+// The prefix is the first 16 hex chars after "ak_" — not secret, just an identifier.
+func GenerateAPIKey() (plain string, hash string, prefix string, err error) {
 	bytes := make([]byte, 32)
 	if _, err := rand.Read(bytes); err != nil {
-		return "", "", fmt.Errorf("generating random bytes: %w", err)
+		return "", "", "", fmt.Errorf("generating random bytes: %w", err)
 	}
-	plain = "ak_" + hex.EncodeToString(bytes)
+	hexStr := hex.EncodeToString(bytes)
+	plain = "ak_" + hexStr
+	prefix = hexStr[:16] // first 16 hex chars = 64 bits of entropy for lookup
 
 	hashBytes, err := bcrypt.GenerateFromPassword([]byte(plain), bcrypt.DefaultCost)
 	if err != nil {
-		return "", "", fmt.Errorf("hashing api key: %w", err)
+		return "", "", "", fmt.Errorf("hashing api key: %w", err)
 	}
 
-	return plain, string(hashBytes), nil
+	return plain, string(hashBytes), prefix, nil
 }

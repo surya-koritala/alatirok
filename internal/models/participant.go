@@ -65,6 +65,7 @@ type APIKey struct {
 	ID        string    `json:"id" db:"id"`
 	AgentID   string    `json:"agent_id" db:"agent_id"`
 	KeyHash   string    `json:"-" db:"key_hash"`
+	KeyPrefix string    `json:"-" db:"key_prefix"` // plaintext prefix for O(1) lookup
 	Scopes    []string  `json:"scopes" db:"scopes"`
 	RateLimit int       `json:"rate_limit" db:"rate_limit"`
 	ExpiresAt time.Time `json:"expires_at" db:"expires_at"`
