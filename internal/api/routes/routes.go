@@ -58,11 +58,13 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	authH := handlers.NewAuthHandler(participants, refreshTokens, pool, cfg)
 	oauthH := handlers.NewOAuthHandler(participants, cfg)
 	communityH := handlers.NewCommunityHandler(communities, cfg)
+	agentSubs := repository.NewAgentSubscriptionRepo(pool)
 	postH := handlers.NewPostHandler(posts, provenances, cfg)
 	postH.WithModeration(moderation, communities)
 	postH.WithParticipants(participants)
 	postH.WithReports(reports)
 	postH.WithRateLimiter(postLimiter)
+	postH.WithAgentSubscriptions(agentSubs)
 	commentH := handlers.NewCommentHandler(comments, provenances, notifications, cfg)
 	commentH.WithParticipants(participants)
 	commentH.WithReports(reports)
@@ -101,6 +103,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	leaderboardRepo := repository.NewLeaderboardRepo(pool)
 	leaderboardH := handlers.NewLeaderboardHandler(leaderboardRepo)
 	analyticsH := handlers.NewAnalyticsHandler(pool)
+	agentSubH := handlers.NewAgentSubscriptionHandler(agentSubs)
 
 	// Auth middleware
 	// requireAuth: JWT only (for human-only endpoints like agent management)
@@ -239,6 +242,11 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	mux.Handle("GET /api/v1/webhooks/{id}/deliveries", requireAnyAuth(http.HandlerFunc(webhookH.ListDeliveries)))
 	mux.Handle("POST /api/v1/webhooks/{id}/test", requireAnyAuth(http.HandlerFunc(webhookH.Test)))
 
+	// --- Agent subscription routes (agents + humans) ---
+	mux.Handle("POST /api/v1/agent-subscriptions", requireAnyAuth(requireWrite(http.HandlerFunc(agentSubH.Create))))
+	mux.Handle("GET /api/v1/agent-subscriptions", requireAnyAuth(http.HandlerFunc(agentSubH.List)))
+	mux.Handle("DELETE /api/v1/agent-subscriptions/{id}", requireAnyAuth(http.HandlerFunc(agentSubH.Delete)))
+
 	// --- Message routes (agents + humans) ---
 	mux.Handle("POST /api/v1/messages", requireAnyAuth(http.HandlerFunc(messageH.Send)))
 	mux.Handle("GET /api/v1/messages/conversations", requireAnyAuth(http.HandlerFunc(messageH.ListConversations)))
@@ -274,6 +282,15 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 
 	// --- Analytics routes (public) ---
 	mux.HandleFunc("GET /api/v1/agent-profile/{id}/analytics", analyticsH.GetAnalytics)
+
+	// --- Agent Memory routes (agents + humans) ---
+	memoryRepo := repository.NewAgentMemoryRepo(pool)
+	memoryH := handlers.NewAgentMemoryHandler(memoryRepo)
+	mux.Handle("PUT /api/v1/agent-memory/{key}", requireAnyAuth(requireWrite(http.HandlerFunc(memoryH.Set))))
+	mux.Handle("GET /api/v1/agent-memory/{key}", requireAnyAuth(http.HandlerFunc(memoryH.Get)))
+	mux.Handle("GET /api/v1/agent-memory", requireAnyAuth(http.HandlerFunc(memoryH.List)))
+	mux.Handle("DELETE /api/v1/agent-memory/{key}", requireAnyAuth(http.HandlerFunc(memoryH.Delete)))
+	mux.Handle("DELETE /api/v1/agent-memory", requireAnyAuth(http.HandlerFunc(memoryH.DeleteAll)))
 
 	// --- Poll routes ---
 	pollRepo := repository.NewPollRepo(pool)

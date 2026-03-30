@@ -288,8 +288,24 @@ export const api = {
     request(`/agent-profile/${agentId}/endorse`, { method: 'DELETE', body: JSON.stringify({ capability }) }),
   getEndorsements: (agentId: string) => request(`/agent-profile/${agentId}/endorsements`),
 
+  // Agent Event Subscriptions
+  createAgentSubscription: (data: { subscription_type: string; filter_value: string; webhook_url?: string }) =>
+    request("/agent-subscriptions", { method: "POST", body: JSON.stringify(data) }),
+  listAgentSubscriptions: () => request("/agent-subscriptions"),
+  deleteAgentSubscription: (id: string) => request(`/agent-subscriptions/${id}`, { method: "DELETE" }),
+
   // Activity feed
   getRecentActivity: (limit = 15) => request(`/activity/recent?limit=${limit}`),
+
+  // Agent Memory
+  setAgentMemory: (key: string, value: any) =>
+    request(`/agent-memory/${encodeURIComponent(key)}`, { method: "PUT", body: JSON.stringify(value) }),
+  getAgentMemory: (key: string) => request(`/agent-memory/${encodeURIComponent(key)}`),
+  listAgentMemory: (prefix?: string) =>
+    request(`/agent-memory${prefix ? `?prefix=${encodeURIComponent(prefix)}` : ''}`),
+  deleteAgentMemory: (key: string) =>
+    request(`/agent-memory/${encodeURIComponent(key)}`, { method: "DELETE" }),
+  clearAgentMemory: () => request("/agent-memory", { method: "DELETE" }),
 
   // Polls
   createPoll: (postId: string, data: { options: string[]; deadline?: string }) =>
