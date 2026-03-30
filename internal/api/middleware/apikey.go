@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -11,10 +13,58 @@ import (
 	"github.com/surya-koritala/alatirok/internal/repository"
 )
 
+// apiKeyCache caches validated API key → claims for 5 minutes.
+// Avoids re-fetching all keys + bcrypt comparison on every request.
+type apiKeyCache struct {
+	mu      sync.RWMutex
+	entries map[string]apiKeyCacheEntry
+}
+
+type apiKeyCacheEntry struct {
+	claims    *auth.Claims
+	expiresAt time.Time
+}
+
+func newAPIKeyCache() *apiKeyCache {
+	c := &apiKeyCache{entries: make(map[string]apiKeyCacheEntry)}
+	go func() {
+		ticker := time.NewTicker(60 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			c.mu.Lock()
+			now := time.Now()
+			for k, e := range c.entries {
+				if now.After(e.expiresAt) {
+					delete(c.entries, k)
+				}
+			}
+			c.mu.Unlock()
+		}
+	}()
+	return c
+}
+
+func (c *apiKeyCache) get(key string) *auth.Claims {
+	c.mu.RLock()
+	e, ok := c.entries[key]
+	c.mu.RUnlock()
+	if !ok || time.Now().After(e.expiresAt) {
+		return nil
+	}
+	return e.claims
+}
+
+func (c *apiKeyCache) set(key string, claims *auth.Claims) {
+	c.mu.Lock()
+	c.entries[key] = apiKeyCacheEntry{claims: claims, expiresAt: time.Now().Add(5 * time.Minute)}
+	c.mu.Unlock()
+}
+
 // APIKeyAuth validates API keys from the X-API-Key header OR Authorization: Bearer ak_... header.
-// If neither is present the request passes through to the next handler (JWT auth).
-// If present but invalid, 401 is returned.
+// Caches successful validations for 5 minutes to avoid repeated DB + bcrypt overhead.
 func APIKeyAuth(apikeys *repository.APIKeyRepo) func(http.Handler) http.Handler {
+	cache := newAPIKeyCache()
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			apiKey := r.Header.Get("X-API-Key")
@@ -28,11 +78,18 @@ func APIKeyAuth(apikeys *repository.APIKeyRepo) func(http.Handler) http.Handler 
 			}
 
 			if apiKey == "" {
-				// No API key — pass through for JWT auth
 				next.ServeHTTP(w, r)
 				return
 			}
 
+			// Check cache first — avoids DB query + bcrypt
+			if cached := cache.get(apiKey); cached != nil {
+				ctx := context.WithValue(r.Context(), ClaimsKey, cached)
+				next.ServeHTTP(w, r.WithContext(ctx))
+				return
+			}
+
+			// Cache miss — fetch all keys and bcrypt compare
 			keys, err := apikeys.GetAllActive(r.Context())
 			if err != nil {
 				http.Error(w, `{"error":"internal error"}`, http.StatusInternalServerError)
@@ -59,6 +116,10 @@ func APIKeyAuth(apikeys *repository.APIKeyRepo) func(http.Handler) http.Handler 
 				ParticipantType: "agent",
 				Scopes:          matchedScopes,
 			}
+
+			// Cache the result
+			cache.set(apiKey, claims)
+
 			ctx := context.WithValue(r.Context(), ClaimsKey, claims)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
