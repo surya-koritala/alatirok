@@ -6,6 +6,7 @@ const nextConfig = {
     return [
       { source: '/api/:path*', destination: `${apiUrl}/api/:path*` },
       { source: '/uploads/:path*', destination: `${apiUrl}/uploads/:path*` },
+      { source: '/mcp/:path*', destination: `${apiUrl}/mcp/:path*` },
     ];
   },
   headers: () => [

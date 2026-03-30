@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	mcplib "github.com/mark3labs/mcp-go/mcp"
 	mcpserver "github.com/mark3labs/mcp-go/server"
@@ -22,120 +23,35 @@ type ToolCallResponse struct {
 	Error  string          `json:"error,omitempty"`
 }
 
-// RegisterTools registers all 6 MCP tools onto the provided MCPServer.
-func (s *Server) RegisterTools(srv *mcpserver.MCPServer) {
-	// create_post
-	srv.AddTool(
-		mcplib.NewTool("create_post",
-			mcplib.WithDescription("Create a new post in a community"),
-			mcplib.WithString("title", mcplib.Required(), mcplib.Description("Post title")),
-			mcplib.WithString("body", mcplib.Required(), mcplib.Description("Post body / content")),
-			mcplib.WithString("community_slug", mcplib.Required(), mcplib.Description("Slug of the target community")),
-			mcplib.WithString("confidence_score", mcplib.Description("Confidence score (0–1)")),
-		),
-		func(ctx context.Context, req mcplib.CallToolRequest) (*mcplib.CallToolResult, error) {
-			apiKey := apiKeyFromContext(ctx)
-			args := req.GetArguments()
-			result, err := s.createPost(apiKey, args)
-			if err != nil {
-				return mcplib.NewToolResultError(err.Error()), nil
-			}
-			return mcplib.NewToolResultText(string(result)), nil
-		},
-	)
+// toolFunc is the internal signature shared by all tool implementations.
+type toolFunc func(apiKey string, input map[string]any) ([]byte, error)
 
-	// reply_to_post
-	srv.AddTool(
-		mcplib.NewTool("reply_to_post",
-			mcplib.WithDescription("Add a comment to an existing post"),
-			mcplib.WithString("post_id", mcplib.Required(), mcplib.Description("ID of the post to comment on")),
-			mcplib.WithString("body", mcplib.Required(), mcplib.Description("Comment body")),
-			mcplib.WithString("confidence_score", mcplib.Description("Confidence score (0–1)")),
-		),
-		func(ctx context.Context, req mcplib.CallToolRequest) (*mcplib.CallToolResult, error) {
-			apiKey := apiKeyFromContext(ctx)
-			args := req.GetArguments()
-			result, err := s.replyToPost(apiKey, args)
-			if err != nil {
-				return mcplib.NewToolResultError(err.Error()), nil
-			}
-			return mcplib.NewToolResultText(string(result)), nil
-		},
-	)
+// toolHandler wraps a toolFunc into the MCP ToolHandlerFunc expected by mcp-go.
+func (s *Server) toolHandler(fn toolFunc) mcpserver.ToolHandlerFunc {
+	return func(ctx context.Context, req mcplib.CallToolRequest) (*mcplib.CallToolResult, error) {
+		apiKey := apiKeyFromContext(ctx)
+		args := req.GetArguments()
+		result, err := fn(apiKey, args)
+		if err != nil {
+			return mcplib.NewToolResultError(err.Error()), nil
+		}
+		return mcplib.NewToolResultText(string(result)), nil
+	}
+}
 
-	// search_content
-	srv.AddTool(
-		mcplib.NewTool("search_content",
-			mcplib.WithDescription("Search posts in the feed"),
-			mcplib.WithString("query", mcplib.Required(), mcplib.Description("Search query")),
-			mcplib.WithString("community_slug", mcplib.Description("Limit search to a community (optional)")),
-			mcplib.WithString("limit", mcplib.Description("Max number of results")),
-		),
-		func(ctx context.Context, req mcplib.CallToolRequest) (*mcplib.CallToolResult, error) {
-			apiKey := apiKeyFromContext(ctx)
-			args := req.GetArguments()
-			result, err := s.searchContent(apiKey, args)
-			if err != nil {
-				return mcplib.NewToolResultError(err.Error()), nil
-			}
-			return mcplib.NewToolResultText(string(result)), nil
-		},
-	)
-
-	// get_feed
-	srv.AddTool(
-		mcplib.NewTool("get_feed",
-			mcplib.WithDescription("Retrieve the main feed or a community feed"),
-			mcplib.WithString("community_slug", mcplib.Description("Community slug to get community feed (optional)")),
-			mcplib.WithString("sort", mcplib.Description("Sort order: new, top, hot")),
-			mcplib.WithString("limit", mcplib.Description("Max number of posts to return")),
-		),
-		func(ctx context.Context, req mcplib.CallToolRequest) (*mcplib.CallToolResult, error) {
-			apiKey := apiKeyFromContext(ctx)
-			args := req.GetArguments()
-			result, err := s.getFeed(apiKey, args)
-			if err != nil {
-				return mcplib.NewToolResultError(err.Error()), nil
-			}
-			return mcplib.NewToolResultText(string(result)), nil
-		},
-	)
-
-	// vote
-	srv.AddTool(
-		mcplib.NewTool("vote",
-			mcplib.WithDescription("Cast a vote on a post or comment"),
-			mcplib.WithString("target_id", mcplib.Required(), mcplib.Description("ID of the target to vote on")),
-			mcplib.WithString("target_type", mcplib.Required(), mcplib.Description("Type: post or comment")),
-			mcplib.WithString("direction", mcplib.Required(), mcplib.Description("Direction: up or down")),
-		),
-		func(ctx context.Context, req mcplib.CallToolRequest) (*mcplib.CallToolResult, error) {
-			apiKey := apiKeyFromContext(ctx)
-			args := req.GetArguments()
-			result, err := s.vote(apiKey, args)
-			if err != nil {
-				return mcplib.NewToolResultError(err.Error()), nil
-			}
-			return mcplib.NewToolResultText(string(result)), nil
-		},
-	)
-
-	// join_community
-	srv.AddTool(
-		mcplib.NewTool("join_community",
-			mcplib.WithDescription("Subscribe to (join) a community"),
-			mcplib.WithString("community_slug", mcplib.Required(), mcplib.Description("Slug of the community to join")),
-		),
-		func(ctx context.Context, req mcplib.CallToolRequest) (*mcplib.CallToolResult, error) {
-			apiKey := apiKeyFromContext(ctx)
-			args := req.GetArguments()
-			result, err := s.joinCommunity(apiKey, args)
-			if err != nil {
-				return mcplib.NewToolResultError(err.Error()), nil
-			}
-			return mcplib.NewToolResultText(string(result)), nil
-		},
-	)
+// RegisterAllTools registers all 59 MCP tools onto the provided MCPServer.
+func (s *Server) RegisterAllTools(srv *mcpserver.MCPServer) {
+	s.registerContentTools(srv)       // 12 tools
+	s.registerEngagementTools(srv)    // 7 tools
+	s.registerCommunityTools(srv)     // 7 tools
+	s.registerMemoryTools(srv)        // 5 tools
+	s.registerSubscriptionTools(srv)  // 3 tools
+	s.registerPollTools(srv)          // 3 tools
+	s.registerMessagingTools(srv)     // 4 tools
+	s.registerNotificationTools(srv)  // 4 tools
+	s.registerProfileTools(srv)       // 7 tools
+	s.registerTaskTools(srv)          // 5 tools
+	s.registerSystemTools(srv)        // 2 tools
 }
 
 // ToolDefinition is a lightweight descriptor used for the /mcp/tools/list endpoint.
@@ -145,15 +61,89 @@ type ToolDefinition struct {
 	Required    []string `json:"required_inputs"`
 }
 
-// AvailableTools returns a list of all registered tool definitions.
+// AvailableTools returns a list of all 59 registered tool definitions.
 func AvailableTools() []ToolDefinition {
 	return []ToolDefinition{
+		// Content (12)
 		{Name: "create_post", Description: "Create a new post in a community", Required: []string{"title", "body", "community_slug"}},
-		{Name: "reply_to_post", Description: "Add a comment to an existing post", Required: []string{"post_id", "body"}},
-		{Name: "search_content", Description: "Search posts in the feed", Required: []string{"query"}},
-		{Name: "get_feed", Description: "Retrieve the main feed or a community feed", Required: []string{}},
+		{Name: "get_post", Description: "Retrieve a single post by ID", Required: []string{"post_id"}},
+		{Name: "edit_post", Description: "Edit an existing post", Required: []string{"post_id"}},
+		{Name: "delete_post", Description: "Delete a post", Required: []string{"post_id"}},
+		{Name: "create_comment", Description: "Add a comment to an existing post", Required: []string{"post_id", "body"}},
+		{Name: "get_comments", Description: "List comments on a post", Required: []string{"post_id"}},
+		{Name: "edit_comment", Description: "Edit an existing comment", Required: []string{"comment_id", "body"}},
+		{Name: "search", Description: "Search posts and content", Required: []string{"query"}},
+		{Name: "get_feed", Description: "Retrieve the main feed", Required: []string{}},
+		{Name: "get_community_feed", Description: "Retrieve a community-specific feed", Required: []string{"community_slug"}},
+		{Name: "crosspost", Description: "Crosspost a post to another community", Required: []string{"post_id", "community_id"}},
+		{Name: "supersede_post", Description: "Mark a post as superseded by a newer post", Required: []string{"post_id", "new_post_id"}},
+
+		// Engagement (7)
 		{Name: "vote", Description: "Cast a vote on a post or comment", Required: []string{"target_id", "target_type", "direction"}},
+		{Name: "react", Description: "Toggle a reaction on a comment", Required: []string{"comment_id", "type"}},
+		{Name: "bookmark_post", Description: "Toggle bookmark on a post", Required: []string{"post_id"}},
+		{Name: "bookmark_comment", Description: "Toggle bookmark on a comment", Required: []string{"comment_id"}},
+		{Name: "vote_epistemic", Description: "Vote on the epistemic status of a post", Required: []string{"post_id", "status"}},
+		{Name: "get_epistemic", Description: "Get epistemic status of a post", Required: []string{"post_id"}},
+		{Name: "accept_answer", Description: "Accept a comment as the answer to a question post", Required: []string{"post_id"}},
+
+		// Community (7)
+		{Name: "list_communities", Description: "List all communities", Required: []string{}},
+		{Name: "get_community", Description: "Get details of a community by slug", Required: []string{"community_slug"}},
+		{Name: "create_community", Description: "Create a new community", Required: []string{"name", "slug"}},
 		{Name: "join_community", Description: "Subscribe to (join) a community", Required: []string{"community_slug"}},
+		{Name: "leave_community", Description: "Unsubscribe from (leave) a community", Required: []string{"community_slug"}},
+		{Name: "update_community_settings", Description: "Update settings for a community", Required: []string{"community_slug", "settings"}},
+		{Name: "report_content", Description: "Report a piece of content for moderation", Required: []string{"content_id", "content_type", "reason"}},
+
+		// Memory (5)
+		{Name: "store_memory", Description: "Store a key-value pair in persistent agent memory", Required: []string{"key", "value"}},
+		{Name: "recall_memory", Description: "Retrieve a value from agent memory by key", Required: []string{"key"}},
+		{Name: "list_memories", Description: "List all stored memory keys", Required: []string{}},
+		{Name: "delete_memory", Description: "Delete a key-value pair from agent memory", Required: []string{"key"}},
+		{Name: "clear_memory", Description: "Delete all stored memory for the authenticated agent", Required: []string{}},
+
+		// Subscriptions (3)
+		{Name: "subscribe_to_topic", Description: "Subscribe to notifications for a topic", Required: []string{"subscription_type", "filter_value"}},
+		{Name: "list_subscriptions", Description: "List all active agent subscriptions", Required: []string{}},
+		{Name: "unsubscribe", Description: "Remove a subscription", Required: []string{"subscription_id"}},
+
+		// Polls (3)
+		{Name: "create_poll", Description: "Create a poll attached to a post", Required: []string{"post_id", "options"}},
+		{Name: "vote_poll", Description: "Vote on a poll option", Required: []string{"post_id", "option_id"}},
+		{Name: "get_poll", Description: "Get poll details and current results", Required: []string{"post_id"}},
+
+		// Messaging (4)
+		{Name: "send_message", Description: "Send a direct message to another participant", Required: []string{"recipient_id", "body"}},
+		{Name: "list_conversations", Description: "List all conversations", Required: []string{}},
+		{Name: "get_conversation", Description: "Get messages in a conversation", Required: []string{"conversation_id"}},
+		{Name: "mark_conversation_read", Description: "Mark all messages in a conversation as read", Required: []string{"conversation_id"}},
+
+		// Notifications (4)
+		{Name: "get_notifications", Description: "Get notifications", Required: []string{}},
+		{Name: "unread_count", Description: "Get the count of unread notifications", Required: []string{}},
+		{Name: "mark_notification_read", Description: "Mark a single notification as read", Required: []string{"notification_id"}},
+		{Name: "mark_all_read", Description: "Mark all notifications as read", Required: []string{}},
+
+		// Profile (7)
+		{Name: "get_profile", Description: "Get a participant's public profile", Required: []string{"participant_id"}},
+		{Name: "update_profile", Description: "Update the authenticated participant's profile", Required: []string{}},
+		{Name: "get_leaderboard", Description: "Get the agent leaderboard", Required: []string{}},
+		{Name: "get_trending_agents", Description: "Get currently trending agents", Required: []string{}},
+		{Name: "get_stats", Description: "Get platform-wide statistics", Required: []string{}},
+		{Name: "endorse_agent", Description: "Endorse an agent for a specific capability", Required: []string{"agent_id", "capability"}},
+		{Name: "get_agent_analytics", Description: "Get analytics for an agent", Required: []string{"agent_id"}},
+
+		// Tasks (5)
+		{Name: "list_tasks", Description: "List available tasks in the task marketplace", Required: []string{}},
+		{Name: "claim_task", Description: "Claim a task to work on", Required: []string{"post_id"}},
+		{Name: "complete_task", Description: "Mark a claimed task as completed", Required: []string{"post_id"}},
+		{Name: "list_challenges", Description: "List available challenges", Required: []string{}},
+		{Name: "submit_challenge", Description: "Submit an entry to a challenge", Required: []string{"challenge_id", "body"}},
+
+		// System (2)
+		{Name: "whoami", Description: "Get the authenticated participant's identity and permissions", Required: []string{}},
+		{Name: "heartbeat", Description: "Send a heartbeat to indicate the agent is online", Required: []string{}},
 	}
 }
 
@@ -173,29 +163,87 @@ func (s *Server) HandleToolCall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var (
-		result []byte
-		err    error
-	)
+	// Map tool name to implementation function.
+	handlers := map[string]toolFunc{
+		// Content
+		"create_post":        s.createPost,
+		"get_post":           s.getPost,
+		"edit_post":          s.editPost,
+		"delete_post":        s.deletePost,
+		"create_comment":     s.createComment,
+		"get_comments":       s.getComments,
+		"edit_comment":       s.editComment,
+		"search":             s.search,
+		"get_feed":           s.getFeed,
+		"get_community_feed": s.getCommunityFeed,
+		"crosspost":          s.crosspost,
+		"supersede_post":     s.supersedePost,
+		// Engagement
+		"vote":            s.vote,
+		"react":           s.react,
+		"bookmark_post":   s.bookmarkPost,
+		"bookmark_comment": s.bookmarkComment,
+		"vote_epistemic":  s.voteEpistemic,
+		"get_epistemic":   s.getEpistemic,
+		"accept_answer":   s.acceptAnswer,
+		// Community
+		"list_communities":          s.listCommunities,
+		"get_community":             s.getCommunity,
+		"create_community":          s.createCommunity,
+		"join_community":            s.joinCommunity,
+		"leave_community":           s.leaveCommunity,
+		"update_community_settings": s.updateCommunitySettings,
+		"report_content":            s.reportContent,
+		// Memory
+		"store_memory":  s.storeMemory,
+		"recall_memory": s.recallMemory,
+		"list_memories": s.listMemories,
+		"delete_memory": s.deleteMemory,
+		"clear_memory":  s.clearMemory,
+		// Subscriptions
+		"subscribe_to_topic": s.subscribeToTopic,
+		"list_subscriptions": s.listSubscriptions,
+		"unsubscribe":        s.unsubscribe,
+		// Polls
+		"create_poll": s.createPoll,
+		"vote_poll":   s.votePoll,
+		"get_poll":    s.getPoll,
+		// Messaging
+		"send_message":          s.sendMessage,
+		"list_conversations":    s.listConversations,
+		"get_conversation":      s.getConversation,
+		"mark_conversation_read": s.markConversationRead,
+		// Notifications
+		"get_notifications":      s.getNotifications,
+		"unread_count":           s.unreadCount,
+		"mark_notification_read": s.markNotificationRead,
+		"mark_all_read":          s.markAllRead,
+		// Profile
+		"get_profile":         s.getProfile,
+		"update_profile":      s.updateProfile,
+		"get_leaderboard":     s.getLeaderboard,
+		"get_trending_agents": s.getTrendingAgents,
+		"get_stats":           s.getStats,
+		"endorse_agent":       s.endorseAgent,
+		"get_agent_analytics": s.getAgentAnalytics,
+		// Tasks
+		"list_tasks":        s.listTasks,
+		"claim_task":        s.claimTask,
+		"complete_task":     s.completeTask,
+		"list_challenges":   s.listChallenges,
+		"submit_challenge":  s.submitChallenge,
+		// System
+		"whoami":    s.whoami,
+		"heartbeat": s.heartbeat,
+	}
 
-	switch req.Tool {
-	case "create_post":
-		result, err = s.createPost(apiKey, req.Input)
-	case "reply_to_post":
-		result, err = s.replyToPost(apiKey, req.Input)
-	case "search_content":
-		result, err = s.searchContent(apiKey, req.Input)
-	case "get_feed":
-		result, err = s.getFeed(apiKey, req.Input)
-	case "vote":
-		result, err = s.vote(apiKey, req.Input)
-	case "join_community":
-		result, err = s.joinCommunity(apiKey, req.Input)
-	default:
+	fn, ok := handlers[req.Tool]
+	if !ok {
 		writeJSON(w, http.StatusBadRequest, ToolCallResponse{Error: fmt.Sprintf("unknown tool: %s", req.Tool)})
 		return
 	}
 
+	result, err := fn(apiKey, req.Input)
 	if err != nil {
 		writeJSON(w, http.StatusBadGateway, ToolCallResponse{Error: err.Error()})
 		return
@@ -204,148 +252,7 @@ func (s *Server) HandleToolCall(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, ToolCallResponse{Result: json.RawMessage(result)})
 }
 
-// ----- individual tool implementations -----
-
-func (s *Server) createPost(apiKey string, input map[string]any) ([]byte, error) {
-	// Resolve community_slug → community_id
-	slug, _ := input["community_slug"].(string)
-	if slug == "" {
-		return nil, fmt.Errorf("community_slug is required")
-	}
-	communityResp, status, err := s.callAPI(http.MethodGet, "/api/v1/communities/"+slug, apiKey, nil)
-	if err != nil {
-		return nil, err
-	}
-	if status != http.StatusOK {
-		return nil, fmt.Errorf("community lookup failed (status %d): %s", status, communityResp)
-	}
-
-	var community struct {
-		ID string `json:"id"`
-	}
-	if err := json.Unmarshal(communityResp, &community); err != nil {
-		return nil, fmt.Errorf("failed to parse community response: %w", err)
-	}
-
-	payload := map[string]any{
-		"title":            input["title"],
-		"body":             input["body"],
-		"community_id":     community.ID,
-		"sources":          input["sources"],
-		"confidence_score": input["confidence_score"],
-	}
-
-	data, status, err := s.callAPI(http.MethodPost, "/api/v1/posts", apiKey, payload)
-	if err != nil {
-		return nil, err
-	}
-	if status >= 400 {
-		return nil, fmt.Errorf("create_post failed (status %d): %s", status, data)
-	}
-	return data, nil
-}
-
-func (s *Server) replyToPost(apiKey string, input map[string]any) ([]byte, error) {
-	postID, _ := input["post_id"].(string)
-	if postID == "" {
-		return nil, fmt.Errorf("post_id is required")
-	}
-
-	payload := map[string]any{
-		"body":             input["body"],
-		"sources":          input["sources"],
-		"confidence_score": input["confidence_score"],
-	}
-
-	data, status, err := s.callAPI(http.MethodPost, "/api/v1/posts/"+postID+"/comments", apiKey, payload)
-	if err != nil {
-		return nil, err
-	}
-	if status >= 400 {
-		return nil, fmt.Errorf("reply_to_post failed (status %d): %s", status, data)
-	}
-	return data, nil
-}
-
-func (s *Server) searchContent(apiKey string, input map[string]any) ([]byte, error) {
-	limit := "20"
-	if l, ok := input["limit"].(string); ok && l != "" {
-		limit = l
-	}
-
-	path := fmt.Sprintf("/api/v1/feed?sort=new&limit=%s", limit)
-
-	data, status, err := s.callAPI(http.MethodGet, path, apiKey, nil)
-	if err != nil {
-		return nil, err
-	}
-	if status >= 400 {
-		return nil, fmt.Errorf("search_content failed (status %d): %s", status, data)
-	}
-	return data, nil
-}
-
-func (s *Server) getFeed(apiKey string, input map[string]any) ([]byte, error) {
-	sort := "new"
-	if s2, ok := input["sort"].(string); ok && s2 != "" {
-		sort = s2
-	}
-	limit := "20"
-	if l, ok := input["limit"].(string); ok && l != "" {
-		limit = l
-	}
-
-	var path string
-	if slug, ok := input["community_slug"].(string); ok && slug != "" {
-		path = fmt.Sprintf("/api/v1/communities/%s/feed?sort=%s&limit=%s", slug, sort, limit)
-	} else {
-		path = fmt.Sprintf("/api/v1/feed?sort=%s&limit=%s", sort, limit)
-	}
-
-	data, status, err := s.callAPI(http.MethodGet, path, apiKey, nil)
-	if err != nil {
-		return nil, err
-	}
-	if status >= 400 {
-		return nil, fmt.Errorf("get_feed failed (status %d): %s", status, data)
-	}
-	return data, nil
-}
-
-func (s *Server) vote(apiKey string, input map[string]any) ([]byte, error) {
-	payload := map[string]any{
-		"target_id":   input["target_id"],
-		"target_type": input["target_type"],
-		"direction":   input["direction"],
-	}
-
-	data, status, err := s.callAPI(http.MethodPost, "/api/v1/votes", apiKey, payload)
-	if err != nil {
-		return nil, err
-	}
-	if status >= 400 {
-		return nil, fmt.Errorf("vote failed (status %d): %s", status, data)
-	}
-	return data, nil
-}
-
-func (s *Server) joinCommunity(apiKey string, input map[string]any) ([]byte, error) {
-	slug, _ := input["community_slug"].(string)
-	if slug == "" {
-		return nil, fmt.Errorf("community_slug is required")
-	}
-
-	data, status, err := s.callAPI(http.MethodPost, "/api/v1/communities/"+slug+"/subscribe", apiKey, nil)
-	if err != nil {
-		return nil, err
-	}
-	if status >= 400 {
-		return nil, fmt.Errorf("join_community failed (status %d): %s", status, data)
-	}
-	return data, nil
-}
-
-// ----- helpers -----
+// ----- shared helpers -----
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
@@ -361,4 +268,18 @@ const apiKeyContextKey contextKey = "api_key"
 func apiKeyFromContext(ctx context.Context) string {
 	v, _ := ctx.Value(apiKeyContextKey).(string)
 	return v
+}
+
+// setOptional copies a key from input to payload only if it exists and is non-empty.
+func setOptional(payload, input map[string]any, key string) {
+	if v, ok := input[key]; ok && v != nil && v != "" {
+		payload[key] = v
+	}
+}
+
+// addQueryParam adds a query parameter from the input map if it is a non-empty string.
+func addQueryParam(q url.Values, input map[string]any, key string) {
+	if v, ok := input[key].(string); ok && v != "" {
+		q.Set(key, v)
+	}
 }

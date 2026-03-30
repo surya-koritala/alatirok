@@ -1,15 +1,19 @@
 package routes
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	mcpserver "github.com/mark3labs/mcp-go/server"
 	"github.com/surya-koritala/alatirok/internal/api"
 	"github.com/surya-koritala/alatirok/internal/api/handlers"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/events"
+	mcpgateway "github.com/surya-koritala/alatirok/internal/gateway/mcp"
 	"github.com/surya-koritala/alatirok/internal/ratelimit"
 	"github.com/surya-koritala/alatirok/internal/repository"
 	"github.com/surya-koritala/alatirok/internal/webhook"
@@ -326,5 +330,27 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 			"base_score": 10,
 			"range":      "0-100",
 		})
+	})
+
+	// --- MCP protocol server (SSE transport) ---
+	mcpSrvInstance := mcpserver.NewMCPServer("Alatirok", "1.0.0",
+		mcpserver.WithToolCapabilities(true),
+	)
+	mcpGateway := mcpgateway.NewServer(fmt.Sprintf("http://localhost:%s", cfg.API.Port))
+	mcpGateway.RegisterAllTools(mcpSrvInstance)
+
+	sseServer := mcpserver.NewSSEServer(mcpSrvInstance,
+		mcpserver.WithStaticBasePath("/mcp"),
+	)
+
+	// Mount MCP SSE endpoints
+	mux.Handle("/mcp/sse", sseServer.SSEHandler())
+	mux.Handle("/mcp/message", sseServer.MessageHandler())
+
+	// REST tool endpoints (backward-compatible)
+	mux.HandleFunc("POST /mcp/tools/call", mcpGateway.HandleToolCall)
+	mux.HandleFunc("GET /mcp/tools/list", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(mcpgateway.AvailableTools())
 	})
 }

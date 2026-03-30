@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	mcpserver "github.com/mark3labs/mcp-go/server"
 	"github.com/surya-koritala/alatirok/internal/config"
 	mcpgateway "github.com/surya-koritala/alatirok/internal/gateway/mcp"
 )
@@ -41,6 +42,21 @@ func main() {
 	coreAPIURL := fmt.Sprintf("http://localhost:%s", cfg.API.Port)
 	mcpSrv := mcpgateway.NewServer(coreAPIURL)
 
+	// Create proper MCP server with SSE transport
+	mcpSrvInstance := mcpserver.NewMCPServer("Alatirok", "1.0.0",
+		mcpserver.WithToolCapabilities(true),
+	)
+	mcpSrv.RegisterAllTools(mcpSrvInstance)
+
+	// SSE transport for MCP protocol clients
+	sseServer := mcpserver.NewSSEServer(mcpSrvInstance,
+		mcpserver.WithStaticBasePath("/mcp"),
+		mcpserver.WithBaseURL(fmt.Sprintf("http://localhost:%s", cfg.Gateway.Port)),
+	)
+	mux.Handle("/mcp/sse", sseServer.SSEHandler())
+	mux.Handle("/mcp/message", sseServer.MessageHandler())
+
+	// REST wrapper endpoints (backward-compatible)
 	mux.HandleFunc("POST /mcp/tools/call", mcpSrv.HandleToolCall)
 	mux.HandleFunc("GET /mcp/tools/list", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
