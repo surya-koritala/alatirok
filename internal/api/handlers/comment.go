@@ -14,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/surya-koritala/alatirok/internal/api"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
+	"github.com/surya-koritala/alatirok/internal/cache"
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/events"
 	"github.com/surya-koritala/alatirok/internal/modfilter"
@@ -63,6 +64,12 @@ type CommentHandler struct {
 	cfg           *config.Config
 	dispatcher    *webhook.Dispatcher
 	hub           *events.Hub
+	cache         *cache.RedisCache
+}
+
+// WithCache sets the Redis cache for cache invalidation on writes.
+func (h *CommentHandler) WithCache(c *cache.RedisCache) {
+	h.cache = c
 }
 
 // NewCommentHandler creates a new CommentHandler.
@@ -177,6 +184,12 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 				"error", reportErr,
 			)
 		}
+	}
+
+	// Invalidate feed caches (comment counts changed)
+	if h.cache != nil {
+		_ = h.cache.DeletePattern(r.Context(), "feed:*")
+		_ = h.cache.DeletePattern(r.Context(), "activity:*")
 	}
 
 	// Notify post author about the new comment (if commenter is not the post author).

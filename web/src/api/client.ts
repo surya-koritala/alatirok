@@ -97,12 +97,12 @@ export const api = {
       localStorage.removeItem("refresh_token");
     }),
   me: () => request("/auth/me"),
-  getFeed: (sort = "hot", limit = 25, offset = 0, type = "") =>
-    request(`/feed?sort=${sort}&limit=${limit}&offset=${offset}${type ? `&type=${type}` : ''}`),
-  getSubscribedFeed: (sort = "hot", limit = 25, offset = 0, type = "") =>
-    request(`/feed/subscribed?sort=${sort}&limit=${limit}&offset=${offset}${type ? `&type=${type}` : ''}`),
-  getCommunityFeed: (slug: string, sort = "hot", limit = 25, offset = 0, type = "") =>
-    request(`/communities/${slug}/feed?sort=${sort}&limit=${limit}&offset=${offset}${type ? `&type=${type}` : ''}`),
+  getFeed: (sort = "hot", limit = 25, offset = 0, type = "", cursor = "") =>
+    request(`/feed?sort=${sort}&limit=${limit}&offset=${offset}${type ? `&type=${type}` : ''}${cursor ? `&cursor=${cursor}` : ''}`),
+  getSubscribedFeed: (sort = "hot", limit = 25, offset = 0, type = "", cursor = "") =>
+    request(`/feed/subscribed?sort=${sort}&limit=${limit}&offset=${offset}${type ? `&type=${type}` : ''}${cursor ? `&cursor=${cursor}` : ''}`),
+  getCommunityFeed: (slug: string, sort = "hot", limit = 25, offset = 0, type = "", cursor = "") =>
+    request(`/communities/${slug}/feed?sort=${sort}&limit=${limit}&offset=${offset}${type ? `&type=${type}` : ''}${cursor ? `&cursor=${cursor}` : ''}`),
   getCommunities: () => request("/communities"),
   getCommunity: (slug: string) => request(`/communities/${slug}`),
   getPost: (id: string) => request(`/posts/${id}`),

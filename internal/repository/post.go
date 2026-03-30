@@ -360,7 +360,8 @@ func (r *PostRepo) GetByID(ctx context.Context, id string) (*models.PostWithAuth
 // ListByCommunity returns paginated posts for a community with the given sort and optional post type filter.
 // Returns the posts slice, total count, and any error.
 // Uses a window function COUNT(*) OVER() to get the total in a single query.
-func (r *PostRepo) ListByCommunity(ctx context.Context, communityID string, sort string, postType string, limit, offset int) ([]models.PostWithAuthor, int, error) {
+// If cursor is non-empty, uses cursor-based pagination (WHERE created_at < cursor's created_at) instead of OFFSET.
+func (r *PostRepo) ListByCommunity(ctx context.Context, communityID string, sort string, postType string, limit, offset int, cursor ...string) ([]models.PostWithAuthor, int, error) {
 	orderBy := orderByClause(sort)
 
 	var whereClauses []string
@@ -370,14 +371,26 @@ func (r *PostRepo) ListByCommunity(ctx context.Context, communityID string, sort
 		queryArgs = append(queryArgs, postType)
 		whereClauses = append(whereClauses, fmt.Sprintf(`p.post_type = $%d`, len(queryArgs)))
 	}
-	queryArgs = append(queryArgs, limit, offset)
-	limitParam := fmt.Sprintf(`$%d`, len(queryArgs)-1)
-	offsetParam := fmt.Sprintf(`$%d`, len(queryArgs))
+
+	useCursor := len(cursor) > 0 && cursor[0] != ""
+	if useCursor {
+		queryArgs = append(queryArgs, cursor[0])
+		whereClauses = append(whereClauses, fmt.Sprintf(`p.created_at < (SELECT created_at FROM posts WHERE id = $%d)`, len(queryArgs)))
+	}
+
+	queryArgs = append(queryArgs, limit)
+	limitParam := fmt.Sprintf(`$%d`, len(queryArgs))
+
+	var offsetClause string
+	if !useCursor {
+		queryArgs = append(queryArgs, offset)
+		offsetClause = fmt.Sprintf(` OFFSET $%d`, len(queryArgs))
+	}
 
 	rows, err := r.pool.Query(ctx, postJoinSelectWithTotal+`
 	WHERE `+strings.Join(whereClauses, " AND ")+`
 	ORDER BY p.is_pinned DESC, `+orderBy+`
-	LIMIT `+limitParam+` OFFSET `+offsetParam,
+	LIMIT `+limitParam+offsetClause,
 		queryArgs...,
 	)
 	if err != nil {
@@ -451,7 +464,8 @@ func (r *PostRepo) AcceptAnswer(ctx context.Context, postID, commentID string) e
 // ListBySubscriptions returns paginated posts from communities the participant is subscribed to.
 // Returns the posts slice, total count, and any error.
 // Uses a window function COUNT(*) OVER() to get the total in a single query.
-func (r *PostRepo) ListBySubscriptions(ctx context.Context, participantID string, sort string, postType string, limit, offset int) ([]models.PostWithAuthor, int, error) {
+// If cursor is non-empty, uses cursor-based pagination instead of OFFSET.
+func (r *PostRepo) ListBySubscriptions(ctx context.Context, participantID string, sort string, postType string, limit, offset int, cursor ...string) ([]models.PostWithAuthor, int, error) {
 	orderBy := orderByClause(sort)
 
 	var whereClauses []string
@@ -462,14 +476,26 @@ func (r *PostRepo) ListBySubscriptions(ctx context.Context, participantID string
 		queryArgs = append(queryArgs, postType)
 		whereClauses = append(whereClauses, fmt.Sprintf(`p.post_type = $%d`, len(queryArgs)))
 	}
-	queryArgs = append(queryArgs, limit, offset)
-	limitParam := fmt.Sprintf(`$%d`, len(queryArgs)-1)
-	offsetParam := fmt.Sprintf(`$%d`, len(queryArgs))
+
+	useCursor := len(cursor) > 0 && cursor[0] != ""
+	if useCursor {
+		queryArgs = append(queryArgs, cursor[0])
+		whereClauses = append(whereClauses, fmt.Sprintf(`p.created_at < (SELECT created_at FROM posts WHERE id = $%d)`, len(queryArgs)))
+	}
+
+	queryArgs = append(queryArgs, limit)
+	limitParam := fmt.Sprintf(`$%d`, len(queryArgs))
+
+	var offsetClause string
+	if !useCursor {
+		queryArgs = append(queryArgs, offset)
+		offsetClause = fmt.Sprintf(` OFFSET $%d`, len(queryArgs))
+	}
 
 	rows, err := r.pool.Query(ctx, postJoinSelectWithTotal+`
 	WHERE `+strings.Join(whereClauses, " AND ")+`
 	ORDER BY p.is_pinned DESC, `+orderBy+`
-	LIMIT `+limitParam+` OFFSET `+offsetParam,
+	LIMIT `+limitParam+offsetClause,
 		queryArgs...,
 	)
 	if err != nil {
@@ -497,25 +523,42 @@ func (r *PostRepo) ListBySubscriptions(ctx context.Context, participantID string
 // ListGlobal returns paginated posts across all communities with the given sort and optional post type filter.
 // Returns the posts slice, total count, and any error.
 // Uses a window function COUNT(*) OVER() to get the total in a single query.
-func (r *PostRepo) ListGlobal(ctx context.Context, sort string, postType string, limit, offset int) ([]models.PostWithAuthor, int, error) {
+// If cursor is non-empty, uses cursor-based pagination instead of OFFSET.
+func (r *PostRepo) ListGlobal(ctx context.Context, sort string, postType string, limit, offset int, cursor ...string) ([]models.PostWithAuthor, int, error) {
 	orderBy := orderByClause(sort)
 
 	var queryArgs []any
-	var whereClause string
+	var whereClauses []string
+
 	if postType != "" {
 		queryArgs = append(queryArgs, postType)
-		whereClause = `
-	WHERE p.post_type = $1`
-		queryArgs = append(queryArgs, limit, offset)
-	} else {
-		queryArgs = append(queryArgs, limit, offset)
+		whereClauses = append(whereClauses, `p.post_type = $1`)
 	}
-	limitParam := fmt.Sprintf(`$%d`, len(queryArgs)-1)
-	offsetParam := fmt.Sprintf(`$%d`, len(queryArgs))
+
+	useCursor := len(cursor) > 0 && cursor[0] != ""
+	if useCursor {
+		queryArgs = append(queryArgs, cursor[0])
+		whereClauses = append(whereClauses, fmt.Sprintf(`p.created_at < (SELECT created_at FROM posts WHERE id = $%d)`, len(queryArgs)))
+	}
+
+	var whereClause string
+	if len(whereClauses) > 0 {
+		whereClause = `
+	WHERE ` + strings.Join(whereClauses, " AND ")
+	}
+
+	queryArgs = append(queryArgs, limit)
+	limitParam := fmt.Sprintf(`$%d`, len(queryArgs))
+
+	var offsetClause string
+	if !useCursor {
+		queryArgs = append(queryArgs, offset)
+		offsetClause = fmt.Sprintf(` OFFSET $%d`, len(queryArgs))
+	}
 
 	rows, err := r.pool.Query(ctx, postJoinSelectWithTotal+whereClause+`
 	ORDER BY `+orderBy+`
-	LIMIT `+limitParam+` OFFSET `+offsetParam,
+	LIMIT `+limitParam+offsetClause,
 		queryArgs...,
 	)
 	if err != nil {

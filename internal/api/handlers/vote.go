@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
 
 	"github.com/surya-koritala/alatirok/internal/api"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
+	"github.com/surya-koritala/alatirok/internal/cache"
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/events"
 	"github.com/surya-koritala/alatirok/internal/models"
@@ -26,6 +26,12 @@ type VoteHandler struct {
 	cfg         *config.Config
 	dispatcher  *webhook.Dispatcher
 	hub         *events.Hub
+	cache       *cache.RedisCache
+}
+
+// WithCache sets the Redis cache for cache invalidation on votes.
+func (h *VoteHandler) WithCache(c *cache.RedisCache) {
+	h.cache = c
 }
 
 // NewVoteHandler creates a new VoteHandler.
@@ -98,63 +104,65 @@ func (h *VoteHandler) Cast(w http.ResponseWriter, r *http.Request) {
 		Direction:  models.VoteDirection(req.Direction),
 	}
 
-	newScore, err := h.votes.CastVote(r.Context(), vote)
+	// Look up the content author so we can do vote + reputation in a single transaction.
+	var authorID string
+	var delta float64
+
+	if req.TargetType == "post" {
+		post, err := h.posts.GetByID(r.Context(), req.TargetID)
+		if err == nil {
+			authorID = post.AuthorID
+		}
+		if req.Direction == "up" {
+			delta = 0.5
+		} else {
+			delta = -0.3
+		}
+	} else {
+		comment, err := h.comments.GetByID(r.Context(), req.TargetID)
+		if err == nil {
+			authorID = comment.AuthorID
+		}
+		if req.Direction == "up" {
+			delta = 0.3
+		} else {
+			delta = -0.2
+		}
+	}
+
+	eventType := repository.EventUpvoteReceived
+	if req.Direction == "down" {
+		eventType = repository.EventDownvoteReceived
+	}
+
+	// Merged transaction: vote + reputation in a single BEGIN/COMMIT
+	newScore, err := h.votes.CastWithReputation(r.Context(), vote, authorID, eventType, delta)
 	if err != nil {
 		api.Error(w, http.StatusInternalServerError, "failed to cast vote")
 		return
 	}
 
-	// Record reputation event for content author
-	go func() {
-		ctx := context.Background()
-		var authorID string
-		var delta float64
+	// Invalidate feed caches
+	if h.cache != nil {
+		_ = h.cache.DeletePattern(r.Context(), "feed:*")
+	}
 
-		if req.TargetType == "post" {
-			post, err := h.posts.GetByID(ctx, req.TargetID)
-			if err == nil {
-				authorID = post.AuthorID
-			}
-			if req.Direction == "up" {
-				delta = 0.5
-			} else {
-				delta = -0.3
-			}
-		} else {
-			comment, err := h.comments.GetByID(ctx, req.TargetID)
-			if err == nil {
-				authorID = comment.AuthorID
-			}
-			if req.Direction == "up" {
-				delta = 0.3
-			} else {
-				delta = -0.2
-			}
+	// Dispatch webhook + SSE for vote.received (non-blocking)
+	if h.dispatcher != nil && authorID != "" && authorID != claims.ParticipantID && req.Direction == "up" {
+		payload := map[string]any{
+			"target_id":   req.TargetID,
+			"target_type": req.TargetType,
+			"voter_id":    claims.ParticipantID,
+			"direction":   req.Direction,
 		}
-
-		if authorID != "" && authorID != claims.ParticipantID {
-			eventType := repository.EventUpvoteReceived
-			if req.Direction == "down" {
-				eventType = repository.EventDownvoteReceived
+		go func() {
+			h.dispatcher.Dispatch("vote.received", payload)
+			if h.hub != nil {
+				data, _ := json.Marshal(payload)
+				h.hub.Publish(authorID, events.Event{Type: "vote.received", Data: string(data)})
 			}
-			_ = h.reputation.RecordEvent(ctx, authorID, eventType, delta)
-
-			// Dispatch webhook + SSE for vote.received
-			if h.dispatcher != nil && req.Direction == "up" {
-				payload := map[string]any{
-					"target_id":   req.TargetID,
-					"target_type": req.TargetType,
-					"voter_id":    claims.ParticipantID,
-					"direction":   req.Direction,
-				}
-				h.dispatcher.Dispatch("vote.received", payload)
-				if h.hub != nil {
-					data, _ := json.Marshal(payload)
-					h.hub.Publish(authorID, events.Event{Type: "vote.received", Data: string(data)})
-				}
-			}
-		}
-	}()
+		}()
+	}
 
 	api.JSON(w, http.StatusOK, map[string]int{"vote_score": newScore})
 }

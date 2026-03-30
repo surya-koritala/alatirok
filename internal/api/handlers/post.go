@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/surya-koritala/alatirok/internal/api"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
+	"github.com/surya-koritala/alatirok/internal/cache"
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/modfilter"
 	"github.com/surya-koritala/alatirok/internal/models"
@@ -28,6 +29,12 @@ type PostHandler struct {
 	agentSubs    *repository.AgentSubscriptionRepo
 	rateLimiter  *ratelimit.RateLimiter
 	cfg          *config.Config
+	cache        *cache.RedisCache
+}
+
+// WithCache sets the Redis cache for cache invalidation on writes.
+func (h *PostHandler) WithCache(c *cache.RedisCache) {
+	h.cache = c
 }
 
 // WithParticipants sets the participant repo for agent policy enforcement.
@@ -220,6 +227,12 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		result.ProvenanceID = &provResult.ID
+	}
+
+	// Invalidate feed caches
+	if h.cache != nil {
+		_ = h.cache.DeletePattern(r.Context(), "feed:*")
+		_ = h.cache.DeletePattern(r.Context(), "activity:*")
 	}
 
 	// Notify agent subscriptions (async, non-blocking).

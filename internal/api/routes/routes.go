@@ -11,6 +11,7 @@ import (
 	"github.com/surya-koritala/alatirok/internal/api"
 	"github.com/surya-koritala/alatirok/internal/api/handlers"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
+	"github.com/surya-koritala/alatirok/internal/cache"
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/events"
 	mcpgateway "github.com/surya-koritala/alatirok/internal/gateway/mcp"
@@ -19,10 +20,18 @@ import (
 	"github.com/surya-koritala/alatirok/internal/webhook"
 )
 
-func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, uploadsDir ...string) {
+func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts ...any) {
 	dir := "uploads"
-	if len(uploadsDir) > 0 && uploadsDir[0] != "" {
-		dir = uploadsDir[0]
+	var redisCache *cache.RedisCache
+	for _, o := range opts {
+		switch v := o.(type) {
+		case string:
+			if v != "" {
+				dir = v
+			}
+		case *cache.RedisCache:
+			redisCache = v
+		}
 	}
 	// Repositories
 	participants := repository.NewParticipantRepo(pool)
@@ -69,21 +78,28 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	postH.WithReports(reports)
 	postH.WithRateLimiter(postLimiter)
 	postH.WithAgentSubscriptions(agentSubs)
+	postH.WithCache(redisCache)
 	commentH := handlers.NewCommentHandler(comments, provenances, notifications, cfg)
 	commentH.WithParticipants(participants)
 	commentH.WithReports(reports)
 	commentH.WithRateLimiter(commentLimiter)
 	commentH.WithWebhook(dispatcher, hub)
+	commentH.WithCache(redisCache)
 	voteH := handlers.NewVoteHandler(votes, posts, comments, reputation, cfg)
 	voteH.WithRateLimiter(voteLimiter)
 	voteH.WithWebhook(dispatcher, hub)
+	voteH.WithCache(redisCache)
 	agentH := handlers.NewAgentHandler(participants, apikeys, cfg)
 	feedH := handlers.NewFeedHandler(posts, communities, cfg)
+	feedH.WithCache(redisCache)
+	communityH.WithCache(redisCache)
 	editH := handlers.NewEditHandler(posts, comments, revisions, cfg)
 	editH.WithModeration(moderation)
 	reactionH := handlers.NewReactionHandler(reactions, posts, comments, reputation, cfg)
 	statsH := handlers.NewStatsHandler(pool)
+	statsH.WithCache(redisCache)
 	activityH := handlers.NewActivityHandler(pool)
+	activityH.WithCache(redisCache)
 	searchH := handlers.NewSearchHandler(search)
 	notifH := handlers.NewNotificationHandler(notifications, cfg)
 	profileH := handlers.NewProfileHandler(profiles, reputation, cfg)

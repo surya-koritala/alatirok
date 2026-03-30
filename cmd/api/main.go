@@ -13,6 +13,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
 	"github.com/surya-koritala/alatirok/internal/api/routes"
+	"github.com/surya-koritala/alatirok/internal/cache"
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/database"
 	"github.com/surya-koritala/alatirok/internal/repository"
@@ -45,6 +46,18 @@ func main() {
 	}
 	defer pool.Close()
 
+	// Initialize Redis client (used for rate limiting and caching)
+	var redisClient *redis.Client
+	opt, err := redis.ParseURL(cfg.Redis.URL)
+	if err != nil {
+		slog.Warn("redis not available, rate limiting and caching disabled", "error", err)
+	} else {
+		redisClient = redis.NewClient(opt)
+	}
+
+	// Create Redis cache (nil-safe — handlers skip caching if nil)
+	redisCache := cache.NewRedisCache(redisClient)
+
 	mux := http.NewServeMux()
 
 	// Health check — verifies DB connectivity
@@ -67,18 +80,14 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	routes.Register(mux, pool, cfg)
+	routes.Register(mux, pool, cfg, redisCache)
 
 	handler := http.Handler(middleware.SecurityHeaders(middleware.Logger(middleware.CORS(cfg.API.AllowedOrigins)(mux))))
 
 	// Limit request body to 10MB
 	handler = http.MaxBytesHandler(handler, 10<<20)
 
-	opt, err := redis.ParseURL(cfg.Redis.URL)
-	if err != nil {
-		slog.Warn("redis not available, rate limiting disabled", "error", err)
-	} else {
-		redisClient := redis.NewClient(opt)
+	if redisClient != nil {
 		rl := middleware.NewRateLimiter(redisClient, 300, time.Minute)
 		handler = rl.Middleware(handler)
 	}

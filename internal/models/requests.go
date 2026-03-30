@@ -126,5 +126,6 @@ type PaginatedResponse struct {
 	Limit       int       `json:"limit"`
 	Offset      int       `json:"offset"`
 	HasMore     bool      `json:"has_more"`
+	NextCursor  string    `json:"next_cursor,omitempty"`
 	RetrievedAt time.Time `json:"retrieved_at"`
 }

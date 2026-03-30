@@ -1,22 +1,30 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/surya-koritala/alatirok/internal/api"
+	"github.com/surya-koritala/alatirok/internal/cache"
 )
 
 // ActivityHandler handles recent platform activity endpoints.
 type ActivityHandler struct {
-	pool *pgxpool.Pool
+	pool  *pgxpool.Pool
+	cache *cache.RedisCache
 }
 
 // NewActivityHandler creates a new ActivityHandler.
 func NewActivityHandler(pool *pgxpool.Pool) *ActivityHandler {
 	return &ActivityHandler{pool: pool}
+}
+
+// WithCache sets the Redis cache for activity responses.
+func (h *ActivityHandler) WithCache(c *cache.RedisCache) {
+	h.cache = c
 }
 
 // activityEvent represents a single recent activity event.
@@ -39,6 +47,17 @@ func (h *ActivityHandler) Recent(w http.ResponseWriter, r *http.Request) {
 	}
 	if limit > 50 {
 		limit = 50
+	}
+
+	// Try Redis cache (15s TTL)
+	cacheKey := fmt.Sprintf("activity:recent:%d", limit)
+	if h.cache != nil {
+		if cached, _ := h.cache.Get(ctx, cacheKey); cached != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("X-Cache", "HIT")
+			w.Write(cached)
+			return
+		}
 	}
 
 	query := `
@@ -103,9 +122,19 @@ func (h *ActivityHandler) Recent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.JSON(w, http.StatusOK, map[string]any{
+	result := map[string]any{
 		"events": events,
-	})
+	}
+
+	// Store in Redis cache
+	if h.cache != nil {
+		if data, err := json.Marshal(result); err == nil {
+			_ = h.cache.Set(ctx, cacheKey, data, 15*time.Second)
+		}
+	}
+
+	w.Header().Set("X-Cache", "MISS")
+	api.JSON(w, http.StatusOK, result)
 }
 
 // relativeTime converts a timestamp to a human-readable relative time string.

@@ -1,14 +1,18 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/surya-koritala/alatirok/internal/api"
 	"github.com/surya-koritala/alatirok/internal/api/middleware"
+	"github.com/surya-koritala/alatirok/internal/cache"
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/models"
 	"github.com/surya-koritala/alatirok/internal/repository"
@@ -18,6 +22,7 @@ import (
 type CommunityHandler struct {
 	communities *repository.CommunityRepo
 	cfg         *config.Config
+	cache       *cache.RedisCache
 }
 
 // NewCommunityHandler creates a new CommunityHandler.
@@ -26,6 +31,11 @@ func NewCommunityHandler(communities *repository.CommunityRepo, cfg *config.Conf
 		communities: communities,
 		cfg:         cfg,
 	}
+}
+
+// WithCache sets the Redis cache for community list responses.
+func (h *CommunityHandler) WithCache(c *cache.RedisCache) {
+	h.cache = c
 }
 
 // Create handles POST /api/v1/communities.
@@ -77,6 +87,11 @@ func (h *CommunityHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Invalidate community list cache
+	if h.cache != nil {
+		_ = h.cache.DeletePattern(r.Context(), "community:*")
+	}
+
 	api.JSON(w, http.StatusCreated, result)
 }
 
@@ -85,12 +100,30 @@ func (h *CommunityHandler) List(w http.ResponseWriter, r *http.Request) {
 	limit := parseIntQuery(r, "limit", 25)
 	offset := parseIntQuery(r, "offset", 0)
 
+	cacheKey := fmt.Sprintf("community:list:%d:%d", limit, offset)
+	if h.cache != nil {
+		if cached, _ := h.cache.Get(r.Context(), cacheKey); cached != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("X-Cache", "HIT")
+			w.Write(cached)
+			return
+		}
+	}
+
 	communities, err := h.communities.List(r.Context(), limit, offset)
 	if err != nil {
 		api.Error(w, http.StatusInternalServerError, "failed to list communities")
 		return
 	}
 
+	// Store in Redis cache
+	if h.cache != nil {
+		if data, err := json.Marshal(communities); err == nil {
+			_ = h.cache.Set(r.Context(), cacheKey, data, 30*time.Second)
+		}
+	}
+
+	w.Header().Set("X-Cache", "MISS")
 	api.JSON(w, http.StatusOK, communities)
 }
 
@@ -148,6 +181,12 @@ func (h *CommunityHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	if err := h.communities.Delete(r.Context(), community.ID); err != nil {
 		api.Error(w, http.StatusInternalServerError, "failed to delete community")
 		return
+	}
+
+	// Invalidate community and feed caches
+	if h.cache != nil {
+		_ = h.cache.DeletePattern(r.Context(), "community:*")
+		_ = h.cache.DeletePattern(r.Context(), "feed:*")
 	}
 
 	api.JSON(w, http.StatusOK, map[string]string{"status": "deleted"})

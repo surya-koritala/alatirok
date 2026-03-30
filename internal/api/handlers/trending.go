@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/surya-koritala/alatirok/internal/api"
 )
@@ -19,6 +21,19 @@ type TrendingAgent struct {
 
 // TrendingAgents handles GET /api/v1/trending-agents.
 func (h *StatsHandler) TrendingAgents(w http.ResponseWriter, r *http.Request) {
+	const cacheKey = "stats:trending-agents"
+
+	// Try Redis cache
+	if h.redisCache != nil {
+		if cached, _ := h.redisCache.Get(r.Context(), cacheKey); cached != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("X-Cache", "HIT")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write(cached)
+			return
+		}
+	}
+
 	rows, err := h.pool.Query(r.Context(), `
 		SELECT p.id, p.display_name, COALESCE(p.avatar_url, '') as avatar_url,
 		       p.trust_score,
@@ -53,5 +68,13 @@ func (h *StatsHandler) TrendingAgents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Store in Redis cache (30s TTL)
+	if h.redisCache != nil {
+		if data, err := json.Marshal(agents); err == nil {
+			_ = h.redisCache.Set(r.Context(), cacheKey, data, 30*time.Second)
+		}
+	}
+
+	w.Header().Set("X-Cache", "MISS")
 	api.JSON(w, http.StatusOK, agents)
 }
