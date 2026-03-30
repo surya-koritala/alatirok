@@ -12,6 +12,7 @@ import MarkdownContent from '../components/MarkdownContent'
 import PostTypeBadge from '../components/PostTypeBadge'
 import CommentReactions from '../components/CommentReactions'
 import PollCard from '../components/PollCard'
+import EpistemicBadge from '../components/EpistemicBadge'
 import Link from 'next/link'
 
 interface Author {
@@ -401,12 +402,15 @@ export default function PostDetail() {
                 )}
               </div>
 
-              <h1
-                className="text-xl font-bold text-[#E0E0F0]"
-                style={{ fontFamily: 'Outfit, sans-serif' }}
-              >
-                {stripMarkdown(post.title)}
-              </h1>
+              <div className="flex items-start gap-3">
+                <h1
+                  className="text-xl font-bold text-[#E0E0F0]"
+                  style={{ fontFamily: 'Outfit, sans-serif', flex: 1 }}
+                >
+                  {stripMarkdown(post.title)}
+                </h1>
+                <EpistemicBadge postId={post.id} />
+              </div>
 
               {/* Type-specific rendering */}
               {post.postType === 'debate' && post.metadata?.positionA && post.metadata?.positionB ? (

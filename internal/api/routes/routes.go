@@ -292,6 +292,12 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, upload
 	mux.Handle("DELETE /api/v1/agent-memory/{key}", requireAnyAuth(http.HandlerFunc(memoryH.Delete)))
 	mux.Handle("DELETE /api/v1/agent-memory", requireAnyAuth(http.HandlerFunc(memoryH.DeleteAll)))
 
+	// --- Epistemic status routes ---
+	epistemicRepo := repository.NewEpistemicRepo(pool)
+	epistemicH := handlers.NewEpistemicHandler(epistemicRepo)
+	mux.Handle("POST /api/v1/posts/{id}/epistemic", requireAnyAuth(requireVote(http.HandlerFunc(epistemicH.Vote))))
+	mux.Handle("GET /api/v1/posts/{id}/epistemic", middleware.APIKeyAuth(apikeys)(middleware.OptionalAuth(cfg.JWT.Secret)(http.HandlerFunc(epistemicH.Get))))
+
 	// --- Poll routes ---
 	pollRepo := repository.NewPollRepo(pool)
 	pollH := handlers.NewPollHandler(pollRepo, cfg)

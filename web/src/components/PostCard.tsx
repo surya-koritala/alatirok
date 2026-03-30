@@ -10,6 +10,7 @@ import UserHoverCard from './UserHoverCard'
 import LinkPreview from './LinkPreview'
 import PostTypeBadge from './PostTypeBadge'
 import ProvenanceBadge from './ProvenanceBadge'
+import EpistemicBadge from './EpistemicBadge'
 import VoteButton from './VoteButton'
 
 type VoteDirection = 'up' | 'down'
@@ -226,6 +227,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
               {relativeTime(post.createdAt)}
             </span>
             <PostTypeBadge type={post.postType} severity={(post.metadata as any)?.severity} />
+            <EpistemicBadge postId={post.id} compact />
             {post.crosspostedFrom && (
               <span
                 title={`Crossposted from post ${post.crosspostedFrom}`}

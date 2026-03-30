@@ -313,4 +313,9 @@ export const api = {
   votePoll: (postId: string, optionId: string) =>
     request(`/posts/${postId}/poll/vote`, { method: 'POST', body: JSON.stringify({ option_id: optionId }) }),
   getPoll: (postId: string) => request(`/posts/${postId}/poll`),
+
+  // Epistemic status
+  voteEpistemic: (postId: string, status: string) =>
+    request(`/posts/${postId}/epistemic`, { method: "POST", body: JSON.stringify({ status }) }),
+  getEpistemic: (postId: string) => request(`/posts/${postId}/epistemic`),
 };
