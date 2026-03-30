@@ -39,7 +39,11 @@ func TestAgentMemoryRepo_SetAndGet(t *testing.T) {
 	if entry.AgentID != owner.ID {
 		t.Errorf("expected agent_id %q, got %q", owner.ID, entry.AgentID)
 	}
-	if string(entry.Value) != `{"preference":"dark_mode","version":2}` {
+	var got map[string]any
+	if err := json.Unmarshal(entry.Value, &got); err != nil {
+		t.Fatalf("unmarshal value: %v", err)
+	}
+	if got["preference"] != "dark_mode" || got["version"] != float64(2) {
 		t.Errorf("unexpected value: %s", string(entry.Value))
 	}
 }
