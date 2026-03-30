@@ -25,22 +25,18 @@ func (r *CommentRepo) Pool() *pgxpool.Pool {
 	return r.pool
 }
 
-// Create inserts a new comment in a transaction.
+// Create inserts a new comment.
 // If parent_comment_id is set, depth = parent_depth + 1; otherwise depth = 0.
-// Also increments the post's comment_count.
+// Also atomically increments the post's comment_count and the author's
+// comment_count on the participants table using CTEs to reduce round-trips.
 func (r *CommentRepo) Create(ctx context.Context, c *models.Comment) (*models.Comment, error) {
-	tx, err := r.pool.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("begin tx: %w", err)
-	}
-	defer func() { _ = tx.Rollback(ctx) }()
-
 	depth := 0
 	if c.ParentCommentID != nil && *c.ParentCommentID != "" {
+		// Parent depth lookup still needed — cannot be combined into the CTE
+		// because we need the depth value for the INSERT.
 		var parentDepth int
-		err = tx.QueryRow(ctx, `SELECT depth FROM comments WHERE id = $1 AND deleted_at IS NULL`, *c.ParentCommentID).Scan(&parentDepth)
+		err := r.pool.QueryRow(ctx, `SELECT depth FROM comments WHERE id = $1 AND deleted_at IS NULL`, *c.ParentCommentID).Scan(&parentDepth)
 		if err != nil {
-			_ = tx.Rollback(ctx)
 			if errors.Is(err, pgx.ErrNoRows) {
 				return nil, fmt.Errorf("parent comment not found: %w", pgx.ErrNoRows)
 			}
@@ -49,16 +45,25 @@ func (r *CommentRepo) Create(ctx context.Context, c *models.Comment) (*models.Co
 		depth = parentDepth + 1
 	}
 
+	// Single-query CTE: insert comment + bump post comment_count +
+	// bump participant comment_count — all in one round-trip.
 	var result models.Comment
-	err = tx.QueryRow(ctx, `
-		INSERT INTO comments
-		  (post_id, parent_comment_id, author_id, author_type, body,
-		   provenance_id, confidence_score, depth)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-		RETURNING
-		  id, post_id, parent_comment_id, author_id, author_type,
-		  body, provenance_id, confidence_score,
-		  vote_score, depth, created_at, updated_at`,
+	err := r.pool.QueryRow(ctx, `
+		WITH inserted AS (
+			INSERT INTO comments
+			  (post_id, parent_comment_id, author_id, author_type, body,
+			   provenance_id, confidence_score, depth)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+			RETURNING
+			  id, post_id, parent_comment_id, author_id, author_type,
+			  body, provenance_id, confidence_score,
+			  vote_score, depth, created_at, updated_at
+		), bump_post AS (
+			UPDATE posts SET comment_count = comment_count + 1 WHERE id = $1
+		), bump_participant AS (
+			UPDATE participants SET comment_count = comment_count + 1 WHERE id = $3
+		)
+		SELECT * FROM inserted`,
 		c.PostID,
 		c.ParentCommentID,
 		c.AuthorID,
@@ -75,18 +80,6 @@ func (r *CommentRepo) Create(ctx context.Context, c *models.Comment) (*models.Co
 	)
 	if err != nil {
 		return nil, fmt.Errorf("insert comment: %w", err)
-	}
-
-	_, err = tx.Exec(ctx, `
-		UPDATE posts SET comment_count = comment_count + 1 WHERE id = $1`,
-		c.PostID,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("increment comment_count: %w", err)
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return nil, fmt.Errorf("commit tx: %w", err)
 	}
 
 	return &result, nil

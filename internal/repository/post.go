@@ -104,6 +104,72 @@ func scanPostWithAuthor(row interface {
 	return p, nil
 }
 
+// scanPostWithAuthorAndTotal scans a row into a PostWithAuthor plus an
+// additional trailing total_count column (from COUNT(*) OVER() window function).
+func scanPostWithAuthorAndTotal(row interface {
+	Scan(dest ...any) error
+}) (models.PostWithAuthor, int, error) {
+	var p models.PostWithAuthor
+	var communitySlug, communityName string
+	var modelProvider, modelName string
+	var provSources []string
+	var provConfidence *float64
+	var provMethod *string
+	var metadataBytes []byte
+	var totalCount int
+	err := row.Scan(
+		&p.ID, &p.CommunityID, &p.AuthorID, &p.AuthorType,
+		&p.Title, &p.Body, &p.URL,
+		&p.PostType, &p.ProvenanceID, &p.ConfidenceScore,
+		&p.VoteScore, &p.CommentCount, &p.Tags, &metadataBytes, &p.CreatedAt, &p.UpdatedAt,
+		&p.DeletedAt, &p.SupersededBy, &p.IsRetracted, &p.RetractionNotice,
+		&p.IsPinned, &p.PinnedAt,
+		&p.Author.DisplayName, &p.Author.AvatarURL,
+		&p.Author.TrustScore, &p.Author.ReputationScore,
+		&p.Author.Type, &p.Author.IsVerified,
+		&modelProvider, &modelName,
+		&communitySlug, &communityName,
+		&provSources, &provConfidence, &provMethod,
+		&totalCount,
+	)
+	if err != nil {
+		return p, 0, err
+	}
+	if len(metadataBytes) > 0 {
+		p.Metadata = make(map[string]any)
+		_ = json.Unmarshal(metadataBytes, &p.Metadata)
+	}
+	p.Author.ID = p.AuthorID
+	p.Author.ModelProvider = modelProvider
+	p.Author.ModelName = modelName
+	p.Community = &models.Community{
+		ID:   p.CommunityID,
+		Slug: communitySlug,
+		Name: communityName,
+	}
+	if p.ProvenanceID != nil {
+		confidence := 0.0
+		if provConfidence != nil {
+			confidence = *provConfidence
+		}
+		method := models.GenerationMethod("")
+		if provMethod != nil {
+			method = models.GenerationMethod(*provMethod)
+		}
+		sources := provSources
+		if sources == nil {
+			sources = []string{}
+		}
+		p.Provenance = &models.Provenance{
+			ID:               *p.ProvenanceID,
+			Sources:          sources,
+			ConfidenceScore:  confidence,
+			GenerationMethod: method,
+		}
+	}
+	return p, totalCount, nil
+}
+
 const postJoinSelect = `
 	SELECT
 		p.id, p.community_id, p.author_id, p.author_type,
@@ -125,7 +191,33 @@ const postJoinSelect = `
 	JOIN communities c ON c.id = p.community_id
 	LEFT JOIN provenances prov ON prov.id = p.provenance_id`
 
+// postJoinSelectWithTotal is the same as postJoinSelect but appends a
+// COUNT(*) OVER() window function so the total count is returned with each
+// row, eliminating the need for a separate COUNT query.
+const postJoinSelectWithTotal = `
+	SELECT
+		p.id, p.community_id, p.author_id, p.author_type,
+		p.title, p.body, COALESCE(p.url, '') AS url,
+		p.post_type, p.provenance_id, p.confidence_score,
+		p.vote_score, p.comment_count, COALESCE(p.tags, '{}') AS tags, p.metadata, p.created_at, p.updated_at,
+		p.deleted_at, p.superseded_by, p.is_retracted, p.retraction_notice,
+		p.is_pinned, p.pinned_at,
+		part.display_name, COALESCE(part.avatar_url, '') AS avatar_url,
+		part.trust_score, part.reputation_score,
+		part.type, part.is_verified,
+		COALESCE(ai.model_provider, '') AS model_provider,
+		COALESCE(ai.model_name, '') AS model_name,
+		c.slug, c.name,
+		prov.sources, prov.confidence_score AS prov_confidence, prov.generation_method,
+		COUNT(*) OVER() AS total_count
+	FROM posts p
+	JOIN participants part ON part.id = p.author_id
+	LEFT JOIN agent_identities ai ON ai.participant_id = p.author_id
+	JOIN communities c ON c.id = p.community_id
+	LEFT JOIN provenances prov ON prov.id = p.provenance_id`
+
 // Create inserts a new post. Defaults post_type to "text" if empty.
+// Also atomically increments the author's post_count on the participants table.
 func (r *PostRepo) Create(ctx context.Context, p *models.Post) (*models.Post, error) {
 	if p.PostType == "" {
 		p.PostType = models.PostTypeText
@@ -146,15 +238,21 @@ func (r *PostRepo) Create(ctx context.Context, p *models.Post) (*models.Post, er
 	var result models.Post
 	var resultMetaBytes []byte
 	err = r.pool.QueryRow(ctx, `
-		INSERT INTO posts
-		  (community_id, author_id, author_type, title, body, url, post_type,
-		   metadata, provenance_id, confidence_score, tags)
-		VALUES ($1, $2, $3, $4, $5, NULLIF($6, ''), $7, $8, $9, $10, $11)
-		RETURNING
-		  id, community_id, author_id, author_type,
-		  title, body, COALESCE(url, '') AS url,
-		  post_type, provenance_id, confidence_score,
-		  vote_score, comment_count, COALESCE(tags, '{}') AS tags, metadata, created_at, updated_at`,
+		WITH inserted AS (
+			INSERT INTO posts
+			  (community_id, author_id, author_type, title, body, url, post_type,
+			   metadata, provenance_id, confidence_score, tags)
+			VALUES ($1, $2, $3, $4, $5, NULLIF($6, ''), $7, $8, $9, $10, $11)
+			RETURNING
+			  id, community_id, author_id, author_type,
+			  title, body, COALESCE(url, '') AS url,
+			  post_type, provenance_id, confidence_score,
+			  vote_score, comment_count, COALESCE(tags, '{}') AS tags, metadata, created_at, updated_at
+		), bump AS (
+			UPDATE participants SET post_count = post_count + 1
+			WHERE id = $2
+		)
+		SELECT * FROM inserted`,
 		p.CommunityID,
 		p.AuthorID,
 		p.AuthorType,
@@ -202,16 +300,22 @@ func (r *PostRepo) CreateWithCrosspost(ctx context.Context, p *models.Post) (*mo
 	var result models.Post
 	var resultMetaBytes []byte
 	err = r.pool.QueryRow(ctx, `
-		INSERT INTO posts
-		  (community_id, author_id, author_type, title, body, url, post_type,
-		   metadata, provenance_id, confidence_score, tags, crossposted_from)
-		VALUES ($1, $2, $3, $4, $5, NULLIF($6, ''), $7, $8, $9, $10, $11, $12)
-		RETURNING
-		  id, community_id, author_id, author_type,
-		  title, body, COALESCE(url, '') AS url,
-		  post_type, provenance_id, confidence_score,
-		  vote_score, comment_count, COALESCE(tags, '{}') AS tags, metadata, created_at, updated_at,
-		  crossposted_from`,
+		WITH inserted AS (
+			INSERT INTO posts
+			  (community_id, author_id, author_type, title, body, url, post_type,
+			   metadata, provenance_id, confidence_score, tags, crossposted_from)
+			VALUES ($1, $2, $3, $4, $5, NULLIF($6, ''), $7, $8, $9, $10, $11, $12)
+			RETURNING
+			  id, community_id, author_id, author_type,
+			  title, body, COALESCE(url, '') AS url,
+			  post_type, provenance_id, confidence_score,
+			  vote_score, comment_count, COALESCE(tags, '{}') AS tags, metadata, created_at, updated_at,
+			  crossposted_from
+		), bump AS (
+			UPDATE participants SET post_count = post_count + 1
+			WHERE id = $2
+		)
+		SELECT * FROM inserted`,
 		p.CommunityID,
 		p.AuthorID,
 		p.AuthorType,
@@ -255,19 +359,8 @@ func (r *PostRepo) GetByID(ctx context.Context, id string) (*models.PostWithAuth
 
 // ListByCommunity returns paginated posts for a community with the given sort and optional post type filter.
 // Returns the posts slice, total count, and any error.
+// Uses a window function COUNT(*) OVER() to get the total in a single query.
 func (r *PostRepo) ListByCommunity(ctx context.Context, communityID string, sort string, postType string, limit, offset int) ([]models.PostWithAuthor, int, error) {
-	var total int
-	countWhere := `p.community_id = $1`
-	countArgs := []any{communityID}
-	if postType != "" {
-		countWhere += ` AND p.post_type = $2`
-		countArgs = append(countArgs, postType)
-	}
-	err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM posts p WHERE `+countWhere, countArgs...).Scan(&total)
-	if err != nil {
-		return nil, 0, fmt.Errorf("count posts by community: %w", err)
-	}
-
 	orderBy := orderByClause(sort)
 
 	var whereClauses []string
@@ -281,7 +374,7 @@ func (r *PostRepo) ListByCommunity(ctx context.Context, communityID string, sort
 	limitParam := fmt.Sprintf(`$%d`, len(queryArgs)-1)
 	offsetParam := fmt.Sprintf(`$%d`, len(queryArgs))
 
-	rows, err := r.pool.Query(ctx, postJoinSelect+`
+	rows, err := r.pool.Query(ctx, postJoinSelectWithTotal+`
 	WHERE `+strings.Join(whereClauses, " AND ")+`
 	ORDER BY p.is_pinned DESC, `+orderBy+`
 	LIMIT `+limitParam+` OFFSET `+offsetParam,
@@ -293,11 +386,13 @@ func (r *PostRepo) ListByCommunity(ctx context.Context, communityID string, sort
 	defer rows.Close()
 
 	var posts []models.PostWithAuthor
+	var total int
 	for rows.Next() {
-		p, err := scanPostWithAuthor(rows)
+		p, rowTotal, err := scanPostWithAuthorAndTotal(rows)
 		if err != nil {
 			return nil, 0, fmt.Errorf("scanning post row: %w", err)
 		}
+		total = rowTotal
 		posts = append(posts, p)
 	}
 	if err := rows.Err(); err != nil {
@@ -355,21 +450,8 @@ func (r *PostRepo) AcceptAnswer(ctx context.Context, postID, commentID string) e
 
 // ListBySubscriptions returns paginated posts from communities the participant is subscribed to.
 // Returns the posts slice, total count, and any error.
+// Uses a window function COUNT(*) OVER() to get the total in a single query.
 func (r *PostRepo) ListBySubscriptions(ctx context.Context, participantID string, sort string, postType string, limit, offset int) ([]models.PostWithAuthor, int, error) {
-	var total int
-	baseWhere := `p.community_id IN (SELECT community_id FROM community_subscriptions WHERE participant_id = $1) AND p.deleted_at IS NULL`
-	if postType != "" {
-		err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM posts p WHERE `+baseWhere+` AND p.post_type = $2`, participantID, postType).Scan(&total)
-		if err != nil {
-			return nil, 0, fmt.Errorf("count subscription posts: %w", err)
-		}
-	} else {
-		err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM posts p WHERE `+baseWhere, participantID).Scan(&total)
-		if err != nil {
-			return nil, 0, fmt.Errorf("count subscription posts: %w", err)
-		}
-	}
-
 	orderBy := orderByClause(sort)
 
 	var whereClauses []string
@@ -384,7 +466,7 @@ func (r *PostRepo) ListBySubscriptions(ctx context.Context, participantID string
 	limitParam := fmt.Sprintf(`$%d`, len(queryArgs)-1)
 	offsetParam := fmt.Sprintf(`$%d`, len(queryArgs))
 
-	rows, err := r.pool.Query(ctx, postJoinSelect+`
+	rows, err := r.pool.Query(ctx, postJoinSelectWithTotal+`
 	WHERE `+strings.Join(whereClauses, " AND ")+`
 	ORDER BY p.is_pinned DESC, `+orderBy+`
 	LIMIT `+limitParam+` OFFSET `+offsetParam,
@@ -396,11 +478,13 @@ func (r *PostRepo) ListBySubscriptions(ctx context.Context, participantID string
 	defer rows.Close()
 
 	var posts []models.PostWithAuthor
+	var total int
 	for rows.Next() {
-		p, err := scanPostWithAuthor(rows)
+		p, rowTotal, err := scanPostWithAuthorAndTotal(rows)
 		if err != nil {
 			return nil, 0, fmt.Errorf("scanning subscription post row: %w", err)
 		}
+		total = rowTotal
 		posts = append(posts, p)
 	}
 	if err := rows.Err(); err != nil {
@@ -412,20 +496,8 @@ func (r *PostRepo) ListBySubscriptions(ctx context.Context, participantID string
 
 // ListGlobal returns paginated posts across all communities with the given sort and optional post type filter.
 // Returns the posts slice, total count, and any error.
+// Uses a window function COUNT(*) OVER() to get the total in a single query.
 func (r *PostRepo) ListGlobal(ctx context.Context, sort string, postType string, limit, offset int) ([]models.PostWithAuthor, int, error) {
-	var total int
-	if postType != "" {
-		err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM posts WHERE post_type = $1`, postType).Scan(&total)
-		if err != nil {
-			return nil, 0, fmt.Errorf("count global posts: %w", err)
-		}
-	} else {
-		err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM posts`).Scan(&total)
-		if err != nil {
-			return nil, 0, fmt.Errorf("count global posts: %w", err)
-		}
-	}
-
 	orderBy := orderByClause(sort)
 
 	var queryArgs []any
@@ -441,7 +513,7 @@ func (r *PostRepo) ListGlobal(ctx context.Context, sort string, postType string,
 	limitParam := fmt.Sprintf(`$%d`, len(queryArgs)-1)
 	offsetParam := fmt.Sprintf(`$%d`, len(queryArgs))
 
-	rows, err := r.pool.Query(ctx, postJoinSelect+whereClause+`
+	rows, err := r.pool.Query(ctx, postJoinSelectWithTotal+whereClause+`
 	ORDER BY `+orderBy+`
 	LIMIT `+limitParam+` OFFSET `+offsetParam,
 		queryArgs...,
@@ -452,11 +524,13 @@ func (r *PostRepo) ListGlobal(ctx context.Context, sort string, postType string,
 	defer rows.Close()
 
 	var posts []models.PostWithAuthor
+	var total int
 	for rows.Next() {
-		p, err := scanPostWithAuthor(rows)
+		p, rowTotal, err := scanPostWithAuthorAndTotal(rows)
 		if err != nil {
 			return nil, 0, fmt.Errorf("scanning global post row: %w", err)
 		}
+		total = rowTotal
 		posts = append(posts, p)
 	}
 	if err := rows.Err(); err != nil {

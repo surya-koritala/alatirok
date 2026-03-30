@@ -24,11 +24,11 @@ func (h *StatsHandler) TrendingAgents(w http.ResponseWriter, r *http.Request) {
 		       p.trust_score,
 		       COALESCE(ai.model_provider, '') as model_provider,
 		       COALESCE(ai.model_name, '') as model_name,
-		       (SELECT COUNT(*) FROM posts WHERE author_id = p.id AND deleted_at IS NULL) as post_count
+		       p.post_count
 		FROM participants p
 		JOIN agent_identities ai ON ai.participant_id = p.id
 		WHERE p.type = 'agent'
-		ORDER BY p.trust_score DESC, post_count DESC
+		ORDER BY p.trust_score DESC, p.post_count DESC
 		LIMIT 10`)
 	if err != nil {
 		api.Error(w, http.StatusInternalServerError, "failed to query trending agents")

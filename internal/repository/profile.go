@@ -16,7 +16,8 @@ func NewProfileRepo(pool *pgxpool.Pool) *ProfileRepo {
 	return &ProfileRepo{pool: pool}
 }
 
-// GetProfile returns participant with post/comment counts computed dynamically.
+// GetProfile returns participant with pre-computed post/comment counts from the
+// participants table (maintained atomically by post/comment creation).
 func (r *ProfileRepo) GetProfile(ctx context.Context, id string) (*models.Participant, error) {
 	var p models.Participant
 	err := r.pool.QueryRow(ctx, `
@@ -25,8 +26,7 @@ func (r *ProfileRepo) GetProfile(ctx context.Context, id string) (*models.Partic
                p.created_at, p.updated_at,
                COALESCE(ai.model_provider, '') as model_provider,
                COALESCE(ai.model_name, '') as model_name,
-               (SELECT count(*) FROM posts WHERE author_id = p.id AND deleted_at IS NULL),
-               (SELECT count(*) FROM comments WHERE author_id = p.id AND deleted_at IS NULL)
+               p.post_count, p.comment_count
         FROM participants p
         LEFT JOIN agent_identities ai ON ai.participant_id = p.id
         WHERE p.id = $1`, id,
@@ -47,15 +47,13 @@ func (r *ProfileRepo) UpdateProfile(ctx context.Context, id, displayName, bio, a
 	return err
 }
 
-// GetUserPosts returns posts by a participant
+// GetUserPosts returns posts by a participant.
+// Uses a window function to get total count in a single query.
 func (r *ProfileRepo) GetUserPosts(ctx context.Context, participantID string, limit, offset int) ([]models.PostWithAuthor, int, error) {
-	var total int
-	_ = r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM posts WHERE author_id = $1 AND deleted_at IS NULL`, participantID).Scan(&total)
-
-	// Reuse the post repo's pattern but filter by author
 	rows, err := r.pool.Query(ctx, `
         SELECT p.id, p.title, p.post_type, p.vote_score, p.comment_count, p.created_at,
-               c.slug, c.name
+               c.slug, c.name,
+               COUNT(*) OVER() AS total_count
         FROM posts p
         JOIN communities c ON c.id = p.community_id
         WHERE p.author_id = $1 AND p.deleted_at IS NULL
@@ -67,10 +65,11 @@ func (r *ProfileRepo) GetUserPosts(ctx context.Context, participantID string, li
 	defer rows.Close()
 
 	var posts []models.PostWithAuthor
+	var total int
 	for rows.Next() {
 		var p models.PostWithAuthor
 		var slug, name string
-		if err := rows.Scan(&p.ID, &p.Title, &p.PostType, &p.VoteScore, &p.CommentCount, &p.CreatedAt, &slug, &name); err != nil {
+		if err := rows.Scan(&p.ID, &p.Title, &p.PostType, &p.VoteScore, &p.CommentCount, &p.CreatedAt, &slug, &name, &total); err != nil {
 			return nil, 0, err
 		}
 		p.Community = &models.Community{Slug: slug, Name: name}
@@ -79,15 +78,14 @@ func (r *ProfileRepo) GetUserPosts(ctx context.Context, participantID string, li
 	return posts, total, rows.Err()
 }
 
-// GetUserComments returns comments by a participant
+// GetUserComments returns comments by a participant.
+// Uses a window function to get total count in a single query.
 func (r *ProfileRepo) GetUserComments(ctx context.Context, participantID string, limit, offset int) ([]models.Comment, int, error) {
-	var total int
-	_ = r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM comments WHERE author_id = $1 AND deleted_at IS NULL`, participantID).Scan(&total)
-
 	rows, err := r.pool.Query(ctx, `
         SELECT id, post_id, parent_comment_id, author_id, author_type,
                body, provenance_id, confidence_score,
-               vote_score, depth, created_at, updated_at
+               vote_score, depth, created_at, updated_at,
+               COUNT(*) OVER() AS total_count
         FROM comments
         WHERE author_id = $1 AND deleted_at IS NULL
         ORDER BY created_at DESC
@@ -98,11 +96,12 @@ func (r *ProfileRepo) GetUserComments(ctx context.Context, participantID string,
 	defer rows.Close()
 
 	var comments []models.Comment
+	var total int
 	for rows.Next() {
 		var c models.Comment
 		if err := rows.Scan(&c.ID, &c.PostID, &c.ParentCommentID, &c.AuthorID, &c.AuthorType,
 			&c.Body, &c.ProvenanceID, &c.ConfidenceScore,
-			&c.VoteScore, &c.Depth, &c.CreatedAt, &c.UpdatedAt); err != nil {
+			&c.VoteScore, &c.Depth, &c.CreatedAt, &c.UpdatedAt, &total); err != nil {
 			return nil, 0, err
 		}
 		comments = append(comments, c)
