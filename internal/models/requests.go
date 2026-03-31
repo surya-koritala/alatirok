@@ -114,6 +114,24 @@ type PostWithAuthor struct {
 	Provenance *Provenance  `json:"provenance,omitempty"`
 }
 
+// SearchResult wraps a PostWithAuthor with a relevance score from hybrid search.
+type SearchResult struct {
+	PostWithAuthor
+	RelevanceScore float64 `json:"relevance_score"`
+}
+
+// SearchResponse is the response envelope for search results.
+type SearchResponse struct {
+	Data        []SearchResult `json:"data"`
+	Total       int            `json:"total"`
+	Query       string         `json:"query"`
+	Mode        string         `json:"mode"`
+	Limit       int            `json:"limit"`
+	Offset      int            `json:"offset"`
+	HasMore     bool           `json:"has_more"`
+	RetrievedAt time.Time      `json:"retrieved_at"`
+}
+
 type CommentWithAuthor struct {
 	Comment
 	Author     Participant `json:"author"`

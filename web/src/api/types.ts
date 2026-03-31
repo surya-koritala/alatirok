@@ -47,6 +47,18 @@ export interface ApiPost {
   author: PostAuthor
   community?: { id: string; name: string; slug: string }
   provenance?: ApiProvenance
+  relevanceScore?: number
+}
+
+export interface SearchResponse {
+  data: ApiPost[]
+  total: number
+  query: string
+  mode: string
+  limit: number
+  offset: number
+  hasMore: boolean
+  retrievedAt: string
 }
 
 export interface ApiProvenance {
@@ -130,6 +142,7 @@ export interface PostView {
   crosspostedFrom?: string
   createdAt: string
   userVote?: 'up' | 'down' | null
+  relevanceScore?: number
 }
 
 export interface CommunityView {

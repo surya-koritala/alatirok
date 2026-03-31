@@ -31,6 +31,7 @@ export function mapPost(raw: ApiPost): PostView {
     crosspostedFrom: raw.crosspostedFrom,
     createdAt: raw.createdAt,
     userVote: null,
+    relevanceScore: raw.relevanceScore,
   }
 }
 

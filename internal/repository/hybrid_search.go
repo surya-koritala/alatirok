@@ -1,0 +1,237 @@
+package repository
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"math"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/surya-koritala/alatirok/internal/models"
+)
+
+// HybridSearchRepo provides hybrid search combining full-text ranking
+// with title similarity using Reciprocal Rank Fusion (RRF).
+type HybridSearchRepo struct {
+	pool *pgxpool.Pool
+}
+
+// NewHybridSearchRepo creates a new HybridSearchRepo.
+func NewHybridSearchRepo(pool *pgxpool.Pool) *HybridSearchRepo {
+	return &HybridSearchRepo{pool: pool}
+}
+
+// rrfK is the constant used in the RRF formula: score = 1/(k + rank).
+// A value of 60 is standard in information retrieval literature.
+const rrfK = 60
+
+// HybridSearch performs a hybrid search combining full-text ts_rank_cd ranking
+// (BM25-like) with trigram title similarity, merged via Reciprocal Rank Fusion.
+// The embedding column is reserved for future semantic vector search; when
+// populated, a third signal can be added to the RRF scoring.
+//
+// Parameters:
+//   - query: the user's search string
+//   - limit: max results to return
+//   - offset: pagination offset
+//
+// Returns search results with relevance scores, total count, and any error.
+func (r *HybridSearchRepo) HybridSearch(ctx context.Context, query string, limit, offset int) ([]models.SearchResult, int, error) {
+	if limit <= 0 {
+		limit = 25
+	}
+	if limit > 100 {
+		limit = 100
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	// The query uses two CTEs:
+	//   1. text_search: full-text search with ts_rank_cd scoring and row numbering
+	//   2. title_match: trigram similarity on the title column
+	// These are combined via RRF in the combined CTE, then joined to the
+	// standard post+author+community+provenance columns.
+	sql := `
+	WITH
+	text_search AS (
+		SELECT p.id,
+			ts_rank_cd(
+				p.search_vector,
+				plainto_tsquery('english', $1)
+			) AS text_rank,
+			ROW_NUMBER() OVER (
+				ORDER BY ts_rank_cd(p.search_vector, plainto_tsquery('english', $1)) DESC
+			) AS text_pos
+		FROM posts p
+		WHERE p.deleted_at IS NULL
+		  AND p.search_vector @@ plainto_tsquery('english', $1)
+	),
+	title_match AS (
+		SELECT p.id,
+			similarity(lower(p.title), lower($1)) AS title_sim,
+			CASE WHEN lower(p.title) LIKE '%' || lower($1) || '%' THEN 1.0 ELSE 0.0 END AS title_contains,
+			ROW_NUMBER() OVER (
+				ORDER BY similarity(lower(p.title), lower($1)) DESC
+			) AS title_pos
+		FROM posts p
+		WHERE p.deleted_at IS NULL
+		  AND (
+			similarity(lower(p.title), lower($1)) > 0.1
+			OR lower(p.title) LIKE '%' || lower($1) || '%'
+		  )
+	),
+	combined AS (
+		SELECT
+			COALESCE(ts.id, tm.id) AS id,
+			-- RRF: 1/(k+rank) for each signal, plus title-contains boost
+			(CASE WHEN ts.text_pos IS NOT NULL THEN 1.0 / ($4::float + ts.text_pos) ELSE 0 END) +
+			(CASE WHEN tm.title_pos IS NOT NULL THEN 1.0 / ($4::float + tm.title_pos) ELSE 0 END) +
+			(COALESCE(tm.title_contains, 0) * 0.3) AS rrf_score
+		FROM text_search ts
+		FULL OUTER JOIN title_match tm ON ts.id = tm.id
+	)
+	SELECT
+		p.id, p.community_id, p.author_id, p.author_type,
+		p.title, p.body, COALESCE(p.url, '') AS url,
+		p.post_type, p.provenance_id, p.confidence_score,
+		p.vote_score, p.comment_count, COALESCE(p.tags, '{}') AS tags, p.metadata, p.created_at, p.updated_at,
+		p.deleted_at, p.superseded_by, p.is_retracted, p.retraction_notice,
+		p.is_pinned, p.pinned_at,
+		part.display_name, COALESCE(part.avatar_url, '') AS avatar_url,
+		part.trust_score, part.reputation_score,
+		part.type, part.is_verified,
+		COALESCE(ai.model_provider, '') AS model_provider,
+		COALESCE(ai.model_name, '') AS model_name,
+		c.slug, c.name,
+		prov.sources, prov.confidence_score AS prov_confidence, prov.generation_method,
+		comb.rrf_score,
+		COUNT(*) OVER() AS total_count
+	FROM combined comb
+	JOIN posts p ON p.id = comb.id
+	JOIN participants part ON part.id = p.author_id
+	LEFT JOIN agent_identities ai ON ai.participant_id = p.author_id
+	JOIN communities c ON c.id = p.community_id
+	LEFT JOIN provenances prov ON prov.id = p.provenance_id
+	ORDER BY comb.rrf_score DESC
+	LIMIT $2 OFFSET $3
+	`
+
+	rows, err := r.pool.Query(ctx, sql, query, limit, offset, rrfK)
+	if err != nil {
+		return nil, 0, fmt.Errorf("hybrid search: %w", err)
+	}
+	defer rows.Close()
+
+	var results []models.SearchResult
+	var total int
+	for rows.Next() {
+		sr, rowTotal, err := scanSearchResult(rows)
+		if err != nil {
+			return nil, 0, fmt.Errorf("scan search result: %w", err)
+		}
+		total = rowTotal
+		results = append(results, sr)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("hybrid search rows: %w", err)
+	}
+
+	if results == nil {
+		results = []models.SearchResult{}
+	}
+
+	// Normalize relevance scores to 0.0-1.0 range
+	normalizeScores(results)
+
+	return results, total, nil
+}
+
+// scanSearchResult scans a row from the hybrid search query into a SearchResult.
+// The row has the standard PostWithAuthor columns, then rrf_score, then total_count.
+func scanSearchResult(row interface {
+	Scan(dest ...any) error
+}) (models.SearchResult, int, error) {
+	var sr models.SearchResult
+	var communitySlug, communityName string
+	var modelProvider, modelName string
+	var provSources []string
+	var provConfidence *float64
+	var provMethod *string
+	var metadataBytes []byte
+	var totalCount int
+
+	err := row.Scan(
+		&sr.ID, &sr.CommunityID, &sr.AuthorID, &sr.AuthorType,
+		&sr.Title, &sr.Body, &sr.URL,
+		&sr.PostType, &sr.ProvenanceID, &sr.ConfidenceScore,
+		&sr.VoteScore, &sr.CommentCount, &sr.Tags, &metadataBytes, &sr.CreatedAt, &sr.UpdatedAt,
+		&sr.DeletedAt, &sr.SupersededBy, &sr.IsRetracted, &sr.RetractionNotice,
+		&sr.IsPinned, &sr.PinnedAt,
+		&sr.Author.DisplayName, &sr.Author.AvatarURL,
+		&sr.Author.TrustScore, &sr.Author.ReputationScore,
+		&sr.Author.Type, &sr.Author.IsVerified,
+		&modelProvider, &modelName,
+		&communitySlug, &communityName,
+		&provSources, &provConfidence, &provMethod,
+		&sr.RelevanceScore,
+		&totalCount,
+	)
+	if err != nil {
+		return sr, 0, err
+	}
+
+	if len(metadataBytes) > 0 {
+		sr.Metadata = make(map[string]any)
+		_ = json.Unmarshal(metadataBytes, &sr.Metadata)
+	}
+
+	sr.Author.ID = sr.AuthorID
+	sr.Author.ModelProvider = modelProvider
+	sr.Author.ModelName = modelName
+	sr.Community = &models.Community{
+		ID:   sr.CommunityID,
+		Slug: communitySlug,
+		Name: communityName,
+	}
+
+	if sr.ProvenanceID != nil {
+		confidence := 0.0
+		if provConfidence != nil {
+			confidence = *provConfidence
+		}
+		method := models.GenerationMethod("")
+		if provMethod != nil {
+			method = models.GenerationMethod(*provMethod)
+		}
+		sources := provSources
+		if sources == nil {
+			sources = []string{}
+		}
+		sr.Provenance = &models.Provenance{
+			ID:               *sr.ProvenanceID,
+			Sources:          sources,
+			ConfidenceScore:  confidence,
+			GenerationMethod: method,
+		}
+	}
+
+	return sr, totalCount, nil
+}
+
+// normalizeScores rescales relevance scores to 0.0-1.0 range.
+// The top result gets 1.0, and others are scaled proportionally.
+func normalizeScores(results []models.SearchResult) {
+	if len(results) == 0 {
+		return
+	}
+
+	maxScore := results[0].RelevanceScore
+	if maxScore <= 0 {
+		return
+	}
+
+	for i := range results {
+		results[i].RelevanceScore = math.Round(results[i].RelevanceScore/maxScore*100) / 100
+	}
+}
