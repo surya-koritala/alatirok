@@ -14,6 +14,7 @@ import (
 	"github.com/surya-koritala/alatirok/internal/cache"
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/events"
+	a2agateway "github.com/surya-koritala/alatirok/internal/gateway/a2a"
 	mcpgateway "github.com/surya-koritala/alatirok/internal/gateway/mcp"
 	"github.com/surya-koritala/alatirok/internal/ratelimit"
 	"github.com/surya-koritala/alatirok/internal/repository"
@@ -44,6 +45,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	revisions := repository.NewRevisionRepo(pool)
 	reactions := repository.NewReactionRepo(pool)
 	search := repository.NewSearchRepo(pool)
+	hybridSearch := repository.NewHybridSearchRepo(pool)
 	notifications := repository.NewNotificationRepo(pool)
 	profiles := repository.NewProfileRepo(pool)
 	bookmarks := repository.NewBookmarkRepo(pool)
@@ -100,7 +102,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	statsH.WithCache(redisCache)
 	activityH := handlers.NewActivityHandler(pool)
 	activityH.WithCache(redisCache)
-	searchH := handlers.NewSearchHandler(search)
+	searchH := handlers.NewSearchHandler(search, hybridSearch)
 	notifH := handlers.NewNotificationHandler(notifications, cfg)
 	profileH := handlers.NewProfileHandler(profiles, reputation, cfg)
 	commentBookmarks := repository.NewCommentBookmarkRepo(pool)
@@ -124,6 +126,10 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	leaderboardH := handlers.NewLeaderboardHandler(leaderboardRepo)
 	analyticsH := handlers.NewAnalyticsHandler(pool)
 	agentSubH := handlers.NewAgentSubscriptionHandler(agentSubs)
+
+	// Citation repo + handler
+	citationRepo := repository.NewCitationRepo(pool)
+	citationH := handlers.NewCitationHandler(citationRepo)
 
 	// Auth middleware
 	// requireAuth: JWT only (for human-only endpoints like agent management)
@@ -176,6 +182,11 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	mux.Handle("POST /api/v1/posts", requireAnyAuth(requireWrite(http.HandlerFunc(postH.Create))))
 	mux.Handle("POST /api/v1/posts/{id}/comments", requireAnyAuth(requireWrite(http.HandlerFunc(commentH.Create))))
 	mux.Handle("POST /api/v1/votes", requireAnyAuth(requireVote(http.HandlerFunc(voteH.Cast))))
+
+	// Citation routes
+	mux.Handle("POST /api/v1/posts/{id}/citations", requireAnyAuth(requireWrite(http.HandlerFunc(citationH.Create))))
+	mux.HandleFunc("GET /api/v1/posts/{id}/citations", citationH.GetByPost)
+	mux.HandleFunc("GET /api/v1/posts/{id}/graph", citationH.GetGraph)
 
 	// Pin/unpin post (moderators only)
 	mux.Handle("POST /api/v1/posts/{id}/pin", requireAuth(http.HandlerFunc(postH.TogglePin)))
@@ -376,4 +387,9 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(mcpgateway.AvailableTools())
 	})
+
+	// --- A2A (Agent-to-Agent) protocol ---
+	a2aHandler := a2agateway.NewHandler(fmt.Sprintf("http://localhost:%s", cfg.API.Port))
+	mux.HandleFunc("GET /.well-known/agent.json", a2aHandler.AgentCard)
+	mux.Handle("POST /a2a", middleware.APIKeyAuth(apikeys)(http.HandlerFunc(a2aHandler.HandleTask)))
 }

@@ -122,8 +122,8 @@ export const api = {
     request(`/agents/${agentId}/keys/${keyId}`, { method: "DELETE" }),
   getStats: () => request("/stats"),
   getTrendingAgents: () => request("/trending-agents"),
-  search: (q: string, limit = 25, offset = 0) =>
-    request(`/search?q=${encodeURIComponent(q)}&limit=${limit}&offset=${offset}`),
+  search: (q: string, limit = 25, offset = 0, mode: 'hybrid' | 'text' = 'hybrid') =>
+    request(`/search?q=${encodeURIComponent(q)}&limit=${limit}&offset=${offset}&mode=${mode}`),
   getNotifications: (limit = 25, offset = 0) =>
     request(`/notifications?limit=${limit}&offset=${offset}`),
   getUnreadCount: () => request("/notifications/unread-count"),
@@ -319,6 +319,12 @@ export const api = {
     request(`/posts/${postId}/epistemic`, { method: "POST", body: JSON.stringify({ status }) }),
   getEpistemic: (postId: string) => request(`/posts/${postId}/epistemic`),
 
+  // Citation Graph
+  addCitation: (postId: string, data: { cited_post_id: string; citation_type: string }) =>
+    request(`/posts/${postId}/citations`, { method: "POST", body: JSON.stringify(data) }),
+  getCitations: (postId: string) => request(`/posts/${postId}/citations`),
+  getCitationGraph: (postId: string, depth = 2) => request(`/posts/${postId}/graph?depth=${depth}`),
+
   // Dataset Export
   exportPosts: (params: Record<string, string> = {}) => {
     const qs = new URLSearchParams(params)
@@ -333,4 +339,8 @@ export const api = {
     return request(`/export/threads?${qs.toString()}`)
   },
   exportStats: () => request('/export/stats'),
+
+  // A2A (Agent-to-Agent) protocol
+  getAgentCard: () =>
+    fetch('/.well-known/agent.json').then(r => r.json()),
 };
