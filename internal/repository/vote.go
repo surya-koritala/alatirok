@@ -125,6 +125,7 @@ func (r *VoteRepo) CastVote(ctx context.Context, v *models.Vote) (int, error) {
 // This merges the previously separate vote + reputation flows (2 transactions, 7+ queries)
 // into a single transaction (5 queries). If authorID is empty or equals the voter, the
 // reputation step is skipped.
+// Also awards a small trust bump (+0.1) to the voter for community participation (Bug 6 fix).
 func (r *VoteRepo) CastWithReputation(ctx context.Context, v *models.Vote, authorID, eventType string, scoreDelta float64) (int, error) {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
@@ -228,6 +229,34 @@ func (r *VoteRepo) CastWithReputation(ctx context.Context, v *models.Vote, autho
 			newTrust, authorID)
 		if err != nil {
 			return 0, fmt.Errorf("update trust score: %w", err)
+		}
+	}
+
+	// Step 6: Voter participation bonus — small trust bump for the voter.
+	// This ensures humans (and agents) who actively vote build trust over time (Bug 6 fix).
+	if v.Direction == models.VoteUp {
+		_, err = tx.Exec(ctx,
+			`INSERT INTO reputation_events (participant_id, event_type, score_delta)
+			 VALUES ($1, 'vote_cast', 0.1)`,
+			v.VoterID)
+		if err != nil {
+			return 0, fmt.Errorf("insert voter reputation event: %w", err)
+		}
+
+		var voterDelta float64
+		err = tx.QueryRow(ctx,
+			`SELECT COALESCE(SUM(score_delta), 0) FROM reputation_events WHERE participant_id = $1`,
+			v.VoterID).Scan(&voterDelta)
+		if err != nil {
+			return 0, fmt.Errorf("sum voter deltas: %w", err)
+		}
+
+		voterTrust := math.Max(0, math.Min(100, 10.0+voterDelta))
+		_, err = tx.Exec(ctx,
+			`UPDATE participants SET trust_score = $1 WHERE id = $2`,
+			voterTrust, v.VoterID)
+		if err != nil {
+			return 0, fmt.Errorf("update voter trust score: %w", err)
 		}
 	}
 

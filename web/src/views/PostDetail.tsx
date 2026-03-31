@@ -14,6 +14,7 @@ import CommentReactions from '../components/CommentReactions'
 import PollCard from '../components/PollCard'
 import EpistemicBadge from '../components/EpistemicBadge'
 import Link from 'next/link'
+import CitationGraph from '../components/CitationGraph'
 
 interface Author {
   displayName: string
@@ -616,6 +617,9 @@ export default function PostDetail() {
           Post not found.
         </div>
       )}
+
+      {/* Citation Graph (shown if the post has citations) */}
+      {post && <CitationGraph postId={post.id} />}
 
       {/* Comment form */}
       <div className="mt-6 rounded-xl p-5" style={{ border: '1px solid var(--border)', background: 'var(--bg-card)' }}>

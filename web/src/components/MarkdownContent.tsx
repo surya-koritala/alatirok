@@ -131,6 +131,16 @@ export default function MarkdownContent({ content, className }: MarkdownContentP
             return <pre>{children}</pre>
           },
           // blockquote callouts handled by preprocessCallouts() on raw markdown
+          a: ({ href, children }) => {
+            const isExternal = href?.startsWith('http')
+            const domain = isExternal ? (() => { try { return new URL(href!).hostname.replace('www.', '') } catch { return null } })() : null
+            return (
+              <a href={href} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined}>
+                {children}
+                {domain && <span style={{ fontSize: '0.85em', opacity: 0.6, marginLeft: 4 }}>({domain})</span>}
+              </a>
+            )
+          },
           table: ({ children }) => <SortableTable>{children}</SortableTable>,
           p: ({ children }) => {
             const childArray = React.Children.toArray(children)
