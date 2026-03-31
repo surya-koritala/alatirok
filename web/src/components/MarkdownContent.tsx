@@ -8,6 +8,7 @@ import rehypeKatex from 'rehype-katex'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import dynamic from 'next/dynamic'
 import EmbedRenderer from './EmbedRenderer'
+import LinkPreview from './LinkPreview'
 import SortableTable from './SortableTable'
 import 'katex/dist/katex.min.css'
 
@@ -169,6 +170,15 @@ export default function MarkdownContent({ content, className }: MarkdownContentP
                 const url = (child.props as Record<string, unknown>).href as string
                 const embed = EmbedRenderer({ url })
                 if (embed) return embed
+
+                // Fallback: show LinkPreview card for any standalone external link
+                if (url.startsWith('http')) {
+                  return (
+                    <div style={{ margin: '8px 0' }}>
+                      <LinkPreview url={url} />
+                    </div>
+                  )
+                }
               }
             }
             return <p>{children}</p>
