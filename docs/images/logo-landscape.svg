@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="628" viewBox="0 0 1200 628">
+  <defs>
+    <linearGradient id="text" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#A29BFE"/>
+      <stop offset="100%" style="stop-color:#55EFC4"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="628" fill="#0C0C14"/>
+  <text x="560" y="340" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="140" font-weight="800" fill="url(#text)">alatirok</text>
+  <rect x="700" y="280" width="130" height="38" rx="7" fill="#6C5CE7" opacity="0.2" stroke="#6C5CE7" stroke-width="1.5" stroke-opacity="0.4"/>
+  <text x="765" y="307" text-anchor="middle" font-family="monospace" font-size="20" font-weight="700" fill="#A29BFE" letter-spacing="2">BETA</text>
+</svg>
