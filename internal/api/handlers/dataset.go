@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -54,18 +55,40 @@ func (h *DatasetHandler) List(w http.ResponseWriter, r *http.Request) {
 		datasets = []repository.Dataset{}
 	}
 
-	// Enrich each dataset with export info
+	// Enrich each dataset with live stats and export info
 	type datasetResponse struct {
-		repository.Dataset
-		ExportFormat  string `json:"export_format"`
-		ExportExample string `json:"export_example"`
+		ID            string          `json:"id"`
+		Name          string          `json:"name"`
+		Slug          string          `json:"slug"`
+		Description   string          `json:"description"`
+		Category      string          `json:"category"`
+		Filters       json.RawMessage `json:"filters"`
+		PostCount     int             `json:"post_count"`
+		CommentCount  int             `json:"comment_count"`
+		AvgTrustScore float64         `json:"avg_trust_score"`
+		IsFeatured    bool            `json:"is_featured"`
+		CreatedAt     time.Time       `json:"created_at"`
+		ExportFormat  string          `json:"export_format"`
+		ExportExample string          `json:"export_example"`
 	}
 
 	var results []datasetResponse
 	for _, d := range datasets {
+		// Compute live stats
+		postCount, commentCount, avgTrust := h.computeDatasetStats(r.Context(), d.Filters)
 		exportCmd := buildExportCommand(d.Filters)
 		results = append(results, datasetResponse{
-			Dataset:       d,
+			ID:            d.ID,
+			Name:          d.Name,
+			Slug:          d.Slug,
+			Description:   d.Description,
+			Category:      d.Category,
+			Filters:       d.Filters,
+			PostCount:     postCount,
+			CommentCount:  commentCount,
+			AvgTrustScore: avgTrust,
+			IsFeatured:    d.IsFeatured,
+			CreatedAt:     d.CreatedAt,
 			ExportFormat:  "jsonl",
 			ExportExample: exportCmd,
 		})
@@ -316,6 +339,49 @@ func (h *DatasetHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	api.JSON(w, http.StatusCreated, result)
+}
+
+// computeDatasetStats calculates live post count, comment count, and avg trust for a dataset's filters.
+func (h *DatasetHandler) computeDatasetStats(ctx context.Context, filtersRaw json.RawMessage) (int, int, float64) {
+	var filters map[string]string
+	if err := json.Unmarshal(filtersRaw, &filters); err != nil {
+		filters = map[string]string{}
+	}
+
+	where := "p.deleted_at IS NULL"
+	args := []any{}
+	idx := 0
+	if pt, ok := filters["post_type"]; ok && pt != "" {
+		idx++
+		where += fmt.Sprintf(" AND p.post_type = $%d", idx)
+		args = append(args, pt)
+	}
+	if mt, ok := filters["min_trust"]; ok && mt != "" {
+		idx++
+		where += fmt.Sprintf(" AND par.trust_score >= $%d", idx)
+		args = append(args, mt)
+	}
+	if es, ok := filters["epistemic_status"]; ok && es != "" {
+		statuses := strings.Split(es, ",")
+		placeholders := make([]string, len(statuses))
+		for i, s := range statuses {
+			idx++
+			placeholders[i] = fmt.Sprintf("$%d", idx)
+			args = append(args, strings.TrimSpace(s))
+		}
+		where += " AND p.epistemic_status IN (" + strings.Join(placeholders, ",") + ")"
+	}
+
+	var postCount, commentCount int
+	var avgTrust float64
+	_ = h.pool.QueryRow(ctx,
+		"SELECT COUNT(*), COALESCE(AVG(par.trust_score), 0) FROM posts p JOIN participants par ON par.id = p.author_id WHERE "+where, args...,
+	).Scan(&postCount, &avgTrust)
+	_ = h.pool.QueryRow(ctx,
+		"SELECT COUNT(*) FROM comments c JOIN posts p ON p.id = c.post_id JOIN participants par ON par.id = p.author_id WHERE c.deleted_at IS NULL AND "+where, args...,
+	).Scan(&commentCount)
+
+	return postCount, commentCount, avgTrust
 }
 
 // buildExportCommand generates an example curl command based on dataset filters.
