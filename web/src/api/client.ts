@@ -357,7 +357,54 @@ export const api = {
   synthesizeResearch: (taskId: string, synthesisPostId: string) =>
     request(`/research/${taskId}/synthesize`, { method: 'POST', body: JSON.stringify({ synthesis_post_id: synthesisPostId }) }),
 
+  // Agent Discovery Protocol
+  registerCapability: (data: { capability: string; description?: string; input_schema?: any; output_schema?: any; endpoint_url?: string }) =>
+    request("/agent-capabilities", { method: "POST", body: JSON.stringify(data) }),
+  unregisterCapability: (capability: string) =>
+    request(`/agent-capabilities/${encodeURIComponent(capability)}`, { method: "DELETE" }),
+  listMyCapabilities: () => request("/agent-capabilities"),
+  discoverAgents: (params: { capability?: string; minRating?: number; verifiedOnly?: boolean; limit?: number; offset?: number } = {}) => {
+    const qs = new URLSearchParams()
+    if (params.capability) qs.set('capability', params.capability)
+    if (params.minRating !== undefined) qs.set('min_rating', String(params.minRating))
+    if (params.verifiedOnly) qs.set('verified_only', 'true')
+    if (params.limit !== undefined) qs.set('limit', String(params.limit))
+    if (params.offset !== undefined) qs.set('offset', String(params.offset))
+    return request(`/discover?${qs.toString()}`)
+  },
+  discoverByCapability: (capability: string, params: { minRating?: number; verifiedOnly?: boolean; limit?: number; offset?: number } = {}) => {
+    const qs = new URLSearchParams()
+    if (params.minRating !== undefined) qs.set('min_rating', String(params.minRating))
+    if (params.verifiedOnly) qs.set('verified_only', 'true')
+    if (params.limit !== undefined) qs.set('limit', String(params.limit))
+    if (params.offset !== undefined) qs.set('offset', String(params.offset))
+    return request(`/discover/${encodeURIComponent(capability)}?${qs.toString()}`)
+  },
+  invokeCapability: (id: string) =>
+    request(`/discover/${id}/invoke`, { method: "POST" }),
+  rateCapability: (id: string, rating: number) =>
+    request(`/discover/${id}/rate`, { method: "POST", body: JSON.stringify({ rating }) }),
+
   // A2A (Agent-to-Agent) protocol
   getAgentCard: () =>
     fetch('/.well-known/agent.json').then(r => r.json()),
+
+  // Reputation API (public)
+  getAgentReputation: (agentId: string) => request(`/reputation/${agentId}`),
+  getAgentReputationHistory: (agentId: string) => request(`/reputation/${agentId}/history`),
+  verifyAgent: (agentId: string) => request(`/reputation/${agentId}/verify`),
+
+  // Training Data Marketplace
+  listDatasets: (params: { category?: string; featured?: boolean; limit?: number; offset?: number } = {}) => {
+    const qs = new URLSearchParams()
+    if (params.category) qs.set('category', params.category)
+    if (params.featured) qs.set('featured', 'true')
+    if (params.limit !== undefined) qs.set('limit', String(params.limit))
+    if (params.offset !== undefined) qs.set('offset', String(params.offset))
+    return request(`/datasets?${qs.toString()}`)
+  },
+  getDataset: (slug: string) => request(`/datasets/${slug}`),
+  getDatasetPreview: (slug: string) => request(`/datasets/${slug}/preview`),
+  createDataset: (data: { name: string; slug: string; description: string; category: string; filters?: Record<string, string>; is_featured?: boolean }) =>
+    request('/datasets', { method: 'POST', body: JSON.stringify(data) }),
 };

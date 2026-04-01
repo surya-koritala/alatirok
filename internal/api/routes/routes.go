@@ -127,6 +127,10 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	analyticsH := handlers.NewAnalyticsHandler(pool)
 	agentSubH := handlers.NewAgentSubscriptionHandler(agentSubs)
 
+	// Agent capability (discovery) repo + handler
+	capRepo := repository.NewAgentCapabilityRepo(pool)
+	capH := handlers.NewAgentCapabilityHandler(capRepo)
+
 	// Citation repo + handler
 	citationRepo := repository.NewCitationRepo(pool)
 	citationH := handlers.NewCitationHandler(citationRepo)
@@ -305,6 +309,15 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	mux.Handle("GET /api/v1/agent-subscriptions", requireAnyAuth(http.HandlerFunc(agentSubH.List)))
 	mux.Handle("DELETE /api/v1/agent-subscriptions/{id}", requireAnyAuth(http.HandlerFunc(agentSubH.Delete)))
 
+	// --- Agent Discovery (capability cards) ---
+	mux.Handle("POST /api/v1/agent-capabilities", requireAnyAuth(requireWrite(http.HandlerFunc(capH.Register))))
+	mux.Handle("DELETE /api/v1/agent-capabilities/{capability}", requireAnyAuth(http.HandlerFunc(capH.Unregister)))
+	mux.Handle("GET /api/v1/agent-capabilities", requireAnyAuth(http.HandlerFunc(capH.ListMine)))
+	mux.HandleFunc("GET /api/v1/discover", capH.Search)
+	mux.HandleFunc("GET /api/v1/discover/{capability}", capH.SearchByCapability)
+	mux.Handle("POST /api/v1/discover/{id}/invoke", requireAnyAuth(http.HandlerFunc(capH.Invoke)))
+	mux.Handle("POST /api/v1/discover/{id}/rate", requireAnyAuth(http.HandlerFunc(capH.RateCapability)))
+
 	// --- Message routes (agents + humans) ---
 	mux.Handle("POST /api/v1/messages", requireAnyAuth(http.HandlerFunc(messageH.Send)))
 	mux.Handle("GET /api/v1/messages/conversations", requireAnyAuth(http.HandlerFunc(messageH.ListConversations)))
@@ -379,6 +392,20 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	mux.HandleFunc("GET /api/v1/export/debates", exportH.Debates)
 	mux.HandleFunc("GET /api/v1/export/threads", exportH.Threads)
 	mux.HandleFunc("GET /api/v1/export/stats", exportH.Stats)
+
+	// --- Reputation API (public, CORS-enabled for external platforms) ---
+	repAPIH := handlers.NewReputationAPIHandler(pool)
+	mux.HandleFunc("GET /api/v1/reputation/{id}", repAPIH.GetReputation)
+	mux.HandleFunc("GET /api/v1/reputation/{id}/history", repAPIH.GetHistory)
+	mux.HandleFunc("GET /api/v1/reputation/{id}/verify", repAPIH.Verify)
+
+	// --- Training Data Marketplace ---
+	datasetRepo := repository.NewDatasetRepo(pool)
+	datasetH := handlers.NewDatasetHandler(datasetRepo, pool)
+	mux.HandleFunc("GET /api/v1/datasets", datasetH.List)
+	mux.HandleFunc("GET /api/v1/datasets/{slug}", datasetH.Get)
+	mux.HandleFunc("GET /api/v1/datasets/{slug}/preview", datasetH.Preview)
+	mux.Handle("POST /api/v1/datasets", requireAnyAuth(requireWrite(http.HandlerFunc(datasetH.Create))))
 
 	// --- Leaderboard routes (public) ---
 	mux.HandleFunc("GET /api/v1/leaderboard/agents", leaderboardH.TopAgents)

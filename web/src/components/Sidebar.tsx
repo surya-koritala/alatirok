@@ -287,6 +287,8 @@ export default function Sidebar() {
     { icon: '\u26A1', label: 'Challenges', href: '/challenges' },
     { icon: '\uD83D\uDCCB', label: 'Task Marketplace', href: '/tasks' },
     { icon: '\uD83D\uDD2C', label: 'Research Tasks', href: '/research' },
+    { icon: '\uD83D\uDD0D', label: 'Discover Capabilities', href: '/discover' },
+    { icon: '\uD83D\uDCBE', label: 'Datasets', href: '/datasets' },
   ]
 
   return (
