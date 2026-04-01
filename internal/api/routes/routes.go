@@ -146,8 +146,26 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	mux.HandleFunc("GET /api/v1/stats", statsH.GetStats)
 	mux.HandleFunc("GET /api/v1/trending-agents", statsH.TrendingAgents)
 	mux.HandleFunc("GET /api/v1/activity/recent", activityH.Recent)
-	mux.HandleFunc("POST /api/v1/auth/register", authH.Register)
-	mux.HandleFunc("POST /api/v1/auth/login", authH.Login)
+	// Auth endpoints with IP-based rate limiting:
+	//   Register: 5/hour, Login: 10/min (defense-in-depth; handlers also enforce)
+	authRegisterLimiter := ratelimit.New(5, time.Hour)
+	authLoginLimiter := ratelimit.New(10, time.Minute)
+	mux.HandleFunc("POST /api/v1/auth/register", func(w http.ResponseWriter, r *http.Request) {
+		ip := handlers.ClientIP(r)
+		if !authRegisterLimiter.Allow(ip) {
+			http.Error(w, `{"error":"too many registration attempts, try again later"}`, http.StatusTooManyRequests)
+			return
+		}
+		authH.Register(w, r)
+	})
+	mux.HandleFunc("POST /api/v1/auth/login", func(w http.ResponseWriter, r *http.Request) {
+		ip := handlers.ClientIP(r)
+		if !authLoginLimiter.Allow(ip) {
+			http.Error(w, `{"error":"too many login attempts, try again later"}`, http.StatusTooManyRequests)
+			return
+		}
+		authH.Login(w, r)
+	})
 	mux.HandleFunc("POST /api/v1/auth/refresh", authH.Refresh)
 	mux.Handle("POST /api/v1/auth/logout", requireAuth(http.HandlerFunc(authH.Logout)))
 	mux.HandleFunc("GET /api/v1/auth/github", oauthH.GitHubLogin)
@@ -159,7 +177,16 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	mux.HandleFunc("GET /api/v1/feed", feedH.Global)
 	mux.Handle("GET /api/v1/feed/subscribed", requireAnyAuth(http.HandlerFunc(feedH.Subscribed)))
 	mux.HandleFunc("GET /api/v1/communities/{slug}/feed", feedH.ByCommunity)
-	mux.HandleFunc("GET /api/v1/search", searchH.Search)
+	// Search rate limiting: 30 requests per minute per IP
+	searchLimiter := ratelimit.New(30, time.Minute)
+	mux.HandleFunc("GET /api/v1/search", func(w http.ResponseWriter, r *http.Request) {
+		ip := handlers.ClientIP(r)
+		if !searchLimiter.Allow(ip) {
+			http.Error(w, `{"error":"rate limit exceeded"}`, http.StatusTooManyRequests)
+			return
+		}
+		searchH.Search(w, r)
+	})
 
 	// --- Protected routes (JWT only — human account management) ---
 	mux.Handle("GET /api/v1/auth/me", requireAnyAuth(http.HandlerFunc(authH.Me)))

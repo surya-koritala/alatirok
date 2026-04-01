@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"sync"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -18,40 +18,29 @@ import (
 	"github.com/surya-koritala/alatirok/internal/auth"
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/models"
+	"github.com/surya-koritala/alatirok/internal/ratelimit"
 	"github.com/surya-koritala/alatirok/internal/repository"
 )
 
-// In-memory rate limiter for auth endpoints (10 attempts per minute per IP).
-var authLimiter = struct {
-	sync.Mutex
-	attempts map[string][]time.Time
-}{attempts: make(map[string][]time.Time)}
+// Per-endpoint rate limiters for auth:
+//   - Register: 5 per hour per IP (prevents signup spam)
+//   - Login:    10 per minute per IP (supplements per-account lockout)
+var (
+	registerLimiter = ratelimit.New(5, time.Hour)
+	loginLimiter    = ratelimit.New(10, time.Minute)
+)
 
-const authRateLimitMax = 10
-
-func checkAuthRateLimit(ip string) (allowed bool, remaining int) {
-	authLimiter.Lock()
-	defer authLimiter.Unlock()
-	now := time.Now()
-	// Clean old entries
-	valid := make([]time.Time, 0)
-	for _, t := range authLimiter.attempts[ip] {
-		if now.Sub(t) < time.Minute {
-			valid = append(valid, t)
+// ClientIP extracts the client IP from X-Forwarded-For (set by load balancers/proxies)
+// with a fallback to RemoteAddr.
+func ClientIP(r *http.Request) string {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		// X-Forwarded-For can be comma-separated; take the first (client) IP
+		if idx := strings.Index(xff, ","); idx != -1 {
+			return strings.TrimSpace(xff[:idx])
 		}
+		return strings.TrimSpace(xff)
 	}
-	authLimiter.attempts[ip] = valid
-	if len(valid) >= authRateLimitMax {
-		return false, 0
-	}
-	authLimiter.attempts[ip] = append(valid, now)
-	return true, authRateLimitMax - len(valid) - 1
-}
-
-// setAuthRateLimitHeaders writes X-RateLimit-Limit and X-RateLimit-Remaining headers.
-func setAuthRateLimitHeaders(w http.ResponseWriter, remaining int) {
-	w.Header().Set("X-RateLimit-Limit", fmt.Sprintf("%d", authRateLimitMax))
-	w.Header().Set("X-RateLimit-Remaining", fmt.Sprintf("%d", remaining))
+	return r.RemoteAddr
 }
 
 // AuthHandler handles authentication endpoints.
@@ -74,10 +63,12 @@ func NewAuthHandler(participants *repository.ParticipantRepo, refreshTokens *rep
 
 // Register handles POST /api/v1/auth/register.
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
-	allowed, remaining := checkAuthRateLimit(r.RemoteAddr)
-	setAuthRateLimitHeaders(w, remaining)
-	if !allowed {
-		api.Error(w, http.StatusTooManyRequests, "too many authentication attempts, try again later")
+	ip := ClientIP(r)
+	remaining := registerLimiter.Remaining(ip)
+	w.Header().Set("X-RateLimit-Limit", "5")
+	w.Header().Set("X-RateLimit-Remaining", fmt.Sprintf("%d", remaining))
+	if !registerLimiter.Allow(ip) {
+		api.Error(w, http.StatusTooManyRequests, "too many registration attempts, try again later")
 		return
 	}
 
@@ -169,10 +160,12 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 // Login handles POST /api/v1/auth/login.
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-	allowed, remaining := checkAuthRateLimit(r.RemoteAddr)
-	setAuthRateLimitHeaders(w, remaining)
-	if !allowed {
-		api.Error(w, http.StatusTooManyRequests, "too many authentication attempts, try again later")
+	ip := ClientIP(r)
+	remaining := loginLimiter.Remaining(ip)
+	w.Header().Set("X-RateLimit-Limit", "10")
+	w.Header().Set("X-RateLimit-Remaining", fmt.Sprintf("%d", remaining))
+	if !loginLimiter.Allow(ip) {
+		api.Error(w, http.StatusTooManyRequests, "too many login attempts, try again later")
 		return
 	}
 
@@ -245,9 +238,11 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 // Refresh handles POST /api/v1/auth/refresh.
 func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
-	allowed, remaining := checkAuthRateLimit(r.RemoteAddr)
-	setAuthRateLimitHeaders(w, remaining)
-	if !allowed {
+	ip := ClientIP(r)
+	remaining := loginLimiter.Remaining(ip)
+	w.Header().Set("X-RateLimit-Limit", "10")
+	w.Header().Set("X-RateLimit-Remaining", fmt.Sprintf("%d", remaining))
+	if !loginLimiter.Allow(ip) {
 		api.Error(w, http.StatusTooManyRequests, "too many authentication attempts, try again later")
 		return
 	}

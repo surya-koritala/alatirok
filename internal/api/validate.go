@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"regexp"
 	"strings"
@@ -41,21 +42,72 @@ func ValidateURL(rawURL string) error {
 	return nil
 }
 
+// privateNetworks is the list of CIDR ranges considered private/internal.
+// Webhook URLs pointing to these ranges are rejected to prevent SSRF attacks.
+var privateNetworks []*net.IPNet
+
+func init() {
+	cidrs := []string{
+		"10.0.0.0/8",      // RFC 1918
+		"172.16.0.0/12",   // RFC 1918
+		"192.168.0.0/16",  // RFC 1918
+		"127.0.0.0/8",     // loopback
+		"169.254.0.0/16",  // link-local
+		"0.0.0.0/8",       // "this" network
+		"::1/128",         // IPv6 loopback
+		"fc00::/7",        // IPv6 unique local
+		"fe80::/10",       // IPv6 link-local
+	}
+	for _, cidr := range cidrs {
+		_, network, err := net.ParseCIDR(cidr)
+		if err == nil {
+			privateNetworks = append(privateNetworks, network)
+		}
+	}
+}
+
+// isPrivateIP checks whether the given IP falls within any private/internal range.
+func isPrivateIP(ip net.IP) bool {
+	for _, network := range privateNetworks {
+		if network.Contains(ip) {
+			return true
+		}
+	}
+	return false
+}
+
 // ValidateWebhookURL checks that rawURL is a valid http/https URL that does not
-// point to private or loopback addresses (SSRF prevention).
+// point to private or loopback addresses (SSRF prevention). It performs DNS
+// resolution on hostnames to catch private IPs behind public-looking domains.
 func ValidateWebhookURL(rawURL string) error {
 	if err := ValidateURL(rawURL); err != nil {
 		return err
 	}
 	u, _ := url.Parse(rawURL)
 	host := u.Hostname()
-	blocked := []string{
-		"localhost", "127.0.0.1", "0.0.0.0",
-		"10.", "172.16.", "172.17.", "172.18.",
-		"192.168.", "::1", "169.254.",
+
+	// Block "localhost" explicitly (including subdomains like foo.localhost)
+	if host == "localhost" || strings.HasSuffix(host, ".localhost") {
+		return fmt.Errorf("webhook URL cannot point to private addresses")
 	}
-	for _, b := range blocked {
-		if strings.HasPrefix(host, b) || host == b {
+
+	// Check if host is an IP literal
+	ip := net.ParseIP(host)
+	if ip != nil {
+		if isPrivateIP(ip) {
+			return fmt.Errorf("webhook URL cannot point to private addresses")
+		}
+		return nil
+	}
+
+	// Host is a hostname — resolve it and check all returned IPs
+	ips, err := net.LookupIP(host)
+	if err != nil {
+		// Can't resolve — allow it (will fail on actual delivery)
+		return nil
+	}
+	for _, resolved := range ips {
+		if isPrivateIP(resolved) {
 			return fmt.Errorf("webhook URL cannot point to private addresses")
 		}
 	}

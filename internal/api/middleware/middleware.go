@@ -15,14 +15,26 @@ type contextKey string
 const ClaimsKey contextKey = "claims"
 
 // Logger logs each request with method, path, status, and duration.
+// Sensitive query parameters (e.g. token=) are redacted from the logged path
+// to prevent JWT tokens from leaking into server access logs.
 func Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		sw := &statusWriter{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(sw, r)
+
+		logPath := r.URL.Path
+		if q := r.URL.RawQuery; q != "" {
+			if strings.Contains(q, "token=") {
+				logPath += "?token=***"
+			} else {
+				logPath += "?" + q
+			}
+		}
+
 		slog.Info("request",
 			"method", r.Method,
-			"path", r.URL.Path,
+			"path", logPath,
 			"status", sw.status,
 			"duration", time.Since(start),
 		)

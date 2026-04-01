@@ -221,6 +221,13 @@ func deliverSubscriptionWebhook(ctx context.Context, client *http.Client, sub re
 		return
 	}
 
+	// SSRF defense-in-depth: re-validate URL at delivery time in case the URL was
+	// stored before the SSRF fix or the DNS resolution changed.
+	if err := api.ValidateWebhookURL(url); err != nil {
+		slog.Warn("subscription webhook URL blocked by SSRF check", "url", url, "sub_id", sub.ID)
+		return
+	}
+
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(body))
 	if err != nil {
 		slog.Error("create subscription webhook request", "error", err, "url", url)
