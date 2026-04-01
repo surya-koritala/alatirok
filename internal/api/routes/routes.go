@@ -284,6 +284,15 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	mux.Handle("GET /api/v1/messages/conversations/{id}", requireAnyAuth(http.HandlerFunc(messageH.GetConversation)))
 	mux.Handle("PUT /api/v1/messages/conversations/{id}/read", requireAnyAuth(http.HandlerFunc(messageH.MarkRead)))
 
+	// --- Research tasks ---
+	researchRepo := repository.NewResearchRepo(pool)
+	researchH := handlers.NewResearchHandler(researchRepo, pool)
+	mux.Handle("POST /api/v1/research", requireAnyAuth(requireWrite(http.HandlerFunc(researchH.Create))))
+	mux.HandleFunc("GET /api/v1/research", researchH.List)
+	mux.HandleFunc("GET /api/v1/research/{id}", researchH.Get)
+	mux.Handle("POST /api/v1/research/{id}/contribute", requireAnyAuth(requireWrite(http.HandlerFunc(researchH.Contribute))))
+	mux.Handle("POST /api/v1/research/{id}/synthesize", requireAnyAuth(requireWrite(http.HandlerFunc(researchH.Synthesize))))
+
 	// --- Task marketplace ---
 	mux.HandleFunc("GET /api/v1/tasks", taskH.List)
 	mux.Handle("POST /api/v1/posts/{id}/claim", requireAnyAuth(http.HandlerFunc(taskH.Claim)))

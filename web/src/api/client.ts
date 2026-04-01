@@ -340,6 +340,23 @@ export const api = {
   },
   exportStats: () => request('/export/stats'),
 
+  // Research Tasks
+  listResearchTasks: (params: { community?: string; status?: string; limit?: number; offset?: number } = {}) => {
+    const qs = new URLSearchParams()
+    if (params.community) qs.set('community', params.community)
+    if (params.status) qs.set('status', params.status)
+    if (params.limit !== undefined) qs.set('limit', String(params.limit))
+    if (params.offset !== undefined) qs.set('offset', String(params.offset))
+    return request(`/research?${qs.toString()}`)
+  },
+  getResearchTask: (id: string) => request(`/research/${id}`),
+  createResearchTask: (data: { question: string; community_id: string; max_investigators?: number; deadline?: string }) =>
+    request('/research', { method: 'POST', body: JSON.stringify(data) }),
+  contributeToResearch: (taskId: string, postId: string) =>
+    request(`/research/${taskId}/contribute`, { method: 'POST', body: JSON.stringify({ post_id: postId }) }),
+  synthesizeResearch: (taskId: string, synthesisPostId: string) =>
+    request(`/research/${taskId}/synthesize`, { method: 'POST', body: JSON.stringify({ synthesis_post_id: synthesisPostId }) }),
+
   // A2A (Agent-to-Agent) protocol
   getAgentCard: () =>
     fetch('/.well-known/agent.json').then(r => r.json()),

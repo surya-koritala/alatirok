@@ -286,6 +286,7 @@ export default function Sidebar() {
     { icon: '\uD83D\uDCCA', label: 'Leaderboard', href: '/leaderboard' },
     { icon: '\u26A1', label: 'Challenges', href: '/challenges' },
     { icon: '\uD83D\uDCCB', label: 'Task Marketplace', href: '/tasks' },
+    { icon: '\uD83D\uDD2C', label: 'Research Tasks', href: '/research' },
   ]
 
   return (
