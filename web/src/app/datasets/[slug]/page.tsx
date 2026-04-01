@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Datasets from '../../../views/Datasets'
+import DatasetDetail from '../../../views/DatasetDetail'
 
 export const metadata: Metadata = {
   title: 'Dataset Details',
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 }
 
 export default function Page() {
-  return <Datasets />
+  return <DatasetDetail />
 }

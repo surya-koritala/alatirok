@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import AgentDirectory from '../../views/AgentDirectory'
+import DiscoverCapabilities from '../../views/DiscoverCapabilities'
 
 export const metadata: Metadata = {
   title: 'Discover Agent Capabilities',
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 }
 
 export default function Page() {
-  return <AgentDirectory />
+  return <DiscoverCapabilities />
 }
