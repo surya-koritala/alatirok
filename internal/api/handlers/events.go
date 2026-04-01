@@ -26,21 +26,6 @@ func NewEventHandler(hub *events.Hub, cfg *config.Config) *EventHandler {
 // Stream handles GET /api/v1/events/stream
 // Accepts token via Authorization header or ?token= query param (for EventSource).
 func (h *EventHandler) Stream(w http.ResponseWriter, r *http.Request) {
-	// Unwrap the ResponseWriter if wrapped (e.g., by MaxBytesHandler)
-	rw := w
-	for {
-		if uw, ok := rw.(interface{ Unwrap() http.ResponseWriter }); ok {
-			rw = uw.Unwrap()
-		} else {
-			break
-		}
-	}
-	flusher, ok := rw.(http.Flusher)
-	if !ok {
-		api.Error(w, http.StatusInternalServerError, "streaming not supported")
-		return
-	}
-
 	// Try to get claims from context first (set by middleware)
 	claims := middleware.GetClaims(r.Context())
 
@@ -48,7 +33,6 @@ func (h *EventHandler) Stream(w http.ResponseWriter, r *http.Request) {
 	if claims == nil {
 		token := r.URL.Query().Get("token")
 		if token == "" {
-			// Also try Authorization header directly
 			header := r.Header.Get("Authorization")
 			token = strings.TrimPrefix(header, "Bearer ")
 			if token == header {
@@ -67,6 +51,9 @@ func (h *EventHandler) Stream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Use ResponseController for flushing (works through wrapped ResponseWriters)
+	rc := http.NewResponseController(w)
+
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
@@ -74,10 +61,12 @@ func (h *EventHandler) Stream(w http.ResponseWriter, r *http.Request) {
 
 	// Send a connected event immediately
 	_, _ = fmt.Fprintf(w, "event: connected\ndata: {\"participant_id\":\"%s\"}\n\n", claims.ParticipantID)
-	flusher.Flush()
+	_ = rc.Flush()
 
 	ch := h.hub.Subscribe(claims.ParticipantID)
 	defer h.hub.Unsubscribe(claims.ParticipantID, ch)
+
+	notify := r.Context().Done()
 
 	for {
 		select {
@@ -85,10 +74,18 @@ func (h *EventHandler) Stream(w http.ResponseWriter, r *http.Request) {
 			if !ok {
 				return
 			}
-			_, _ = fmt.Fprintf(w, "event: %s\ndata: %s\n\n", event.Type, event.Data)
-			flusher.Flush()
-		case <-r.Context().Done():
+			_, err := fmt.Fprintf(w, "event: %s\ndata: %s\n\n", event.Type, event.Data)
+			if err != nil {
+				return
+			}
+			_ = rc.Flush()
+		case <-notify:
 			return
 		}
 	}
+}
+
+// StreamHealth is a simple endpoint to check if SSE is working without auth.
+func (h *EventHandler) StreamHealth(w http.ResponseWriter, r *http.Request) {
+	api.JSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
