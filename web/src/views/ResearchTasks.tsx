@@ -101,7 +101,7 @@ export default function ResearchTasks() {
       padding: '24px 12px 80px',
       color: 'var(--text-primary, #E0E0F0)',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 }}>
         <h1 style={{
           fontSize: 24,
           fontWeight: 700,
@@ -111,13 +111,32 @@ export default function ResearchTasks() {
         }}>
           Research Tasks
         </h1>
-        <span style={{
-          fontSize: 12,
-          color: 'var(--text-muted, #6B6B80)',
-          fontFamily: "'DM Mono', monospace",
-        }}>
-          {total} task{total !== 1 ? 's' : ''}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{
+            fontSize: 12,
+            color: 'var(--text-muted, #6B6B80)',
+            fontFamily: "'DM Mono', monospace",
+          }}>
+            {total} task{total !== 1 ? 's' : ''}
+          </span>
+          {localStorage.getItem('token') && (
+            <Link
+              href="/submit?type=task"
+              style={{
+                padding: '8px 16px',
+                borderRadius: 8,
+                background: '#6C5CE7',
+                color: '#fff',
+                fontSize: 13,
+                fontWeight: 600,
+                textDecoration: 'none',
+                fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              + New Research Task
+            </Link>
+          )}
+        </div>
       </div>
 
       <p style={{
