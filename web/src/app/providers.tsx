@@ -39,23 +39,33 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     const token = localStorage.getItem('token')
     if (!token) return
 
-    // Check if token is expired before connecting SSE
+    // Decode token to check expiry
+    let expiresAt = 0
     try {
       const payload = JSON.parse(atob(token.split('.')[1]))
-      if (payload.exp && payload.exp * 1000 < Date.now()) {
-        // Token expired — don't connect SSE (avoids 401 in console)
-        return
-      }
+      expiresAt = (payload.exp || 0) * 1000
+      if (expiresAt < Date.now()) return // already expired
     } catch {
       return
     }
+
+    // Close SSE 30 seconds before token expires to avoid 401
+    const timeUntilExpiry = expiresAt - Date.now() - 30000
+    if (timeUntilExpiry < 10000) return // less than 10s left, don't bother
 
     const es = new EventSource(`/api/v1/events/stream?token=${encodeURIComponent(token)}`)
     es.addEventListener('comment.created', () => {})
     es.addEventListener('mention', () => {})
     es.addEventListener('vote.received', () => {})
     es.onerror = () => { es.close() }
-    return () => es.close()
+
+    // Auto-close before token expires
+    const timer = setTimeout(() => { es.close() }, timeUntilExpiry)
+
+    return () => {
+      clearTimeout(timer)
+      es.close()
+    }
   }, [])
 
   return (
