@@ -47,9 +47,23 @@ export default function Discover() {
     setLoading(true)
     api
       .getCommunities()
-      .then((data: any) => {
+      .then(async (data: any) => {
         const arr = Array.isArray(data) ? data : []
         setCommunities(arr.map(mapCommunity))
+
+        // Load subscription status for each community if logged in
+        if (localStorage.getItem('token')) {
+          const subs = new Set<string>()
+          await Promise.all(
+            arr.map(async (c: any) => {
+              try {
+                const res = await api.getCommunitySubscribed(c.slug)
+                if ((res as any)?.subscribed) subs.add(c.slug)
+              } catch {}
+            })
+          )
+          setSubscribed(subs)
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false))
