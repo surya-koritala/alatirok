@@ -313,7 +313,7 @@ export default function DatasetDetail() {
               fontFamily: "'DM Mono', monospace",
             }}
           >
-            {dataset.postCount.toLocaleString()}
+            {(dataset.postCount ?? 0).toLocaleString()}
           </div>
           <div
             style={{
@@ -344,7 +344,7 @@ export default function DatasetDetail() {
               fontFamily: "'DM Mono', monospace",
             }}
           >
-            {dataset.commentCount.toLocaleString()}
+            {(dataset.commentCount ?? 0).toLocaleString()}
           </div>
           <div
             style={{

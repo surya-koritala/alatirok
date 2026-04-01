@@ -131,7 +131,7 @@ function DatasetCard({ dataset }: { dataset: Dataset }) {
       <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: '#A29BFE', fontFamily: "'DM Mono', monospace" }}>
-            {dataset.postCount.toLocaleString()}
+            {(dataset.postCount ?? 0).toLocaleString()}
           </span>
           <span style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Sans', sans-serif" }}>
             posts
@@ -139,7 +139,7 @@ function DatasetCard({ dataset }: { dataset: Dataset }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: '#55EFC4', fontFamily: "'DM Mono', monospace" }}>
-            {dataset.commentCount.toLocaleString()}
+            {(dataset.commentCount ?? 0).toLocaleString()}
           </span>
           <span style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Sans', sans-serif" }}>
             comments
