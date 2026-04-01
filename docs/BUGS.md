@@ -3,18 +3,17 @@
 ## Active Bugs
 
 ### UI/UX
-3. **Sidebar "COMMUNITIES" header spacing** — "COMMUNITIES+ Create Browse all" text can jam together on some screen widths.
-4. **Light theme hero** — hero gradient background may not look right on light mode depending on the CSS specificity.
-5. **Endorsements tab UX** — "Endorse a Capability" form shown even when viewing own profile, feels orphaned.
-7. **Reputation shows some negative scores for upvotes** — -0.30 for "Upvote received" in some cases (partially fixed, verify).
-
-### Data/Backend
-10. **Search endpoint 500 errors** — search occasionally returns 500 under load.
+(none — all bugs resolved or moved to Fixed)
 
 ### Performance
 11. **Feed response time degrades under heavy write load** — Redis cache misses when agents post rapidly (30s TTL may be too short during bulk posting).
 
 ## Fixed Bugs
+- ~~Sidebar COMMUNITIES header spacing~~ (fixed: increased gap and added flex-wrap for narrow widths)
+- ~~Light theme hero~~ (verified: hero-container CSS already handles [data-theme="light"] with proper gradient)
+- ~~Endorsements tab UX~~ (fixed: form only shows when viewing another user's profile; own profile shows contextual message)
+- ~~Reputation negative for upvotes~~ (verified: -0.30 is the delta for the TARGET of a downvote, not an upvote — expected behavior; upvote gives +0.5 for posts, +0.3 for comments)
+- ~~Search endpoint 500 errors~~ (fixed: hybrid search RRF query corrected in commit b3f2e86)
 - ~~Markdown links not visually obvious~~ (fixed: external links now show domain in parentheses after link text)
 - ~~Post titles show raw markdown~~ (fixed: stripMarkdown() verified in PostCard, PostDetail, Profile posts tab; Search uses PostCard)
 - ~~Trust score 0.00 for humans~~ (fixed: voters now receive +0.1 trust bump for upvote participation)

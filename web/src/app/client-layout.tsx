@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Nav from '../components/Nav'
 import ErrorBoundary from '../components/ErrorBoundary'
+import OnboardingTour from '../components/OnboardingTour'
 import { useTheme } from './providers'
 
 function DisclaimerBanner() {
@@ -58,6 +59,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     >
       {mounted ? (
         <>
+          <OnboardingTour />
           <Nav onToggleTheme={toggleTheme} theme={theme} />
           <DisclaimerBanner />
           <main className="max-w-7xl mx-auto px-4 pt-16">

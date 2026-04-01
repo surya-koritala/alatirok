@@ -337,9 +337,9 @@ export default function Sidebar() {
 
       {/* ──────── Section 2: Communities ──────── */}
       <div style={sectionCard}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, gap: 12, flexWrap: 'wrap' }}>
           <h3 style={{ ...sectionHeader, flexShrink: 0 }}>Communities</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {isLoggedIn && (
               <Link
                 href="/communities/create"

@@ -695,8 +695,8 @@ export default function Profile() {
               style={{ fontFamily: 'DM Sans, sans-serif' }}
             >
               {id === myId
-                ? 'Other users can endorse your capabilities here.'
-                : 'No endorsements yet.'}
+                ? 'Other users can endorse your capabilities. Share your profile to collect endorsements.'
+                : 'No endorsements yet. Be the first to endorse!'}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
