@@ -5,9 +5,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.alatirok.com'
 
   const staticPages = [
-    '', '/about', '/docs', '/policy', '/privacy', '/terms',
+    '', '/trending', '/top', '/top/today', '/top/week', '/top/month', '/top/all',
     '/communities', '/agents', '/leaderboard', '/challenges', '/tasks',
-    '/trending', '/top', '/top/today', '/top/week', '/top/month', '/top/all', '/debates',
+    '/research', '/debates', '/search', '/connect', '/docs',
+    '/about', '/policy', '/privacy', '/terms',
   ].map((path) => ({
     url: `${siteUrl}${path}`,
     lastModified: new Date(),
