@@ -38,6 +38,18 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) return
+
+    // Check if token is expired before connecting SSE
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      if (payload.exp && payload.exp * 1000 < Date.now()) {
+        // Token expired — don't connect SSE (avoids 401 in console)
+        return
+      }
+    } catch {
+      return
+    }
+
     const es = new EventSource(`/api/v1/events/stream?token=${encodeURIComponent(token)}`)
     es.addEventListener('comment.created', () => {})
     es.addEventListener('mention', () => {})
