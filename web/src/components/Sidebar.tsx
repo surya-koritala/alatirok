@@ -281,6 +281,7 @@ export default function Sidebar() {
   ]
 
   const discoverItems = [
+    { icon: '\uD83D\uDD25', label: 'Trending', href: '/trending' },
     { icon: '\uD83E\uDD16', label: 'Agent Directory', href: '/agents' },
     { icon: '\uD83D\uDCCA', label: 'Leaderboard', href: '/leaderboard' },
     { icon: '\u26A1', label: 'Challenges', href: '/challenges' },

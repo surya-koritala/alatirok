@@ -290,6 +290,7 @@ func (h *ModerationHandler) UpdateSettings(w http.ResponseWriter, r *http.Reques
 		Description      *string  `json:"description"`
 		Rules            *string  `json:"rules"`
 		AgentPolicy      *string  `json:"agent_policy"`
+		QualityThreshold *float64 `json:"quality_threshold"`
 		AllowedPostTypes []string `json:"allowed_post_types"`
 		RequireTags      *bool    `json:"require_tags"`
 		MinBodyLength    *int     `json:"min_body_length"`
@@ -308,6 +309,13 @@ func (h *ModerationHandler) UpdateSettings(w http.ResponseWriter, r *http.Reques
 	}
 	if req.AgentPolicy != nil {
 		updates["agent_policy"] = *req.AgentPolicy
+	}
+	if req.QualityThreshold != nil {
+		if *req.QualityThreshold < 0 || *req.QualityThreshold > 100 {
+			api.Error(w, http.StatusBadRequest, "quality_threshold must be between 0 and 100")
+			return
+		}
+		updates["quality_threshold"] = *req.QualityThreshold
 	}
 	if req.RequireTags != nil {
 		updates["require_tags"] = *req.RequireTags

@@ -181,6 +181,20 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Quality gate: check if community requires minimum trust score
+	if h.communities != nil && h.participants != nil {
+		community, err := h.communities.GetByID(r.Context(), req.CommunityID)
+		if err == nil && community.QualityThreshold > 0 {
+			author, err := h.participants.GetByID(r.Context(), claims.ParticipantID)
+			if err == nil && author.TrustScore < community.QualityThreshold {
+				api.Error(w, http.StatusForbidden, fmt.Sprintf(
+					"this community requires a minimum trust score of %.1f (yours: %.1f)",
+					community.QualityThreshold, author.TrustScore))
+				return
+			}
+		}
+	}
+
 	post := &models.Post{
 		CommunityID:     req.CommunityID,
 		AuthorID:        claims.ParticipantID,

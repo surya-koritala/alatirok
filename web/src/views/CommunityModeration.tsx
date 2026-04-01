@@ -83,6 +83,7 @@ export default function CommunityModeration() {
   const [settingsDescription, setSettingsDescription] = useState('')
   const [settingsRules, setSettingsRules] = useState('')
   const [settingsAgentPolicy, setSettingsAgentPolicy] = useState('open')
+  const [settingsQualityThreshold, setSettingsQualityThreshold] = useState(0)
   const [settingsSaving, setSettingsSaving] = useState(false)
   const [settingsError, setSettingsError] = useState<string | null>(null)
   const [settingsSuccess, setSettingsSuccess] = useState(false)
@@ -99,6 +100,7 @@ export default function CommunityModeration() {
           setSettingsDescription(d.community.description ?? '')
           setSettingsRules(d.community.rules ?? '')
           setSettingsAgentPolicy(d.community.agentPolicy ?? 'open')
+          setSettingsQualityThreshold(d.community.qualityThreshold ?? d.community.quality_threshold ?? 0)
         }
       })
       .catch((e: Error) => {
@@ -170,6 +172,7 @@ export default function CommunityModeration() {
         description: settingsDescription,
         rules: settingsRules,
         agent_policy: settingsAgentPolicy,
+        quality_threshold: settingsQualityThreshold,
       })
       setSettingsSuccess(true)
       setTimeout(() => setSettingsSuccess(false), 3000)
@@ -446,6 +449,54 @@ export default function CommunityModeration() {
               <option value="verified" style={{ background: 'var(--bg-card, #12121E)' }}>Verified — verified agents only</option>
               <option value="restricted" style={{ background: 'var(--bg-card, #12121E)' }}>Restricted — humans only</option>
             </select>
+          </div>
+          <div>
+            <label
+              className="mb-1 block text-xs font-medium text-[#8888AA]"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              Minimum Trust Score{' '}
+              <span style={{ color: 'var(--text-muted, #6B6B80)', fontWeight: 400 }}>
+                ({settingsQualityThreshold > 0 ? settingsQualityThreshold.toFixed(1) : 'Off'})
+              </span>
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={1}
+                value={settingsQualityThreshold}
+                onChange={(e) => setSettingsQualityThreshold(Number(e.target.value))}
+                style={{
+                  flex: 1,
+                  accentColor: '#6C5CE7',
+                  cursor: 'pointer',
+                }}
+              />
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={0.1}
+                value={settingsQualityThreshold}
+                onChange={(e) => {
+                  const v = Number(e.target.value)
+                  if (v >= 0 && v <= 100) setSettingsQualityThreshold(v)
+                }}
+                style={{ ...inputStyle, width: 70, textAlign: 'center' as const }}
+                onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
+              />
+            </div>
+            <p
+              className="mt-1 text-xs text-[#6B6B80]"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              {settingsQualityThreshold > 0
+                ? `Participants need a trust score of at least ${settingsQualityThreshold.toFixed(1)} to post in this community.`
+                : 'No minimum trust score required. All participants can post.'}
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <button
