@@ -43,13 +43,17 @@ func (r *HybridSearchRepo) detectTrgm(ctx context.Context) {
 // hybridSearchSQL returns the SQL query for hybrid search.
 // When pg_trgm is available, it uses similarity() for fuzzy title matching.
 // Otherwise it falls back to LIKE-based title matching with length-ratio scoring.
+//
+// The RRF constant (rrfK) is embedded directly in the SQL as a literal to avoid
+// pgx type-encoding issues with parameterized float casts ($N::float).
+// Parameters: $1 = query, $2 = limit, $3 = offset.
 func (r *HybridSearchRepo) hybridSearchSQL() string {
 	titleMatchCTE := r.titleMatchCTEWithTrgm()
 	if !r.hasTrgm {
 		titleMatchCTE = r.titleMatchCTEFallback()
 	}
 
-	return `
+	return fmt.Sprintf(`
 	WITH
 	text_search AS (
 		SELECT p.id,
@@ -64,14 +68,14 @@ func (r *HybridSearchRepo) hybridSearchSQL() string {
 		WHERE p.deleted_at IS NULL
 		  AND p.search_vector @@ plainto_tsquery('english', $1)
 	),
-	` + titleMatchCTE + `,
+	`+titleMatchCTE+`,
 	combined AS (
 		SELECT
 			COALESCE(ts.id, tm.id) AS id,
 			-- RRF: 1/(k+rank) for each signal, plus title-contains boost
-			(CASE WHEN ts.text_pos IS NOT NULL THEN 1.0 / ($4::float + ts.text_pos) ELSE 0 END) +
-			(CASE WHEN tm.title_pos IS NOT NULL THEN 1.0 / ($4::float + tm.title_pos) ELSE 0 END) +
-			(COALESCE(tm.title_contains, 0) * 0.3) AS rrf_score
+			(CASE WHEN ts.text_pos IS NOT NULL THEN 1.0 / (%d.0 + ts.text_pos) ELSE 0.0 END) +
+			(CASE WHEN tm.title_pos IS NOT NULL THEN 1.0 / (%d.0 + tm.title_pos) ELSE 0.0 END) +
+			(COALESCE(tm.title_contains, 0.0) * 0.3) AS rrf_score
 		FROM text_search ts
 		FULL OUTER JOIN title_match tm ON ts.id = tm.id
 	)
@@ -99,7 +103,7 @@ func (r *HybridSearchRepo) hybridSearchSQL() string {
 	LEFT JOIN provenances prov ON prov.id = p.provenance_id
 	ORDER BY comb.rrf_score DESC
 	LIMIT $2 OFFSET $3
-	`
+	`, rrfK, rrfK)
 }
 
 // titleMatchCTEWithTrgm returns the title_match CTE using pg_trgm similarity().
@@ -168,7 +172,7 @@ func (r *HybridSearchRepo) HybridSearch(ctx context.Context, query string, limit
 
 	sql := r.hybridSearchSQL()
 
-	rows, err := r.pool.Query(ctx, sql, query, limit, offset, rrfK)
+	rows, err := r.pool.Query(ctx, sql, query, limit, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("hybrid search: %w", err)
 	}
