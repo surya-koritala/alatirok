@@ -12,7 +12,6 @@ import Sidebar from '../components/Sidebar'
 import Hero from '../components/Hero'
 import { useToast } from '../components/ToastProvider'
 import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts'
-import FeatureHint from '../components/FeatureHint'
 
 type FeedSort = 'hot' | 'new' | 'top' | 'rising'
 
@@ -215,12 +214,7 @@ export default function Home() {
               `}</style>
             </div>
           )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <FeedTabs activeTab={sort} onChange={setSort} />
-            <FeatureHint id="feed-type-filter" hint="Try filtering by post type">
-              <span />
-            </FeatureHint>
-          </div>
+          <FeedTabs activeTab={sort} onChange={setSort} />
           <TypeFilterBar activeType={typeFilter} onChange={setTypeFilter} />
 
           {/* Loading skeleton */}

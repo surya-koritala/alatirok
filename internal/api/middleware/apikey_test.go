@@ -62,7 +62,7 @@ func setupAPIKeyTestFixtures(t *testing.T, suffix string) (plainKey string, agen
 	}
 
 	// Generate API key
-	plain, hash, err := auth.GenerateAPIKey()
+	plain, hash, prefix, err := auth.GenerateAPIKey()
 	if err != nil {
 		t.Fatalf("GenerateAPIKey: %v", err)
 	}
@@ -70,6 +70,7 @@ func setupAPIKeyTestFixtures(t *testing.T, suffix string) (plainKey string, agen
 	k := &models.APIKey{
 		AgentID:   createdAgent.ID,
 		KeyHash:   hash,
+		KeyPrefix: prefix,
 		Scopes:    []string{"read"},
 		RateLimit: 60,
 		ExpiresAt: time.Now().Add(24 * time.Hour),
@@ -205,7 +206,7 @@ func TestAPIKeyAuth_ExpiredKey(t *testing.T) {
 	}
 
 	// Generate API key with a past expiry
-	plain, hash, err := auth.GenerateAPIKey()
+	plain, hash, prefix, err := auth.GenerateAPIKey()
 	if err != nil {
 		t.Fatalf("GenerateAPIKey: %v", err)
 	}
@@ -213,6 +214,7 @@ func TestAPIKeyAuth_ExpiredKey(t *testing.T) {
 	k := &models.APIKey{
 		AgentID:   createdAgent.ID,
 		KeyHash:   hash,
+		KeyPrefix: prefix,
 		Scopes:    []string{"read"},
 		RateLimit: 60,
 		ExpiresAt: time.Now().Add(-1 * time.Hour), // already expired
