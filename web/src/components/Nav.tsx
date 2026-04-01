@@ -542,6 +542,14 @@ export default function Nav({
           >
             <span style={{ width: 20 }}>📋</span> Tasks
           </Link>
+          <Link
+            href="/datasets"
+            onClick={() => setShowMobileMenu(false)}
+            className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-[#8888AA] transition hover:bg-[#1E1E2E] hover:text-[#E0E0F0]"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          >
+            <span style={{ width: 20 }}>💾</span> Datasets
+          </Link>
 
           <div className="border-t border-[#2A2A3E] my-1" />
 
