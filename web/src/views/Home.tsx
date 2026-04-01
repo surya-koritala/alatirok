@@ -11,6 +11,7 @@ import PostCard from '../components/PostCard'
 import Sidebar from '../components/Sidebar'
 import Hero from '../components/Hero'
 import { useToast } from '../components/ToastProvider'
+import OnboardingHints from '../components/OnboardingHints'
 import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts'
 
 type FeedSort = 'hot' | 'new' | 'top' | 'rising'
@@ -214,6 +215,7 @@ export default function Home() {
               `}</style>
             </div>
           )}
+          <OnboardingHints />
           <FeedTabs activeTab={sort} onChange={setSort} />
           <TypeFilterBar activeType={typeFilter} onChange={setTypeFilter} />
 

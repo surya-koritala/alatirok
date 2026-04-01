@@ -157,10 +157,35 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
     router.push(`/post/${post.id}`)
   }
 
+  const [showShareMenu, setShowShareMenu] = useState(false)
+
+  const canonicalUrl = `https://www.alatirok.com/post/${post.id}`
+
   const handleShareClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    navigator.clipboard?.writeText(window.location.origin + `/post/${post.id}`)
+    setShowShareMenu((prev) => !prev)
+  }
+
+  const handleCopyLink = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    navigator.clipboard?.writeText(canonicalUrl)
     addToast('Link copied to clipboard')
+    setShowShareMenu(false)
+  }
+
+  const handleShareTwitter = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const text = encodeURIComponent(post.title)
+    const url = encodeURIComponent(canonicalUrl)
+    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank', 'noopener')
+    setShowShareMenu(false)
+  }
+
+  const handleShareLinkedIn = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const url = encodeURIComponent(canonicalUrl)
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'noopener')
+    setShowShareMenu(false)
   }
 
   const handleSave = async (e: React.MouseEvent) => {
@@ -228,6 +253,55 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             </span>
             <PostTypeBadge type={post.postType} severity={(post.metadata as any)?.severity} />
             <EpistemicBadge postId={post.id} compact />
+            {/* Feature badges */}
+            {post.metadata?.poll_id && (
+              <span
+                style={{
+                  fontSize: 10,
+                  color: '#74B9FF',
+                  background: 'rgba(116,185,255,0.1)',
+                  border: '1px solid rgba(116,185,255,0.2)',
+                  borderRadius: 4,
+                  padding: '1px 6px',
+                  fontWeight: 600,
+                  letterSpacing: '0.02em',
+                }}
+              >
+                &#x1F4CA; Poll
+              </span>
+            )}
+            {post.provenance && post.provenance.sourceCount > 0 && (
+              <span
+                style={{
+                  fontSize: 10,
+                  color: '#00B894',
+                  background: 'rgba(0,184,148,0.1)',
+                  border: '1px solid rgba(0,184,148,0.2)',
+                  borderRadius: 4,
+                  padding: '1px 6px',
+                  fontWeight: 600,
+                  letterSpacing: '0.02em',
+                }}
+              >
+                &#x1F517; Cited
+              </span>
+            )}
+            {post.commentCount >= 10 && (
+              <span
+                style={{
+                  fontSize: 10,
+                  color: '#E17055',
+                  background: 'rgba(225,112,85,0.1)',
+                  border: '1px solid rgba(225,112,85,0.2)',
+                  borderRadius: 4,
+                  padding: '1px 6px',
+                  fontWeight: 600,
+                  letterSpacing: '0.02em',
+                }}
+              >
+                &#x1F525; Hot discussion
+              </span>
+            )}
             {post.crosspostedFrom && (
               <span
                 title={`Crossposted from post ${post.crosspostedFrom}`}
@@ -443,13 +517,115 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             className="mt-2.5 flex items-center gap-3 md:gap-4 flex-wrap"
             style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)' }}
           >
-            <button
-              className="flex cursor-pointer items-center gap-1 border-none bg-transparent transition-colors hover:text-[#E0E0F0]"
-              style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)' }}
-              onClick={handleShareClick}
-            >
-              &#x1F517; Share
-            </button>
+            <div style={{ position: 'relative' }}>
+              <button
+                className="flex cursor-pointer items-center gap-1 border-none bg-transparent transition-colors hover:text-[#E0E0F0]"
+                style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)' }}
+                onClick={handleShareClick}
+              >
+                &#x1F517; Share
+              </button>
+              {showShareMenu && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '100%',
+                    left: 0,
+                    marginBottom: 6,
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 8,
+                    padding: 4,
+                    minWidth: 160,
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                    zIndex: 50,
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={handleCopyLink}
+                    className="cursor-pointer"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: 6,
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--text-primary, #E0E0F0)',
+                      fontSize: 13,
+                      fontFamily: "'DM Sans', sans-serif",
+                      textAlign: 'left',
+                      transition: 'background 0.1s',
+                    }}
+                    onMouseEnter={(e) => {
+                      ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-hover)'
+                    }}
+                    onMouseLeave={(e) => {
+                      ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+                    }}
+                  >
+                    &#x1F4CB; Copy link
+                  </button>
+                  <button
+                    onClick={handleShareTwitter}
+                    className="cursor-pointer"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: 6,
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--text-primary, #E0E0F0)',
+                      fontSize: 13,
+                      fontFamily: "'DM Sans', sans-serif",
+                      textAlign: 'left',
+                      transition: 'background 0.1s',
+                    }}
+                    onMouseEnter={(e) => {
+                      ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-hover)'
+                    }}
+                    onMouseLeave={(e) => {
+                      ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+                    }}
+                  >
+                    &#x1D54F; Share to Twitter
+                  </button>
+                  <button
+                    onClick={handleShareLinkedIn}
+                    className="cursor-pointer"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: 6,
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--text-primary, #E0E0F0)',
+                      fontSize: 13,
+                      fontFamily: "'DM Sans', sans-serif",
+                      textAlign: 'left',
+                      transition: 'background 0.1s',
+                    }}
+                    onMouseEnter={(e) => {
+                      ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-hover)'
+                    }}
+                    onMouseLeave={(e) => {
+                      ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+                    }}
+                  >
+                    &#x1F4BC; Share to LinkedIn
+                  </button>
+                </div>
+              )}
+            </div>
             <button
               className="flex cursor-pointer items-center gap-1 border-none bg-transparent transition-colors hover:text-[#E0E0F0]"
               style={{ fontSize: 12, color: saved ? '#A29BFE' : '#6B6B80' }}
