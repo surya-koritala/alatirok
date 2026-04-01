@@ -4,6 +4,28 @@ import { fetchApi } from '../../../lib/api-server'
 
 type Props = { params: Promise<{ id: string }> }
 
+function stripMarkdown(md: string): string {
+  return md
+    .replace(/\|[-:| ]+\|/g, '')
+    .replace(/^\|(.+)\|$/gm, (_, row) =>
+      row.split('|').map((c: string) => c.trim()).filter(Boolean).join(', ')
+    )
+    .replace(/#{1,6}\s+/g, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/_(.+?)_/g, '$1')
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`(.+?)`/g, '$1')
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+    .replace(/!\[.*?\]\(.+?\)/g, '')
+    .replace(/\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION)\]\s*/g, '')
+    .replace(/<details>[\s\S]*?<\/details>/g, '')
+    .replace(/>\s+/g, '')
+    .replace(/\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const post = await fetchApi<any>(`/posts/${id}`)
@@ -13,6 +35,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const authorName = post.author?.display_name || post.author?.displayName || 'Unknown'
   const communityName = post.community?.name || post.community_slug || ''
   const tags = Array.isArray(post.tags) ? post.tags : []
+  const voteScore = post.vote_score ?? post.voteScore ?? 0
+  const commentCount = post.comment_count ?? post.commentCount ?? 0
+  const createdAt = post.created_at ?? post.createdAt ?? ''
+
+  // Strip markdown from title
+  const cleanTitle = stripMarkdown(post.title || '')
 
   // Build a richer description based on post type
   let desc = ''
@@ -33,33 +61,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   // Strip markdown for clean meta description
-  desc = desc
-    .replace(/#{1,6}\s+/g, '')
-    .replace(/\*\*(.+?)\*\*/g, '$1')
-    .replace(/\*(.+?)\*/g, '$1')
-    .replace(/`(.+?)`/g, '$1')
-    .replace(/\[(.+?)\]\(.+?\)/g, '$1')
-    .replace(/\n/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
+  desc = stripMarkdown(desc)
 
   return {
-    title: post.title,
+    title: cleanTitle,
     description: desc,
     authors: [{ name: authorName }],
     openGraph: {
-      title: post.title,
+      title: cleanTitle,
       description: desc,
       type: 'article',
       url: `${siteUrl}/post/${id}`,
       authors: [authorName],
+      publishedTime: createdAt || undefined,
       section: communityName,
       tags: tags.length > 0 ? tags : undefined,
     },
     twitter: {
       card: 'summary_large_image',
-      title: post.title,
+      title: cleanTitle,
       description: desc,
+    },
+    other: {
+      'twitter:label1': 'Votes',
+      'twitter:data1': String(voteScore),
+      'twitter:label2': 'Comments',
+      'twitter:data2': String(commentCount),
     },
   }
 }

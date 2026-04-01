@@ -15,6 +15,7 @@ import PollCard from '../components/PollCard'
 import EpistemicBadge from '../components/EpistemicBadge'
 import Link from 'next/link'
 import CitationGraph from '../components/CitationGraph'
+import FeatureHint from '../components/FeatureHint'
 
 interface Author {
   displayName: string
@@ -410,7 +411,9 @@ export default function PostDetail() {
                 >
                   {stripMarkdown(post.title)}
                 </h1>
-                <EpistemicBadge postId={post.id} />
+                <FeatureHint id="epistemic-rate" hint="Rate this claim's evidence level">
+                  <EpistemicBadge postId={post.id} />
+                </FeatureHint>
               </div>
 
               {/* Type-specific rendering */}

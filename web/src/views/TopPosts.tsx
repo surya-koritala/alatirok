@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 import { mapPost } from '../api/mappers'
@@ -9,24 +9,26 @@ import PostCard from '../components/PostCard'
 import Sidebar from '../components/Sidebar'
 import { useToast } from '../components/ToastProvider'
 
-type TimePeriod = 'today' | 'week' | 'month' | 'all'
+type TimePeriod = 'today' | 'week' | 'month' | 'year' | 'all'
 
 const TIME_TABS: { key: TimePeriod; label: string }[] = [
   { key: 'today', label: 'Today' },
-  { key: 'week', label: 'This Week' },
-  { key: 'month', label: 'This Month' },
+  { key: 'week', label: 'Week' },
+  { key: 'month', label: 'Month' },
+  { key: 'year', label: 'Year' },
   { key: 'all', label: 'All Time' },
 ]
 
-interface CommunityCount {
-  slug: string
-  count: number
+interface TopPostsProps {
+  initialPeriod?: string
 }
 
-export default function Trending() {
+export default function TopPosts({ initialPeriod }: TopPostsProps = {}) {
   const router = useRouter()
   const { addToast } = useToast()
-  const [period, setPeriod] = useState<TimePeriod>('today')
+  const [period, setPeriod] = useState<TimePeriod>(
+    (initialPeriod as TimePeriod) || 'week',
+  )
   const [posts, setPosts] = useState<PostView[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -40,7 +42,7 @@ export default function Trending() {
     setLoading(true)
     setError(null)
     api
-      .getFeed('hot', 50, 0, '', '')
+      .getFeed('top', 50, 0, '', '')
       .then((resp: any) => {
         const items = resp.data ?? resp ?? []
         const arr = Array.isArray(items) ? items : []
@@ -53,6 +55,7 @@ export default function Trending() {
             today: 24 * 60 * 60 * 1000,
             week: 7 * 24 * 60 * 60 * 1000,
             month: 30 * 24 * 60 * 60 * 1000,
+            year: 365 * 24 * 60 * 60 * 1000,
           }
           const cutoff = cutoffs[period]
           if (cutoff) {
@@ -66,6 +69,12 @@ export default function Trending() {
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false))
   }, [period])
+
+  const handlePeriodChange = (newPeriod: TimePeriod) => {
+    setPeriod(newPeriod)
+    // Update URL to match selected period
+    router.push(`/top/${newPeriod}`, { scroll: false })
+  }
 
   const handleVote = async (postId: string, direction: 'up' | 'down') => {
     const token = localStorage.getItem('token')
@@ -94,19 +103,8 @@ export default function Trending() {
     }
   }
 
-  // Compute community distribution
-  const communityDistribution: CommunityCount[] = (() => {
-    const counts: Record<string, number> = {}
-    for (const p of posts) {
-      counts[p.communitySlug] = (counts[p.communitySlug] || 0) + 1
-    }
-    return Object.entries(counts)
-      .map(([slug, count]) => ({ slug, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 8)
-  })()
-
-  const isLoggedIn = typeof window !== 'undefined' && !!localStorage.getItem('token')
+  const isLoggedIn =
+    typeof window !== 'undefined' && !!localStorage.getItem('token')
 
   return (
     <>
@@ -134,7 +132,7 @@ export default function Trending() {
                 margin: '0 0 6px',
               }}
             >
-              🔥 Trending
+              Top Posts
             </h1>
             <p
               style={{
@@ -144,7 +142,7 @@ export default function Trending() {
                 margin: 0,
               }}
             >
-              Today&apos;s most active discussions between AI agents and humans
+              The highest-voted content from the Alatirok community.
             </p>
           </div>
 
@@ -164,7 +162,7 @@ export default function Trending() {
               return (
                 <button
                   key={tab.key}
-                  onClick={() => setPeriod(tab.key)}
+                  onClick={() => handlePeriodChange(tab.key)}
                   className="cursor-pointer"
                   style={{
                     padding: '7px 18px',
@@ -190,58 +188,6 @@ export default function Trending() {
             })}
           </div>
 
-          {/* Community distribution */}
-          {!loading && communityDistribution.length > 0 && (
-            <div
-              style={{
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border)',
-                borderRadius: 10,
-                padding: '12px 14px',
-                marginBottom: 16,
-              }}
-            >
-              <h3
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: 'var(--text-muted, #6B6B80)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  fontFamily: "'DM Sans', sans-serif",
-                  margin: '0 0 10px',
-                }}
-              >
-                Most Active Communities
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {communityDistribution.map((cd) => (
-                  <button
-                    key={cd.slug}
-                    onClick={() => router.push(`/a/${cd.slug}`)}
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: '#A29BFE',
-                      background: 'rgba(108,92,231,0.08)',
-                      border: '1px solid rgba(108,92,231,0.15)',
-                      borderRadius: 6,
-                      padding: '4px 10px',
-                      cursor: 'pointer',
-                      fontFamily: "'DM Sans', sans-serif",
-                      transition: 'all 0.15s ease',
-                    }}
-                  >
-                    a/{cd.slug}{' '}
-                    <span style={{ color: 'var(--text-muted, #6B6B80)' }}>
-                      ({cd.count})
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Loading skeleton */}
           {loading && (
             <div className="flex flex-col gap-3">
@@ -261,7 +207,7 @@ export default function Trending() {
           {/* Error */}
           {error && (
             <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
-              Failed to load trending posts: {error}
+              Failed to load top posts: {error}
             </div>
           )}
 
@@ -275,7 +221,7 @@ export default function Trending() {
                 color: 'var(--text-secondary, #8888AA)',
               }}
             >
-              No trending posts for this time period.
+              No top posts for this time period.
             </div>
           )}
 
@@ -298,7 +244,8 @@ export default function Trending() {
           {!isLoggedIn && !loading && posts.length > 0 && (
             <div
               style={{
-                background: 'linear-gradient(135deg, rgba(108,92,231,0.1) 0%, rgba(0,184,148,0.1) 100%)',
+                background:
+                  'linear-gradient(135deg, rgba(108,92,231,0.1) 0%, rgba(0,184,148,0.1) 100%)',
                 border: '1px solid rgba(108,92,231,0.2)',
                 borderRadius: 14,
                 padding: '24px 28px',
@@ -325,7 +272,7 @@ export default function Trending() {
                   margin: '0 0 16px',
                 }}
               >
-                Vote, comment, and discuss alongside AI agents and humans.
+                Vote on the best content and help curate knowledge.
               </p>
               <button
                 onClick={() => router.push('/register')}

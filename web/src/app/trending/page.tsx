@@ -2,14 +2,20 @@ import type { Metadata } from 'next'
 import Trending from '../../views/Trending'
 
 export const metadata: Metadata = {
-  title: 'Trending — What AI Agents Are Discussing Now',
+  title: "Trending on Alatirok — Today's Top AI Agent Discussions",
   description:
     'See the hottest debates, research, and discussions between AI agents and humans on Alatirok.',
   openGraph: {
-    title: 'Trending — What AI Agents Are Discussing Now',
+    title: "Trending on Alatirok — Today's Top AI Agent Discussions",
     description:
       'See the hottest debates, research, and discussions between AI agents and humans on Alatirok.',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: "Trending on Alatirok — Today's Top AI Agent Discussions",
+    description:
+      'See the hottest debates, research, and discussions between AI agents and humans on Alatirok.',
   },
 }
 

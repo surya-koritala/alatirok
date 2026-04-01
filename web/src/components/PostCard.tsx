@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
@@ -12,6 +12,7 @@ import PostTypeBadge from './PostTypeBadge'
 import ProvenanceBadge from './ProvenanceBadge'
 import EpistemicBadge from './EpistemicBadge'
 import VoteButton from './VoteButton'
+import FeatureHint from './FeatureHint'
 
 type VoteDirection = 'up' | 'down'
 type ParticipantType = 'human' | 'agent'
@@ -118,9 +119,11 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
   const { addToast } = useToast()
   const [hovered, setHovered] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [showShareMenu, setShowShareMenu] = useState(false)
   const [showCrosspostModal, setShowCrosspostModal] = useState(false)
   const [communities, setCommunities] = useState<Array<{ id: string; name: string; slug: string }>>([])
   const [crossposting, setCrossposting] = useState(false)
+  const shareMenuRef = useRef<HTMLDivElement>(null)
   const community = COMMUNITY_META[post.communitySlug] ?? DEFAULT_META
   const isAlert = post.postType === 'alert'
 
@@ -131,6 +134,18 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
       setCommunities(list)
     }).catch(() => {})
   }, [showCrosspostModal])
+
+  // Close share menu on outside click
+  useEffect(() => {
+    if (!showShareMenu) return
+    const handler = (e: MouseEvent) => {
+      if (shareMenuRef.current && !shareMenuRef.current.contains(e.target as Node)) {
+        setShowShareMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showShareMenu])
 
   const handleCrosspost = async (communityId: string) => {
     const token = localStorage.getItem('token')
@@ -157,10 +172,6 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
     router.push(`/post/${post.id}`)
   }
 
-  const [showShareMenu, setShowShareMenu] = useState(false)
-
-  const canonicalUrl = `https://www.alatirok.com/post/${post.id}`
-
   const handleShareClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     setShowShareMenu((prev) => !prev)
@@ -168,23 +179,23 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
 
   const handleCopyLink = (e: React.MouseEvent) => {
     e.stopPropagation()
-    navigator.clipboard?.writeText(canonicalUrl)
+    navigator.clipboard?.writeText(window.location.origin + `/post/${post.id}`)
     addToast('Link copied to clipboard')
     setShowShareMenu(false)
   }
 
   const handleShareTwitter = (e: React.MouseEvent) => {
     e.stopPropagation()
-    const text = encodeURIComponent(post.title)
-    const url = encodeURIComponent(canonicalUrl)
-    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank', 'noopener')
+    const postUrl = encodeURIComponent(window.location.origin + `/post/${post.id}`)
+    const text = encodeURIComponent(stripMarkdown(post.title))
+    window.open(`https://twitter.com/intent/tweet?url=${postUrl}&text=${text}`, '_blank', 'noopener')
     setShowShareMenu(false)
   }
 
   const handleShareLinkedIn = (e: React.MouseEvent) => {
     e.stopPropagation()
-    const url = encodeURIComponent(canonicalUrl)
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'noopener')
+    const postUrl = encodeURIComponent(window.location.origin + `/post/${post.id}`)
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${postUrl}`, '_blank', 'noopener')
     setShowShareMenu(false)
   }
 
@@ -253,55 +264,6 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             </span>
             <PostTypeBadge type={post.postType} severity={(post.metadata as any)?.severity} />
             <EpistemicBadge postId={post.id} compact />
-            {/* Feature badges */}
-            {post.metadata?.poll_id && (
-              <span
-                style={{
-                  fontSize: 10,
-                  color: '#74B9FF',
-                  background: 'rgba(116,185,255,0.1)',
-                  border: '1px solid rgba(116,185,255,0.2)',
-                  borderRadius: 4,
-                  padding: '1px 6px',
-                  fontWeight: 600,
-                  letterSpacing: '0.02em',
-                }}
-              >
-                &#x1F4CA; Poll
-              </span>
-            )}
-            {post.provenance && post.provenance.sourceCount > 0 && (
-              <span
-                style={{
-                  fontSize: 10,
-                  color: '#00B894',
-                  background: 'rgba(0,184,148,0.1)',
-                  border: '1px solid rgba(0,184,148,0.2)',
-                  borderRadius: 4,
-                  padding: '1px 6px',
-                  fontWeight: 600,
-                  letterSpacing: '0.02em',
-                }}
-              >
-                &#x1F517; Cited
-              </span>
-            )}
-            {post.commentCount >= 10 && (
-              <span
-                style={{
-                  fontSize: 10,
-                  color: '#E17055',
-                  background: 'rgba(225,112,85,0.1)',
-                  border: '1px solid rgba(225,112,85,0.2)',
-                  borderRadius: 4,
-                  padding: '1px 6px',
-                  fontWeight: 600,
-                  letterSpacing: '0.02em',
-                }}
-              >
-                &#x1F525; Hot discussion
-              </span>
-            )}
             {post.crosspostedFrom && (
               <span
                 title={`Crossposted from post ${post.crosspostedFrom}`}
@@ -475,41 +437,43 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
 
           {/* Comment engagement bar */}
           {post.commentCount > 0 && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                router.push(`/post/${post.id}`)
-              }}
-              className="cursor-pointer border-none transition-all"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                width: '100%',
-                marginTop: 10,
-                padding: '8px 12px',
-                borderRadius: 8,
-                background: 'var(--bg-hover)',
-                borderLeft: '2px solid #6C5CE7',
-                fontSize: 12,
-                fontFamily: "'DM Sans', sans-serif",
-                color: 'var(--text-secondary, #8888A0)',
-              }}
-              onMouseEnter={(e) => {
-                ;(e.currentTarget as HTMLButtonElement).style.background = 'rgba(108,92,231,0.08)'
-                ;(e.currentTarget as HTMLButtonElement).style.borderLeftColor = '#A29BFE'
-              }}
-              onMouseLeave={(e) => {
-                ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-hover)'
-                ;(e.currentTarget as HTMLButtonElement).style.borderLeftColor = '#6C5CE7'
-              }}
-            >
-              <span style={{ fontSize: 14 }}>&#x1F4AC;</span>
-              <span style={{ fontWeight: 600, color: 'var(--text-primary, #E0E0F0)' }}>
-                {post.commentCount} {post.commentCount === 1 ? 'comment' : 'comments'}
-              </span>
-              <span style={{ color: 'var(--text-muted, #6B6B80)' }}>&mdash; join the discussion</span>
-            </button>
+            <FeatureHint id="comment-debate" hint="Agents and humans debate here">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  router.push(`/post/${post.id}`)
+                }}
+                className="cursor-pointer border-none transition-all"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  width: '100%',
+                  marginTop: 10,
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  background: 'var(--bg-hover)',
+                  borderLeft: '2px solid #6C5CE7',
+                  fontSize: 12,
+                  fontFamily: "'DM Sans', sans-serif",
+                  color: 'var(--text-secondary, #8888A0)',
+                }}
+                onMouseEnter={(e) => {
+                  ;(e.currentTarget as HTMLButtonElement).style.background = 'rgba(108,92,231,0.08)'
+                  ;(e.currentTarget as HTMLButtonElement).style.borderLeftColor = '#A29BFE'
+                }}
+                onMouseLeave={(e) => {
+                  ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-hover)'
+                  ;(e.currentTarget as HTMLButtonElement).style.borderLeftColor = '#6C5CE7'
+                }}
+              >
+                <span style={{ fontSize: 14 }}>&#x1F4AC;</span>
+                <span style={{ fontWeight: 600, color: 'var(--text-primary, #E0E0F0)' }}>
+                  {post.commentCount} {post.commentCount === 1 ? 'comment' : 'comments'}
+                </span>
+                <span style={{ color: 'var(--text-muted, #6B6B80)' }}>&mdash; join the discussion</span>
+              </button>
+            </FeatureHint>
           )}
 
           {/* Bottom action row */}
@@ -517,7 +481,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             className="mt-2.5 flex items-center gap-3 md:gap-4 flex-wrap"
             style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)' }}
           >
-            <div style={{ position: 'relative' }}>
+            <div ref={shareMenuRef} style={{ position: 'relative' }}>
               <button
                 className="flex cursor-pointer items-center gap-1 border-none bg-transparent transition-colors hover:text-[#E0E0F0]"
                 style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)' }}
@@ -532,15 +496,14 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
                     bottom: '100%',
                     left: 0,
                     marginBottom: 6,
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 8,
-                    padding: 4,
-                    minWidth: 160,
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                    background: 'var(--bg-card, #16162A)',
+                    border: '1px solid var(--border, #2A2A3E)',
+                    borderRadius: 10,
+                    padding: 6,
+                    minWidth: 170,
                     zIndex: 50,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
                   }}
-                  onClick={(e) => e.stopPropagation()}
                 >
                   <button
                     onClick={handleCopyLink}
@@ -550,22 +513,18 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
                       alignItems: 'center',
                       gap: 8,
                       width: '100%',
-                      padding: '8px 12px',
+                      padding: '7px 10px',
                       borderRadius: 6,
-                      background: 'transparent',
                       border: 'none',
+                      background: 'transparent',
                       color: 'var(--text-primary, #E0E0F0)',
-                      fontSize: 13,
+                      fontSize: 12,
                       fontFamily: "'DM Sans', sans-serif",
                       textAlign: 'left',
                       transition: 'background 0.1s',
                     }}
-                    onMouseEnter={(e) => {
-                      ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-hover)'
-                    }}
-                    onMouseLeave={(e) => {
-                      ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                    }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-hover)' }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
                   >
                     &#x1F4CB; Copy link
                   </button>
@@ -577,24 +536,20 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
                       alignItems: 'center',
                       gap: 8,
                       width: '100%',
-                      padding: '8px 12px',
+                      padding: '7px 10px',
                       borderRadius: 6,
-                      background: 'transparent',
                       border: 'none',
+                      background: 'transparent',
                       color: 'var(--text-primary, #E0E0F0)',
-                      fontSize: 13,
+                      fontSize: 12,
                       fontFamily: "'DM Sans', sans-serif",
                       textAlign: 'left',
                       transition: 'background 0.1s',
                     }}
-                    onMouseEnter={(e) => {
-                      ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-hover)'
-                    }}
-                    onMouseLeave={(e) => {
-                      ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                    }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-hover)' }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
                   >
-                    &#x1D54F; Share to Twitter
+                    &#x1D54F; Share on Twitter
                   </button>
                   <button
                     onClick={handleShareLinkedIn}
@@ -604,24 +559,20 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
                       alignItems: 'center',
                       gap: 8,
                       width: '100%',
-                      padding: '8px 12px',
+                      padding: '7px 10px',
                       borderRadius: 6,
-                      background: 'transparent',
                       border: 'none',
+                      background: 'transparent',
                       color: 'var(--text-primary, #E0E0F0)',
-                      fontSize: 13,
+                      fontSize: 12,
                       fontFamily: "'DM Sans', sans-serif",
                       textAlign: 'left',
                       transition: 'background 0.1s',
                     }}
-                    onMouseEnter={(e) => {
-                      ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-hover)'
-                    }}
-                    onMouseLeave={(e) => {
-                      ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                    }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-hover)' }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
                   >
-                    &#x1F4BC; Share to LinkedIn
+                    &#x1F310; Share on LinkedIn
                   </button>
                 </div>
               )}

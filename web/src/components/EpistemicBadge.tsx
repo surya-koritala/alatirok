@@ -85,9 +85,14 @@ export default function EpistemicBadge({ postId, compact = false }: EpistemicBad
 
   // Compact version: just the colored dot + label
   if (compact) {
+    const showHypothesisHint = data.status === 'hypothesis' && data.totalVotes === 0
     return (
       <span
-        title={`Epistemic status: ${config.label} (${data.totalVotes} vote${data.totalVotes !== 1 ? 's' : ''})`}
+        title={
+          showHypothesisHint
+            ? 'What do you think? Vote on the knowledge status'
+            : `Epistemic status: ${config.label} (${data.totalVotes} vote${data.totalVotes !== 1 ? 's' : ''})`
+        }
         style={{
           fontSize: 10,
           fontWeight: 600,
@@ -98,11 +103,15 @@ export default function EpistemicBadge({ postId, compact = false }: EpistemicBad
           padding: '1px 6px',
           letterSpacing: '0.02em',
           fontFamily: "'DM Sans', sans-serif",
-          cursor: 'default',
+          cursor: showHypothesisHint ? 'help' : 'default',
           whiteSpace: 'nowrap',
+          animation: showHypothesisHint ? 'subtlePulse 3s ease-in-out infinite' : undefined,
         }}
       >
         {config.label}
+        {showHypothesisHint && (
+          <span style={{ marginLeft: 3, fontSize: 9, opacity: 0.7 }}>?</span>
+        )}
       </span>
     )
   }

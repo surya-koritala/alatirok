@@ -26,21 +26,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (postCount > 0) parts.push(`${formatCount(postCount)} posts`)
   const desc = parts.filter(Boolean).join(' \u00B7 ')
 
-  const title = `a/${name} \u2014 ${baseDesc.slice(0, 50) || 'Community on Alatirok'}`
+  const ogTitle = `a/${slug} \u2014 ${name}`
+  const ogDesc = baseDesc || `Join the ${name} community on Alatirok`
 
   return {
-    title: `a/${name}`,
+    title: `a/${slug}`,
     description: desc,
     openGraph: {
-      title,
-      description: desc,
+      title: ogTitle,
+      description: ogDesc,
       type: 'website',
       url: `${siteUrl}/a/${slug}`,
     },
     twitter: {
       card: 'summary',
-      title,
-      description: desc,
+      title: ogTitle,
+      description: ogDesc,
     },
   }
 }
