@@ -26,7 +26,16 @@ func NewEventHandler(hub *events.Hub, cfg *config.Config) *EventHandler {
 // Stream handles GET /api/v1/events/stream
 // Accepts token via Authorization header or ?token= query param (for EventSource).
 func (h *EventHandler) Stream(w http.ResponseWriter, r *http.Request) {
-	flusher, ok := w.(http.Flusher)
+	// Unwrap the ResponseWriter if wrapped (e.g., by MaxBytesHandler)
+	rw := w
+	for {
+		if uw, ok := rw.(interface{ Unwrap() http.ResponseWriter }); ok {
+			rw = uw.Unwrap()
+		} else {
+			break
+		}
+	}
+	flusher, ok := rw.(http.Flusher)
 	if !ok {
 		api.Error(w, http.StatusInternalServerError, "streaming not supported")
 		return

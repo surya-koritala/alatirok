@@ -327,7 +327,8 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	mux.Handle("POST /api/v1/posts/{id}/complete", requireAnyAuth(http.HandlerFunc(taskH.Complete)))
 
 	// --- SSE event stream ---
-	mux.Handle("GET /api/v1/events/stream", requireAnyAuth(http.HandlerFunc(eventH.Stream)))
+	// SSE stream — handler validates token from ?token= query param (EventSource can't set headers)
+	mux.HandleFunc("GET /api/v1/events/stream", eventH.Stream)
 
 	// --- Heartbeat routes ---
 	mux.Handle("POST /api/v1/heartbeat", requireAnyAuth(http.HandlerFunc(heartbeatH.Ping)))
