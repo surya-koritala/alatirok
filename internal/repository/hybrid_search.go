@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"sync"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/surya-koritala/alatirok/internal/models"
@@ -13,7 +14,9 @@ import (
 // HybridSearchRepo provides hybrid search combining full-text ranking
 // with title similarity using Reciprocal Rank Fusion (RRF).
 type HybridSearchRepo struct {
-	pool *pgxpool.Pool
+	pool       *pgxpool.Pool
+	hasTrgm    bool
+	trgmOnce   sync.Once
 }
 
 // NewHybridSearchRepo creates a new HybridSearchRepo.
@@ -25,34 +28,28 @@ func NewHybridSearchRepo(pool *pgxpool.Pool) *HybridSearchRepo {
 // A value of 60 is standard in information retrieval literature.
 const rrfK = 60
 
-// HybridSearch performs a hybrid search combining full-text ts_rank_cd ranking
-// (BM25-like) with trigram title similarity, merged via Reciprocal Rank Fusion.
-// The embedding column is reserved for future semantic vector search; when
-// populated, a third signal can be added to the RRF scoring.
-//
-// Parameters:
-//   - query: the user's search string
-//   - limit: max results to return
-//   - offset: pagination offset
-//
-// Returns search results with relevance scores, total count, and any error.
-func (r *HybridSearchRepo) HybridSearch(ctx context.Context, query string, limit, offset int) ([]models.SearchResult, int, error) {
-	if limit <= 0 {
-		limit = 25
-	}
-	if limit > 100 {
-		limit = 100
-	}
-	if offset < 0 {
-		offset = 0
+// detectTrgm checks once whether the pg_trgm extension is installed.
+func (r *HybridSearchRepo) detectTrgm(ctx context.Context) {
+	r.trgmOnce.Do(func() {
+		var exists bool
+		err := r.pool.QueryRow(ctx,
+			`SELECT EXISTS(SELECT 1 FROM pg_extension WHERE extname = 'pg_trgm')`).Scan(&exists)
+		if err == nil && exists {
+			r.hasTrgm = true
+		}
+	})
+}
+
+// hybridSearchSQL returns the SQL query for hybrid search.
+// When pg_trgm is available, it uses similarity() for fuzzy title matching.
+// Otherwise it falls back to LIKE-based title matching with length-ratio scoring.
+func (r *HybridSearchRepo) hybridSearchSQL() string {
+	titleMatchCTE := r.titleMatchCTEWithTrgm()
+	if !r.hasTrgm {
+		titleMatchCTE = r.titleMatchCTEFallback()
 	}
 
-	// The query uses two CTEs:
-	//   1. text_search: full-text search with ts_rank_cd scoring and row numbering
-	//   2. title_match: trigram similarity on the title column
-	// These are combined via RRF in the combined CTE, then joined to the
-	// standard post+author+community+provenance columns.
-	sql := `
+	return `
 	WITH
 	text_search AS (
 		SELECT p.id,
@@ -67,20 +64,7 @@ func (r *HybridSearchRepo) HybridSearch(ctx context.Context, query string, limit
 		WHERE p.deleted_at IS NULL
 		  AND p.search_vector @@ plainto_tsquery('english', $1)
 	),
-	title_match AS (
-		SELECT p.id,
-			similarity(lower(p.title), lower($1)) AS title_sim,
-			CASE WHEN lower(p.title) LIKE '%' || lower($1) || '%' THEN 1.0 ELSE 0.0 END AS title_contains,
-			ROW_NUMBER() OVER (
-				ORDER BY similarity(lower(p.title), lower($1)) DESC
-			) AS title_pos
-		FROM posts p
-		WHERE p.deleted_at IS NULL
-		  AND (
-			similarity(lower(p.title), lower($1)) > 0.1
-			OR lower(p.title) LIKE '%' || lower($1) || '%'
-		  )
-	),
+	` + titleMatchCTE + `,
 	combined AS (
 		SELECT
 			COALESCE(ts.id, tm.id) AS id,
@@ -116,6 +100,73 @@ func (r *HybridSearchRepo) HybridSearch(ctx context.Context, query string, limit
 	ORDER BY comb.rrf_score DESC
 	LIMIT $2 OFFSET $3
 	`
+}
+
+// titleMatchCTEWithTrgm returns the title_match CTE using pg_trgm similarity().
+func (r *HybridSearchRepo) titleMatchCTEWithTrgm() string {
+	return `title_match AS (
+		SELECT p.id,
+			similarity(lower(p.title), lower($1)) AS title_sim,
+			CASE WHEN lower(p.title) LIKE '%' || lower($1) || '%' THEN 1.0 ELSE 0.0 END AS title_contains,
+			ROW_NUMBER() OVER (
+				ORDER BY similarity(lower(p.title), lower($1)) DESC
+			) AS title_pos
+		FROM posts p
+		WHERE p.deleted_at IS NULL
+		  AND (
+			similarity(lower(p.title), lower($1)) > 0.1
+			OR lower(p.title) LIKE '%' || lower($1) || '%'
+		  )
+	)`
+}
+
+// titleMatchCTEFallback returns the title_match CTE using LIKE-based matching
+// when pg_trgm is not available. Uses a length-ratio heuristic as a rough
+// proxy for similarity scoring.
+func (r *HybridSearchRepo) titleMatchCTEFallback() string {
+	return `title_match AS (
+		SELECT p.id,
+			-- Approximate similarity: ratio of query length to title length (capped at 1.0)
+			LEAST(1.0, length($1)::float / GREATEST(length(p.title), 1)::float) AS title_sim,
+			CASE WHEN lower(p.title) LIKE '%' || lower($1) || '%' THEN 1.0 ELSE 0.0 END AS title_contains,
+			ROW_NUMBER() OVER (
+				ORDER BY
+					CASE WHEN lower(p.title) LIKE '%' || lower($1) || '%' THEN 0 ELSE 1 END,
+					length(p.title) ASC
+			) AS title_pos
+		FROM posts p
+		WHERE p.deleted_at IS NULL
+		  AND lower(p.title) LIKE '%' || lower($1) || '%'
+	)`
+}
+
+// HybridSearch performs a hybrid search combining full-text ts_rank_cd ranking
+// (BM25-like) with title similarity, merged via Reciprocal Rank Fusion.
+// Uses pg_trgm similarity() when available, falls back to LIKE-based matching.
+// The embedding column is reserved for future semantic vector search; when
+// populated, a third signal can be added to the RRF scoring.
+//
+// Parameters:
+//   - query: the user's search string
+//   - limit: max results to return
+//   - offset: pagination offset
+//
+// Returns search results with relevance scores, total count, and any error.
+func (r *HybridSearchRepo) HybridSearch(ctx context.Context, query string, limit, offset int) ([]models.SearchResult, int, error) {
+	if limit <= 0 {
+		limit = 25
+	}
+	if limit > 100 {
+		limit = 100
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	// Detect pg_trgm availability once on first call.
+	r.detectTrgm(ctx)
+
+	sql := r.hybridSearchSQL()
 
 	rows, err := r.pool.Query(ctx, sql, query, limit, offset, rrfK)
 	if err != nil {

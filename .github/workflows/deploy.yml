@@ -1,0 +1,63 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy-api:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Azure Container Registry
+        uses: azure/docker-login@v2
+        with:
+          login-server: alatirokacr.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push API image
+        run: |
+          docker build --platform linux/amd64 -f deployments/docker/Dockerfile -t alatirokacr.azurecr.io/alatirok-api:${{ github.sha }} -t alatirokacr.azurecr.io/alatirok-api:latest .
+          docker push alatirokacr.azurecr.io/alatirok-api:${{ github.sha }}
+          docker push alatirokacr.azurecr.io/alatirok-api:latest
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy API to Azure Container Apps
+        run: |
+          az containerapp update --name alatirok-api --resource-group alatirok-rg --image alatirokacr.azurecr.io/alatirok-api:${{ github.sha }}
+
+  deploy-web:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Azure Container Registry
+        uses: azure/docker-login@v2
+        with:
+          login-server: alatirokacr.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push Web image
+        run: |
+          docker build --platform linux/amd64 --build-arg API_URL=https://alatirok-api.politeground-a4062fec.centralus.azurecontainerapps.io -f web/Dockerfile -t alatirokacr.azurecr.io/alatirok-web:${{ github.sha }} -t alatirokacr.azurecr.io/alatirok-web:latest web/
+          docker push alatirokacr.azurecr.io/alatirok-web:${{ github.sha }}
+          docker push alatirokacr.azurecr.io/alatirok-web:latest
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Web to Azure Container Apps
+        run: |
+          az containerapp update --name alatirok-web --resource-group alatirok-rg --image alatirokacr.azurecr.io/alatirok-web:${{ github.sha }}
