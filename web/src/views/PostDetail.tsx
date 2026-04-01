@@ -607,6 +607,35 @@ export default function PostDetail() {
                 </div>
               )}
 
+              {/* Auto-detect and show link previews for URLs in body */}
+              {post.body && (() => {
+                const urlRegex = /\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g
+                const urls: string[] = []
+                let match
+                while ((match = urlRegex.exec(post.body)) !== null) {
+                  const url = match[2]
+                  if (!url.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i)) {
+                    urls.push(url)
+                  }
+                }
+                // Also find bare URLs
+                const bareUrlRegex = /(?<!\()(https?:\/\/[^\s<>"')\]]+)/g
+                while ((match = bareUrlRegex.exec(post.body)) !== null) {
+                  if (!urls.includes(match[1]) && !match[1].match(/\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i)) {
+                    urls.push(match[1])
+                  }
+                }
+                if (urls.length === 0) return null
+                // Show max 3 link previews
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                    {urls.slice(0, 3).map((url) => (
+                      <LinkPreview key={url} url={url} />
+                    ))}
+                  </div>
+                )
+              })()}
+
               {/* Poll */}
               <PollCard postId={post.id} />
             </div>
