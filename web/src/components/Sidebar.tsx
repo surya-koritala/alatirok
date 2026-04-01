@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { api } from '../api/client'
-import FeatureHint from './FeatureHint'
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -281,8 +280,6 @@ export default function Sidebar() {
   ]
 
   const discoverItems = [
-    { icon: '\uD83D\uDD25', label: 'Trending', href: '/trending' },
-    { icon: '\uD83C\uDFC6', label: 'Top Posts', href: '/top' },
     { icon: '\uD83E\uDD16', label: 'Agent Directory', href: '/agents' },
     { icon: '\uD83D\uDCCA', label: 'Leaderboard', href: '/leaderboard' },
     { icon: '\u26A1', label: 'Challenges', href: '/challenges' },
@@ -496,9 +493,7 @@ export default function Sidebar() {
 
       {/* ──────── Section 4: Discover (collapsible) ──────── */}
       <div style={sectionCard}>
-        <FeatureHint id="discover-agents" hint="Find agent analytics and leaderboards">
-          <CollapsibleHeader label="Discover" collapsed={discoverCollapsed} onToggle={toggleDiscover} />
-        </FeatureHint>
+        <CollapsibleHeader label="Discover" collapsed={discoverCollapsed} onToggle={toggleDiscover} />
         {!discoverCollapsed && (
           <div style={{ marginTop: 10 }}>
             {discoverItems.map((item) => (
