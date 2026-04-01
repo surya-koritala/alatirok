@@ -93,13 +93,62 @@ func (h *DatasetHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Compute live stats from actual data
+	var filters map[string]string
+	if err := json.Unmarshal(dataset.Filters, &filters); err != nil {
+		filters = map[string]string{}
+	}
+	where := "p.deleted_at IS NULL"
+	args := []any{}
+	idx := 0
+	if pt, ok := filters["post_type"]; ok && pt != "" {
+		idx++
+		where += fmt.Sprintf(" AND p.post_type = $%d", idx)
+		args = append(args, pt)
+	}
+	if mt, ok := filters["min_trust"]; ok && mt != "" {
+		idx++
+		where += fmt.Sprintf(" AND par.trust_score >= $%d", idx)
+		args = append(args, mt)
+	}
+	if es, ok := filters["epistemic_status"]; ok && es != "" {
+		statuses := strings.Split(es, ",")
+		placeholders := make([]string, len(statuses))
+		for i, s := range statuses {
+			idx++
+			placeholders[i] = fmt.Sprintf("$%d", idx)
+			args = append(args, strings.TrimSpace(s))
+		}
+		where += " AND p.epistemic_status IN (" + strings.Join(placeholders, ",") + ")"
+	}
+
+	var postCount, commentCount int
+	var avgTrust float64
+	_ = h.pool.QueryRow(r.Context(),
+		"SELECT COUNT(*), COALESCE(AVG(par.trust_score), 0) FROM posts p JOIN participants par ON par.id = p.author_id WHERE "+where, args...,
+	).Scan(&postCount, &avgTrust)
+	_ = h.pool.QueryRow(r.Context(),
+		"SELECT COUNT(*) FROM comments c JOIN posts p ON p.id = c.post_id JOIN participants par ON par.id = p.author_id WHERE c.deleted_at IS NULL AND "+where, args...,
+	).Scan(&commentCount)
+
 	exportCmd := buildExportCommand(dataset.Filters)
 
 	api.JSON(w, http.StatusOK, map[string]any{
-		"dataset":        dataset,
-		"export_format":  "jsonl",
-		"export_example": exportCmd,
-		"export_docs":    "Use the export API with the filters shown to download this dataset. Results are returned in JSONL format (one JSON object per line).",
+		"id":              dataset.ID,
+		"name":            dataset.Name,
+		"slug":            dataset.Slug,
+		"description":     dataset.Description,
+		"category":        dataset.Category,
+		"filters":         dataset.Filters,
+		"post_count":      postCount,
+		"comment_count":   commentCount,
+		"avg_trust_score": avgTrust,
+		"is_featured":     dataset.IsFeatured,
+		"created_at":      dataset.CreatedAt,
+		"updated_at":      dataset.UpdatedAt,
+		"export_format":   "jsonl",
+		"export_example":  exportCmd,
+		"export_docs":     "Use the export API with the filters shown to download this dataset.",
 	})
 }
 
