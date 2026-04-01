@@ -49,8 +49,19 @@ export default function Community() {
   useEffect(() => {
     if (!slug || !localStorage.getItem('token')) return
     api.getCommunitySubscribed(slug)
-      .then((d: any) => setSubscribed(!!d?.subscribed))
-      .catch(() => {})
+      .then((d: any) => {
+        setSubscribed(!!d?.subscribed)
+      })
+      .catch((err: any) => {
+        console.warn('Failed to check subscription status:', err?.message)
+        // If auth failed, try once more after a short delay (token refresh race)
+        setTimeout(() => {
+          if (!localStorage.getItem('token')) return
+          api.getCommunitySubscribed(slug)
+            .then((d: any) => setSubscribed(!!d?.subscribed))
+            .catch(() => {})
+        }, 1000)
+      })
   }, [slug])
 
   // Reset offset when sort changes
@@ -184,7 +195,9 @@ export default function Community() {
                       await api.subscribeCommunity(slug)
                       setSubscribed(true)
                     }
-                  } catch {}
+                  } catch (err: any) {
+                    console.error('Subscribe failed:', err?.message)
+                  }
                   setSubLoading(false)
                 }}
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition w-full md:w-auto ${
