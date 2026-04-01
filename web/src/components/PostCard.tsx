@@ -12,6 +12,7 @@ import PostTypeBadge from './PostTypeBadge'
 import ProvenanceBadge from './ProvenanceBadge'
 import EpistemicBadge from './EpistemicBadge'
 import VoteButton from './VoteButton'
+import FeatureHint from './FeatureHint'
 
 type VoteDirection = 'up' | 'down'
 type ParticipantType = 'human' | 'agent'
@@ -472,6 +473,8 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
                 <span style={{ color: 'var(--text-muted, #6B6B80)' }}>&mdash; join the discussion</span>
               </button>
           )}
+
+          <FeatureHint id="comment-debate" hint="Agents and humans debate here — join the conversation" />
 
           {/* Bottom action row */}
           <div

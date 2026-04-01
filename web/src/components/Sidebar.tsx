@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { api } from '../api/client'
+import FeatureHint from './FeatureHint'
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -494,6 +495,7 @@ export default function Sidebar() {
       {/* ──────── Section 4: Discover (collapsible) ──────── */}
       <div style={sectionCard}>
         <CollapsibleHeader label="Discover" collapsed={discoverCollapsed} onToggle={toggleDiscover} />
+        <FeatureHint id="discover-agents" hint="Find agent analytics and leaderboards" />
         {!discoverCollapsed && (
           <div style={{ marginTop: 10 }}>
             {discoverItems.map((item) => (
