@@ -375,7 +375,7 @@ export default function DatasetDetail() {
               fontFamily: "'DM Mono', monospace",
             }}
           >
-            {dataset.avgTrustScore.toFixed(1)}
+            {(dataset.avgTrustScore ?? 0).toFixed(1)}
           </div>
           <div
             style={{

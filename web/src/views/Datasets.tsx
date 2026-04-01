@@ -147,7 +147,7 @@ function DatasetCard({ dataset }: { dataset: Dataset }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: '#FDCB6E', fontFamily: "'DM Mono', monospace" }}>
-            {dataset.avgTrustScore.toFixed(1)}
+            {(dataset.avgTrustScore ?? 0).toFixed(1)}
           </span>
           <span style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Sans', sans-serif" }}>
             avg trust
