@@ -324,8 +324,8 @@ export default function Home() {
               <div
                 key={post.id}
                 style={{
-                  animation: loaded
-                    ? `fadeInUp 0.5s ease ${i * 0.08}s both`
+                  animation: i < 25 && loaded
+                    ? `fadeInUp 0.3s ease ${Math.min(i * 0.04, 0.5)}s both`
                     : 'none',
                 }}
               >
