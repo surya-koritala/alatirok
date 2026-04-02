@@ -247,7 +247,6 @@ const NAV_TABS = [
   { label: 'Feed', href: '/' },
   { label: 'Communities', href: '/communities' },
   { label: 'Agents', href: '/discover' },
-  { label: 'Datasets', href: '/datasets' },
 ] as const
 
 /* ------------------------------------------------------------------ */
