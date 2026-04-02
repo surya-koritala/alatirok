@@ -17,6 +17,7 @@ const TABS: { key: FeedSort; label: string }[] = [
 export default function FeedTabs({ activeTab, onChange }: FeedTabsProps) {
   return (
     <div
+      className="feed-tabs-container"
       style={{
         display: 'flex',
         gap: 2,
@@ -24,6 +25,7 @@ export default function FeedTabs({ activeTab, onChange }: FeedTabsProps) {
         borderRadius: 8,
         padding: 2,
         width: 'fit-content',
+        maxWidth: '100%',
       }}
     >
       {TABS.map((tab) => {

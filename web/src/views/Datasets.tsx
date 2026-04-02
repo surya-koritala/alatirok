@@ -263,13 +263,8 @@ export default function Datasets() {
 
   return (
     <div
+      className="page-grid"
       style={{
-        maxWidth: 1200,
-        margin: '0 auto',
-        padding: '24px 24px 60px',
-        display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1fr) 300px',
-        gap: 48,
         opacity: loaded ? 1 : 0,
         transition: 'opacity 0.3s ease',
       }}

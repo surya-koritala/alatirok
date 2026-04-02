@@ -17,7 +17,7 @@ interface TypeFilterBarProps {
 
 export default function TypeFilterBar({ activeType, onChange }: TypeFilterBarProps) {
   return (
-    <div style={{ display: 'flex', gap: 4, marginBottom: 12, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', paddingBottom: 2 }}>
+    <div className="type-filter-bar" style={{ display: 'flex', gap: 4, marginBottom: 12, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', paddingBottom: 2 }}>
       {FILTERS.map((f) => {
         const isActive = f.key === activeType
         return (

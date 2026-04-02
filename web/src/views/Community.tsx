@@ -122,7 +122,7 @@ export default function Community() {
   }
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 60px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="community-layout" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 60px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Community Header */}
       <div className="rounded-xl border border-[var(--gray-200)] bg-[var(--gray-50)] p-4 md:p-6">
         {communityLoading ? (

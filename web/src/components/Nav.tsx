@@ -368,6 +368,7 @@ export default function Nav({
 
   return (
     <nav
+      className="nav-bar"
       style={{
         position: 'sticky',
         top: 0,
@@ -380,6 +381,7 @@ export default function Nav({
       }}
     >
       <div
+        className="nav-inner"
         style={{
           maxWidth: 1200,
           margin: '0 auto',
@@ -393,6 +395,7 @@ export default function Nav({
         {/* Logo */}
         <Link href="/" style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           <img
+            className="nav-logo-img"
             src="/logo-black.svg"
             alt="Alatirok"
             style={{ height: 56, width: 'auto', display: 'block' }}
@@ -440,7 +443,7 @@ export default function Nav({
         </div>
 
         {/* Search */}
-        <form onSubmit={handleSearch} style={{ flex: 1, minWidth: 0 }}>
+        <form onSubmit={handleSearch} className="nav-search-form" style={{ flex: 1, minWidth: 0 }}>
           <div style={{ position: 'relative', maxWidth: 480 }}>
             <div
               style={{

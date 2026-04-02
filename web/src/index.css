@@ -106,18 +106,153 @@ body {
 [style*="scrollbar-width"] { -ms-overflow-style: none; }
 [style*="scrollbar-width"]::-webkit-scrollbar { display: none; }
 
+@media (pointer: coarse) {
+  nav button, nav a, .postcard-article button { min-height: 36px; }
+}
+
+/* ══════════════════════════════════════
+   Page grid: two-column layout with sidebar
+   Used by Home, Trending, Top, TopPosts,
+   Debates, Datasets, PostDetail, etc.
+   ══════════════════════════════════════ */
+.page-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 24px 60px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 48px;
+}
+
+@media (max-width: 1024px) {
+  .page-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+    padding: 16px 16px 40px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-grid {
+    padding: 12px 12px 32px !important;
+  }
+}
+
+/* ══════════════════════════════════════
+   Community layout responsive padding
+   ══════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .community-layout {
+    padding: 16px 16px 40px !important;
+  }
+}
+@media (max-width: 768px) {
+  .community-layout {
+    padding: 12px 12px 32px !important;
+  }
+}
+
+/* ══════════════════════════════════════
+   Nav mobile fixes
+   ══════════════════════════════════════ */
+@media (max-width: 768px) {
+  .nav-logo-img {
+    height: 36px !important;
+  }
+  .nav-bar {
+    height: 56px !important;
+    padding: 0 10px !important;
+  }
+  .nav-inner {
+    gap: 12px !important;
+    padding: 0 10px !important;
+  }
+  .nav-search-form {
+    min-width: 0 !important;
+  }
+}
+
+/* ══════════════════════════════════════
+   PostCard mobile fixes
+   ══════════════════════════════════════ */
 @media (max-width: 768px) {
   .markdown-body pre { font-size: 12px; }
   .markdown-body table { font-size: 12px; }
-  .postcard-article { padding: 14px 12px !important; border-radius: 10px !important; }
+
+  .postcard-article {
+    padding: 14px 4px !important;
+    border-radius: 10px !important;
+  }
+  .postcard-source-line {
+    font-size: 10px !important;
+    gap: 4px !important;
+    row-gap: 4px !important;
+  }
+  .postcard-source-line > * {
+    font-size: 10px !important;
+  }
+  .postcard-title {
+    font-size: 16px !important;
+  }
+  .postcard-actions {
+    gap: 6px !important;
+  }
+  .postcard-actions button {
+    font-size: 11px !important;
+    padding: 4px 6px !important;
+  }
+  .postcard-thumbnail img {
+    width: 100% !important;
+    max-height: 240px !important;
+  }
+}
+
+/* ══════════════════════════════════════
+   PostDetail mobile fixes
+   ══════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .postdetail-wrapper {
+    padding: 16px 12px !important;
+  }
+}
+@media (max-width: 768px) {
+  .postdetail-wrapper {
+    padding: 12px 8px !important;
+  }
   .postdetail-comment { max-width: 100%; }
   .postdetail-comment[data-depth="1"] { margin-left: 12px !important; }
   .postdetail-comment[data-depth="2"] { margin-left: 24px !important; }
   .postdetail-comment[data-depth="3"] { margin-left: 32px !important; }
   .postdetail-comment[data-depth="4"] { margin-left: 36px !important; }
   .postdetail-comment[data-depth="5"] { margin-left: 40px !important; }
+
+  .postdetail-thread-children {
+    padding-left: 16px !important;
+  }
+  .postdetail-comment-form {
+    width: 100% !important;
+  }
 }
 
-@media (pointer: coarse) {
-  nav button, nav a, .postcard-article button { min-height: 36px; }
+/* ══════════════════════════════════════
+   FeedTabs & TypeFilterBar mobile scroll
+   ══════════════════════════════════════ */
+@media (max-width: 768px) {
+  .feed-tabs-container,
+  .type-filter-bar {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap !important;
+    max-width: 100%;
+  }
+  .feed-tabs-container::-webkit-scrollbar,
+  .type-filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .feed-tabs-container button,
+  .type-filter-bar button {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
 }

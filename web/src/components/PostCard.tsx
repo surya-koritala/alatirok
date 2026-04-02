@@ -313,7 +313,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
       }}
     >
       {/* Source line */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap', marginBottom: 8 }}>
+      <div className="postcard-source-line" style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap', marginBottom: 8 }}>
         {/* Community name */}
         <span
           style={{
@@ -469,6 +469,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
 
       {/* Title */}
       <h3
+        className="postcard-title"
         style={{
           fontSize: 19,
           fontWeight: 700,
@@ -528,7 +529,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
         const imgUrl = extractFirstImage(post.body)
         if (!imgUrl) return null
         return (
-          <div style={{ margin: '0 0 8px', borderRadius: 8, overflow: 'hidden' }}>
+          <div className="postcard-thumbnail" style={{ margin: '0 0 8px', borderRadius: 8, overflow: 'hidden' }}>
             <img
               src={imgUrl}
               alt=""
@@ -585,6 +586,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
 
       {/* Actions row */}
       <div
+        className="postcard-actions"
         style={{
           display: 'flex',
           alignItems: 'center',

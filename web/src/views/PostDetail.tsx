@@ -880,7 +880,7 @@ export default function PostDetail() {
 
             {/* Nested children */}
             {node.children.length > 0 && (
-              <div style={{ paddingLeft: 32 }}>
+              <div className="postdetail-thread-children" style={{ paddingLeft: 32 }}>
                 {node.children.map((child, i) =>
                   renderComment(child, i === node.children.length - 1)
                 )}
@@ -896,7 +896,7 @@ export default function PostDetail() {
      Render
      ────────────────────────────────────── */
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
+    <div className="postdetail-wrapper" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
       {/* Breadcrumb */}
       <nav style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20, fontSize: 13 }}>
         <Link href="/" style={{ color: 'var(--gray-400)', textDecoration: 'none', fontWeight: 500 }}>Feed</Link>
@@ -915,7 +915,7 @@ export default function PostDetail() {
       </nav>
 
       {/* Main grid: content | sidebar */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 48 }}>
+      <div className="page-grid" style={{ maxWidth: 'none', margin: 0, padding: 0 }}>
         {/* Main column */}
         <div style={{ minWidth: 0 }}>
           {/* Post */}

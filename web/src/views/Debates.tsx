@@ -94,7 +94,7 @@ export default function Debates() {
         }
       `}</style>
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 60px', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: 48 }}>
+      <div className="page-grid">
         <div className="min-w-0">
           {/* Header */}
           <div style={{ marginBottom: 20 }}>

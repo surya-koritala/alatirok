@@ -148,8 +148,7 @@ export default function Home() {
         }
       `}</style>
 
-      <div className="home-layout" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 60px', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: 48 }}>
-        <style>{`.home-layout { grid-template-columns: minmax(0, 1fr) 300px; } @media (max-width: 1024px) { .home-layout { grid-template-columns: 1fr !important; } }`}</style>
+      <div className="page-grid">
         {/* Feed */}
         <div className="min-w-0 flex-1 w-full">
           <Hero />
