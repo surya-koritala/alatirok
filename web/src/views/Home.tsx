@@ -22,30 +22,44 @@ interface StatsData {
   totalPosts: number
 }
 
-function InfiniteScrollSentinel({ onVisible }: { onVisible: () => void }) {
+function InfiniteScrollSentinel({ onVisible, loading }: { onVisible: () => void; loading: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
   const called = useRef(false)
   useEffect(() => {
-    called.current = false
-  }, [onVisible])
+    if (!loading) called.current = false
+  }, [loading])
   useEffect(() => {
     const el = ref.current
     if (!el) return
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !called.current) {
+        if (entry.isIntersecting && !called.current && !loading) {
           called.current = true
           onVisible()
         }
       },
-      { rootMargin: '200px' }
+      { rootMargin: '400px' }
     )
     observer.observe(el)
     return () => observer.disconnect()
-  }, [onVisible])
+  }, [onVisible, loading])
   return (
-    <div ref={ref} style={{ padding: '20px 0', textAlign: 'center' }}>
-      <div className="skeleton" style={{ width: 200, height: 12, margin: '0 auto' }} />
+    <div ref={ref} style={{ padding: '20px 0' }}>
+      {loading && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          {[0, 1, 2].map((i) => (
+            <div key={i} style={{ padding: '20px 0', borderBottom: '1px solid var(--gray-100)' }}>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+                <div className="skeleton" style={{ width: 80, height: 12 }} />
+                <div className="skeleton skeleton-avatar" />
+                <div className="skeleton" style={{ width: 60, height: 12 }} />
+              </div>
+              <div className="skeleton skeleton-title" />
+              <div className="skeleton skeleton-text" style={{ width: '85%' }} />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -60,6 +74,7 @@ export default function Home() {
   const [communities, setCommunities] = useState<CommunityView[]>([])
   const [stats, setStats] = useState<StatsData | undefined>(undefined)
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loaded, setLoaded] = useState(false)
   const [offset, setOffset] = useState(0)
@@ -76,7 +91,9 @@ export default function Home() {
   useEffect(() => { setOffset(0) }, [sort, typeFilter, feedMode])
 
   useEffect(() => {
-    setLoading(true)
+    const isInitial = offset === 0
+    if (isInitial) setLoading(true)
+    else setLoadingMore(true)
     setError(null)
     const fetchFn = feedMode === 'home' && localStorage.getItem('token')
       ? () => api.getSubscribedFeed(sort, 25, offset, typeFilter)
@@ -86,7 +103,7 @@ export default function Home() {
         const items = resp.data ?? resp ?? []
         const arr = Array.isArray(items) ? items : []
         const mapped = arr.map(mapPost)
-        if (offset === 0) {
+        if (isInitial) {
           setPosts(mapped)
         } else {
           setPosts(prev => [...prev, ...mapped])
@@ -94,14 +111,16 @@ export default function Home() {
         setHasMore(resp.hasMore ?? arr.length === 25)
       })
       .catch((e: Error) => {
-        // If token expired (401), fall back to All feed
         if (e.message === 'Unauthorized' || e.message === 'login required') {
           setFeedMode('all')
           return
         }
         setError(e.message)
       })
-      .finally(() => setLoading(false))
+      .finally(() => {
+        setLoading(false)
+        setLoadingMore(false)
+      })
   }, [sort, typeFilter, offset, feedMode])
 
   useEffect(() => {
@@ -315,8 +334,8 @@ export default function Home() {
             ))}
 
           {/* Infinite scroll sentinel */}
-          {!loading && hasMore && posts.length > 0 && (
-            <InfiniteScrollSentinel onVisible={() => setOffset(prev => prev + 25)} />
+          {hasMore && posts.length > 0 && (
+            <InfiniteScrollSentinel onVisible={() => setOffset(prev => prev + 25)} loading={loadingMore} />
           )}
         </div>
 
