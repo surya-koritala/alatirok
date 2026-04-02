@@ -15,6 +15,28 @@ function formatNum(n: number): string {
   return String(n)
 }
 
+function UpArrow() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <path
+        d="M8 3L13 10H3L8 3Z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+function DownArrow() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <path
+        d="M8 13L3 6H13L8 13Z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
 export default function VoteButton({ score, onVote, userVote }: VoteButtonProps) {
   const [hoverUp, setHoverUp] = useState(false)
   const [hoverDown, setHoverDown] = useState(false)
@@ -24,61 +46,85 @@ export default function VoteButton({ score, onVote, userVote }: VoteButtonProps)
 
   return (
     <div
-      className="flex flex-col items-center gap-0.5"
       style={{
-        padding: '6px 4px',
-        borderRadius: 10,
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.04)',
-        minWidth: 48,
+        display: 'inline-flex',
+        alignItems: 'center',
+        border: '1px solid var(--gray-200)',
+        borderRadius: 8,
+        overflow: 'hidden',
       }}
     >
-      {/* Upvote */}
+      {/* Upvote segment */}
       <button
         onClick={() => onVote('up')}
         onMouseEnter={() => setHoverUp(true)}
         onMouseLeave={() => setHoverUp(false)}
         aria-label="Upvote"
-        className="cursor-pointer border-none bg-transparent p-0.5"
         style={{
-          fontSize: 16,
-          color: upActive ? '#6C5CE7' : hoverUp ? '#A29BFE' : '#6B6B80',
-          transition: 'all 0.2s',
-          transform: upActive ? 'scale(1.2)' : 'scale(1)',
-          lineHeight: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 32,
+          height: 30,
+          border: 'none',
+          cursor: 'pointer',
+          transition: 'all 0.15s ease',
+          color: upActive ? 'var(--indigo)' : hoverUp ? 'var(--gray-600)' : 'var(--gray-400)',
+          background: upActive ? '#eef2ff' : 'transparent',
         }}
       >
-        &#x25B2;
+        <UpArrow />
       </button>
 
-      {/* Score */}
-      <span
+      {/* Separator */}
+      <div style={{ width: 1, height: 30, background: 'var(--gray-200)', flexShrink: 0 }} />
+
+      {/* Count segment */}
+      <div
         style={{
-          fontWeight: 700,
-          fontSize: 14,
-          fontFamily: "'DM Mono', monospace",
-          color: upActive ? '#6C5CE7' : downActive ? '#E17055' : '#A0A0B8',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minWidth: 36,
+          height: 30,
+          padding: '0 6px',
+          fontSize: 13,
+          fontWeight: 600,
+          fontVariantNumeric: 'tabular-nums',
+          color: upActive
+            ? 'var(--indigo)'
+            : downActive
+            ? 'var(--rose)'
+            : 'var(--gray-700)',
+          background: upActive ? '#eef2ff' : downActive ? '#fff1f2' : 'transparent',
         }}
       >
         {formatNum(score)}
-      </span>
+      </div>
 
-      {/* Downvote */}
+      {/* Separator */}
+      <div style={{ width: 1, height: 30, background: 'var(--gray-200)', flexShrink: 0 }} />
+
+      {/* Downvote segment */}
       <button
         onClick={() => onVote('down')}
         onMouseEnter={() => setHoverDown(true)}
         onMouseLeave={() => setHoverDown(false)}
         aria-label="Downvote"
-        className="cursor-pointer border-none bg-transparent p-0.5"
         style={{
-          fontSize: 16,
-          color: downActive ? '#E17055' : hoverDown ? '#E17055' : '#6B6B80',
-          transition: 'all 0.2s',
-          transform: downActive ? 'scale(1.2)' : 'scale(1)',
-          lineHeight: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 32,
+          height: 30,
+          border: 'none',
+          cursor: 'pointer',
+          transition: 'all 0.15s ease',
+          color: downActive ? 'var(--rose)' : hoverDown ? 'var(--gray-600)' : 'var(--gray-400)',
+          background: downActive ? '#fff1f2' : 'transparent',
         }}
       >
-        &#x25BC;
+        <DownArrow />
       </button>
     </div>
   )

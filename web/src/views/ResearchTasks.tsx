@@ -29,9 +29,9 @@ interface CommunityOption {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  open: { label: 'Open', color: '#00B894', bg: 'rgba(0,184,148,0.1)' },
-  investigating: { label: 'Investigating', color: '#FDCB6E', bg: 'rgba(253,203,110,0.1)' },
-  synthesis: { label: 'Synthesis', color: '#A29BFE', bg: 'rgba(162,155,254,0.1)' },
+  open: { label: 'Open', color: 'var(--emerald)', bg: 'color-mix(in srgb, var(--emerald) 10%, transparent)' },
+  investigating: { label: 'Investigating', color: 'var(--amber)', bg: 'color-mix(in srgb, var(--amber) 10%, transparent)' },
+  synthesis: { label: 'Synthesis', color: 'var(--indigo)', bg: 'color-mix(in srgb, var(--indigo) 10%, transparent)' },
   completed: { label: 'Completed', color: '#74B9FF', bg: 'rgba(116,185,255,0.1)' },
 }
 
@@ -46,8 +46,8 @@ function StatusBadge({ status }: { status: string }) {
       fontWeight: 700,
       color: config.color,
       background: config.bg,
-      border: `1px solid ${config.color}33`,
-      fontFamily: "'DM Sans', sans-serif",
+      border: `1px solid color-mix(in srgb, ${config.color} 20%, transparent)`,
+      fontFamily: 'inherit',
       textTransform: 'uppercase',
       letterSpacing: '0.5px',
     }}>
@@ -59,7 +59,7 @@ function StatusBadge({ status }: { status: string }) {
 function DeadlineCountdown({ deadline }: { deadline: string }) {
   const diff = new Date(deadline).getTime() - Date.now()
   if (diff <= 0) {
-    return <span style={{ color: '#E17055', fontSize: 11, fontFamily: "'DM Mono', monospace" }}>Expired</span>
+    return <span style={{ color: 'var(--rose)', fontSize: 11, fontFamily: 'inherit' }}>Expired</span>
   }
   const hours = Math.floor(diff / 3600000)
   const days = Math.floor(hours / 24)
@@ -72,9 +72,9 @@ function DeadlineCountdown({ deadline }: { deadline: string }) {
   const isUrgent = days === 0 && hours < 24
   return (
     <span style={{
-      color: isUrgent ? '#FDCB6E' : 'var(--text-muted, #6B6B80)',
+      color: isUrgent ? 'var(--amber)' : 'var(--gray-400)',
       fontSize: 11,
-      fontFamily: "'DM Mono', monospace",
+      fontFamily: 'inherit',
     }}>
       {text}
     </span>
@@ -171,13 +171,13 @@ export default function ResearchTasks() {
   const formInputStyle: React.CSSProperties = {
     width: '100%',
     borderRadius: 8,
-    border: '1px solid var(--border, #2A2A3E)',
-    background: 'var(--bg-page, #0D0D1A)',
-    color: 'var(--text-primary, #E0E0F0)',
+    border: '1px solid var(--gray-200)',
+    background: 'var(--white)',
+    color: 'var(--gray-900)',
     padding: '8px 12px',
     fontSize: 14,
     outline: 'none',
-    fontFamily: "'DM Sans', sans-serif",
+    fontFamily: 'inherit',
     boxSizing: 'border-box' as const,
   }
 
@@ -186,8 +186,8 @@ export default function ResearchTasks() {
     marginBottom: 4,
     fontSize: 12,
     fontWeight: 600,
-    color: 'var(--text-secondary, #8888AA)',
-    fontFamily: "'DM Sans', sans-serif",
+    color: 'var(--gray-500)',
+    fontFamily: 'inherit',
   }
 
   return (
@@ -195,14 +195,14 @@ export default function ResearchTasks() {
       maxWidth: 800,
       margin: '0 auto',
       padding: '24px 12px 80px',
-      color: 'var(--text-primary, #E0E0F0)',
+      color: 'var(--gray-900)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 }}>
         <h1 style={{
           fontSize: 24,
           fontWeight: 700,
-          fontFamily: "'Outfit', sans-serif",
-          color: 'var(--text-primary, #E0E0F0)',
+          fontFamily: 'inherit',
+          color: 'var(--gray-900)',
           margin: 0,
         }}>
           Research Tasks
@@ -210,8 +210,8 @@ export default function ResearchTasks() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{
             fontSize: 12,
-            color: 'var(--text-muted, #6B6B80)',
-            fontFamily: "'DM Mono', monospace",
+            color: 'var(--gray-400)',
+            fontFamily: 'inherit',
           }}>
             {total} task{total !== 1 ? 's' : ''}
           </span>
@@ -221,13 +221,13 @@ export default function ResearchTasks() {
               style={{
                 padding: '8px 16px',
                 borderRadius: 8,
-                background: '#6C5CE7',
+                background: 'var(--gray-900)',
                 color: '#fff',
                 fontSize: 13,
                 fontWeight: 600,
                 border: 'none',
                 cursor: 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: 'inherit',
               }}
             >
               + New Research Task
@@ -239,8 +239,8 @@ export default function ResearchTasks() {
       {/* Inline create form */}
       {showCreateForm && (
         <div style={{
-          background: 'var(--bg-card, #12121F)',
-          border: '1px solid rgba(108,92,231,0.3)',
+          background: 'var(--gray-50)',
+          border: '1px solid color-mix(in srgb, var(--indigo) 30%, transparent)',
           borderRadius: 12,
           padding: '20px 24px',
           marginBottom: 20,
@@ -249,8 +249,8 @@ export default function ResearchTasks() {
             <h2 style={{
               fontSize: 16,
               fontWeight: 700,
-              fontFamily: "'Outfit', sans-serif",
-              color: 'var(--text-primary, #E0E0F0)',
+              fontFamily: 'inherit',
+              color: 'var(--gray-900)',
               margin: 0,
             }}>
               New Research Task
@@ -260,7 +260,7 @@ export default function ResearchTasks() {
               style={{
                 background: 'none',
                 border: 'none',
-                color: 'var(--text-muted, #6B6B80)',
+                color: 'var(--gray-400)',
                 fontSize: 18,
                 cursor: 'pointer',
                 padding: '2px 6px',
@@ -284,8 +284,8 @@ export default function ResearchTasks() {
                 resize: 'vertical',
                 minHeight: 72,
               }}
-              onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
+              onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
             />
           </div>
 
@@ -293,7 +293,7 @@ export default function ResearchTasks() {
           <div style={{ marginBottom: 14 }}>
             <label style={formLabelStyle}>Community *</label>
             {communitiesLoading ? (
-              <div style={{ fontSize: 13, color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Sans', sans-serif", padding: '8px 0' }}>
+              <div style={{ fontSize: 13, color: 'var(--gray-400)', fontFamily: 'inherit', padding: '8px 0' }}>
                 Loading communities...
               </div>
             ) : (
@@ -301,8 +301,8 @@ export default function ResearchTasks() {
                 value={formCommunityId}
                 onChange={(e) => setFormCommunityId(e.target.value)}
                 style={formInputStyle}
-                onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
+                onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
               >
                 <option value="">Select a community</option>
                 {communities.map((c) => (
@@ -325,8 +325,8 @@ export default function ResearchTasks() {
                 value={formMaxInvestigators}
                 onChange={(e) => setFormMaxInvestigators(Math.max(1, parseInt(e.target.value) || 1))}
                 style={formInputStyle}
-                onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
+                onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
               />
             </div>
             <div style={{ flex: '1 1 200px' }}>
@@ -337,10 +337,9 @@ export default function ResearchTasks() {
                 onChange={(e) => setFormDeadline(e.target.value)}
                 style={{
                   ...formInputStyle,
-                  colorScheme: 'dark',
                 }}
-                onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
+                onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
               />
             </div>
           </div>
@@ -349,12 +348,12 @@ export default function ResearchTasks() {
           {formError && (
             <div style={{
               borderRadius: 8,
-              border: '1px solid rgba(225,112,85,0.3)',
-              background: 'rgba(225,112,85,0.08)',
+              border: '1px solid color-mix(in srgb, var(--rose) 30%, transparent)',
+              background: 'color-mix(in srgb, var(--rose) 8%, transparent)',
               padding: '8px 12px',
               fontSize: 13,
-              color: '#E17055',
-              fontFamily: "'DM Sans', sans-serif",
+              color: 'var(--rose)',
+              fontFamily: 'inherit',
               marginBottom: 14,
             }}>
               {formError}
@@ -370,13 +369,13 @@ export default function ResearchTasks() {
                 padding: '9px 22px',
                 borderRadius: 8,
                 border: 'none',
-                background: '#6C5CE7',
+                background: 'var(--gray-900)',
                 color: '#fff',
                 fontSize: 14,
                 fontWeight: 600,
                 cursor: formSubmitting ? 'default' : 'pointer',
                 opacity: formSubmitting ? 0.6 : 1,
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: 'inherit',
                 transition: 'opacity 0.15s',
               }}
             >
@@ -387,13 +386,13 @@ export default function ResearchTasks() {
               style={{
                 padding: '9px 22px',
                 borderRadius: 8,
-                border: '1px solid var(--border, #2A2A3E)',
+                border: '1px solid var(--gray-200)',
                 background: 'transparent',
-                color: 'var(--text-secondary, #8888AA)',
+                color: 'var(--gray-700)',
                 fontSize: 14,
                 fontWeight: 500,
                 cursor: 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: 'inherit',
               }}
             >
               Cancel
@@ -404,8 +403,8 @@ export default function ResearchTasks() {
 
       <p style={{
         fontSize: 13,
-        color: 'var(--text-secondary, #8888AA)',
-        fontFamily: "'DM Sans', sans-serif",
+        color: 'var(--gray-500)',
+        fontFamily: 'inherit',
         marginBottom: 20,
         lineHeight: 1.5,
       }}>
@@ -431,10 +430,10 @@ export default function ResearchTasks() {
                 borderRadius: 8,
                 fontSize: 12,
                 fontWeight: 600,
-                fontFamily: "'DM Sans', sans-serif",
-                border: isActive ? '1px solid rgba(108,92,231,0.4)' : '1px solid var(--border, #2A2A3E)',
-                background: isActive ? 'rgba(108,92,231,0.12)' : 'transparent',
-                color: isActive ? '#A29BFE' : 'var(--text-muted, #6B6B80)',
+                fontFamily: 'inherit',
+                border: isActive ? '1px solid color-mix(in srgb, var(--indigo) 40%, transparent)' : '1px solid var(--gray-200)',
+                background: isActive ? '#eef2ff' : 'transparent',
+                color: isActive ? 'var(--indigo)' : 'var(--gray-400)',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
               }}
@@ -450,21 +449,21 @@ export default function ResearchTasks() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} style={{
-              background: 'var(--bg-card, #12121F)',
-              border: '1px solid var(--border, #2A2A3E)',
+              background: 'var(--gray-50)',
+              border: '1px solid var(--gray-200)',
               borderRadius: 10,
               padding: '18px 20px',
               height: 100,
               animation: 'shimmer 1.5s infinite',
-              backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%)',
+              backgroundImage: 'linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%)',
               backgroundSize: '200% 100%',
             }} />
           ))}
         </div>
       ) : tasks.length === 0 ? (
         <div style={{
-          background: 'var(--bg-card, #12121F)',
-          border: '1px solid var(--border, #2A2A3E)',
+          background: 'var(--gray-50)',
+          border: '1px solid var(--gray-200)',
           borderRadius: 12,
           padding: '40px 20px',
           textAlign: 'center',
@@ -473,16 +472,16 @@ export default function ResearchTasks() {
           <div style={{
             fontSize: 15,
             fontWeight: 600,
-            color: 'var(--text-primary, #E0E0F0)',
-            fontFamily: "'DM Sans', sans-serif",
+            color: 'var(--gray-900)',
+            fontFamily: 'inherit',
             marginBottom: 4,
           }}>
             No research tasks yet
           </div>
           <div style={{
             fontSize: 13,
-            color: 'var(--text-muted, #6B6B80)',
-            fontFamily: "'DM Sans', sans-serif",
+            color: 'var(--gray-400)',
+            fontFamily: 'inherit',
           }}>
             {statusFilter ? 'No tasks match the selected filter.' : 'Be the first to post a research question.'}
           </div>
@@ -497,20 +496,20 @@ export default function ResearchTasks() {
             >
               <div
                 style={{
-                  background: 'var(--bg-card, #12121F)',
-                  border: '1px solid var(--border, #2A2A3E)',
+                  background: 'var(--gray-50)',
+                  border: '1px solid var(--gray-200)',
                   borderRadius: 10,
                   padding: '16px 20px',
                   transition: 'all 0.15s ease',
                   cursor: 'pointer',
                 }}
                 onMouseEnter={(e) => {
-                  ;(e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(108,92,231,0.3)'
-                  ;(e.currentTarget as HTMLDivElement).style.background = 'rgba(108,92,231,0.03)'
+                  ;(e.currentTarget as HTMLDivElement).style.borderColor = 'color-mix(in srgb, var(--indigo) 30%, transparent)'
+                  ;(e.currentTarget as HTMLDivElement).style.background = '#eef2ff'
                 }}
                 onMouseLeave={(e) => {
-                  ;(e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border, #2A2A3E)'
-                  ;(e.currentTarget as HTMLDivElement).style.background = 'var(--bg-card, #12121F)'
+                  ;(e.currentTarget as HTMLDivElement).style.borderColor = 'var(--gray-200)'
+                  ;(e.currentTarget as HTMLDivElement).style.background = 'var(--gray-50)'
                 }}
               >
                 {/* Header row: status + community + deadline */}
@@ -518,15 +517,15 @@ export default function ResearchTasks() {
                   <StatusBadge status={task.status} />
                   <span style={{
                     fontSize: 11,
-                    color: '#A29BFE',
+                    color: 'var(--indigo)',
                     fontWeight: 600,
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: 'inherit',
                   }}>
                     a/{task.communitySlug}
                   </span>
                   {task.deadline && (
                     <>
-                      <span style={{ color: 'var(--border, #2A2A3E)' }}>{'|'}</span>
+                      <span style={{ color: 'var(--gray-200)' }}>{'|'}</span>
                       <DeadlineCountdown deadline={task.deadline} />
                     </>
                   )}
@@ -536,8 +535,8 @@ export default function ResearchTasks() {
                 <div style={{
                   fontSize: 15,
                   fontWeight: 600,
-                  color: 'var(--text-primary, #E0E0F0)',
-                  fontFamily: "'DM Sans', sans-serif",
+                  color: 'var(--gray-900)',
+                  fontFamily: 'inherit',
                   lineHeight: 1.4,
                   marginBottom: 10,
                 }}>
@@ -550,19 +549,19 @@ export default function ResearchTasks() {
                   alignItems: 'center',
                   gap: 16,
                   fontSize: 11,
-                  color: 'var(--text-muted, #6B6B80)',
-                  fontFamily: "'DM Sans', sans-serif",
+                  color: 'var(--gray-400)',
+                  fontFamily: 'inherit',
                 }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ color: '#55EFC4', fontWeight: 700, fontFamily: "'DM Mono', monospace" }}>
+                    <span style={{ color: 'var(--emerald)', fontWeight: 700, fontFamily: 'inherit' }}>
                       {task.contributionCount}
                     </span>
                     /{task.maxInvestigators} investigators
                   </span>
                   <span>
-                    by <span style={{ fontWeight: 600, color: 'var(--text-secondary, #8888AA)' }}>{task.createdByName || 'Unknown'}</span>
+                    by <span style={{ fontWeight: 600, color: 'var(--gray-500)' }}>{task.createdByName || 'Unknown'}</span>
                   </span>
-                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10 }}>
+                  <span style={{ fontFamily: 'inherit', fontSize: 10 }}>
                     {new Date(task.createdAt).toLocaleDateString()}
                   </span>
                 </div>

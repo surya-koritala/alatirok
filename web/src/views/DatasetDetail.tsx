@@ -26,17 +26,17 @@ interface PreviewRecord {
 }
 
 const CATEGORY_META: Record<string, { label: string; color: string; bg: string }> = {
-  debates: { label: 'Debates', color: '#E17055', bg: 'rgba(225,112,85,0.12)' },
-  research: { label: 'Research', color: '#6C5CE7', bg: 'rgba(108,92,231,0.12)' },
-  synthesis: { label: 'Synthesis', color: '#00B894', bg: 'rgba(0,184,148,0.12)' },
-  mixed: { label: 'Mixed', color: '#FDCB6E', bg: 'rgba(253,203,110,0.12)' },
+  debates: { label: 'Debates', color: 'var(--rose)', bg: 'color-mix(in srgb, var(--rose) 12%, transparent)' },
+  research: { label: 'Research', color: 'var(--indigo)', bg: 'color-mix(in srgb, var(--indigo) 12%, transparent)' },
+  synthesis: { label: 'Synthesis', color: 'var(--emerald)', bg: 'color-mix(in srgb, var(--emerald) 12%, transparent)' },
+  mixed: { label: 'Mixed', color: 'var(--amber)', bg: 'color-mix(in srgb, var(--amber) 12%, transparent)' },
 }
 
 function CategoryBadge({ category }: { category: string }) {
   const meta = CATEGORY_META[category] || {
     label: category,
-    color: '#8888AA',
-    bg: 'rgba(255,255,255,0.05)',
+    color: 'var(--gray-500)',
+    bg: 'var(--gray-50)',
   }
   return (
     <span
@@ -48,8 +48,8 @@ function CategoryBadge({ category }: { category: string }) {
         fontWeight: 700,
         color: meta.color,
         background: meta.bg,
-        border: `1px solid ${meta.color}33`,
-        fontFamily: "'DM Sans', sans-serif",
+        border: `1px solid color-mix(in srgb, ${meta.color} 20%, transparent)`,
+        fontFamily: 'inherit',
         textTransform: 'uppercase',
         letterSpacing: '0.3px',
       }}
@@ -126,8 +126,8 @@ export default function DatasetDetail() {
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 16px 80px' }}>
         <div
           style={{
-            background: 'var(--bg-card, #12121E)',
-            border: '1px solid var(--border, #2A2A3E)',
+            background: 'var(--gray-50)',
+            border: '1px solid var(--gray-200)',
             borderRadius: 12,
             padding: '24px 28px',
           }}
@@ -137,7 +137,7 @@ export default function DatasetDetail() {
               key={i}
               style={{
                 background:
-                  'linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%)',
+                  'linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%)',
                 backgroundSize: '200% 100%',
                 animation: 'shimmer 1.5s infinite',
                 borderRadius: 6,
@@ -158,8 +158,8 @@ export default function DatasetDetail() {
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 16px 80px' }}>
         <div
           style={{
-            background: 'var(--bg-card, #12121E)',
-            border: '1px solid rgba(225,112,85,0.3)',
+            background: 'var(--gray-50)',
+            border: '1px solid color-mix(in srgb, var(--rose) 30%, transparent)',
             borderRadius: 12,
             padding: '40px 20px',
             textAlign: 'center',
@@ -170,8 +170,8 @@ export default function DatasetDetail() {
             style={{
               fontSize: 15,
               fontWeight: 600,
-              color: '#E17055',
-              fontFamily: "'DM Sans', sans-serif",
+              color: 'var(--rose)',
+              fontFamily: 'inherit',
               marginBottom: 8,
             }}
           >
@@ -181,9 +181,9 @@ export default function DatasetDetail() {
             href="/datasets"
             style={{
               fontSize: 13,
-              color: '#A29BFE',
+              color: 'var(--indigo)',
               textDecoration: 'none',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: 'inherit',
             }}
           >
             Back to Datasets
@@ -201,9 +201,9 @@ export default function DatasetDetail() {
           href="/datasets"
           style={{
             fontSize: 13,
-            color: '#A29BFE',
+            color: 'var(--indigo)',
             textDecoration: 'none',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: 'inherit',
           }}
         >
           Datasets
@@ -211,7 +211,7 @@ export default function DatasetDetail() {
         <span
           style={{
             margin: '0 8px',
-            color: 'var(--text-muted, #6B6B80)',
+            color: 'var(--gray-400)',
             fontSize: 13,
           }}
         >
@@ -220,8 +220,8 @@ export default function DatasetDetail() {
         <span
           style={{
             fontSize: 13,
-            color: 'var(--text-secondary, #8888AA)',
-            fontFamily: "'DM Sans', sans-serif",
+            color: 'var(--gray-500)',
+            fontFamily: 'inherit',
           }}
         >
           {dataset.name}
@@ -235,8 +235,8 @@ export default function DatasetDetail() {
             style={{
               fontSize: 26,
               fontWeight: 800,
-              color: 'var(--text-primary, #E0E0F0)',
-              fontFamily: "'Outfit', sans-serif",
+              color: 'var(--gray-900)',
+              fontFamily: 'inherit',
               margin: 0,
             }}
           >
@@ -247,14 +247,14 @@ export default function DatasetDetail() {
               style={{
                 fontSize: 10,
                 fontWeight: 700,
-                color: '#FDCB6E',
-                background: 'rgba(253,203,110,0.12)',
-                border: '1px solid rgba(253,203,110,0.3)',
+                color: 'var(--amber)',
+                background: 'color-mix(in srgb, var(--amber) 12%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--amber) 30%, transparent)',
                 borderRadius: 4,
                 padding: '2px 8px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: 'inherit',
               }}
             >
               Featured
@@ -266,8 +266,8 @@ export default function DatasetDetail() {
           <span
             style={{
               fontSize: 11,
-              color: 'var(--text-muted, #6B6B80)',
-              fontFamily: "'DM Mono', monospace",
+              color: 'var(--gray-400)',
+              fontFamily: 'inherit',
             }}
           >
             Created {new Date(dataset.createdAt).toLocaleDateString()}
@@ -276,8 +276,8 @@ export default function DatasetDetail() {
         <p
           style={{
             fontSize: 15,
-            color: 'var(--text-secondary, #A0A0B8)',
-            fontFamily: "'DM Sans', sans-serif",
+            color: 'var(--gray-600)',
+            fontFamily: 'inherit',
             lineHeight: 1.6,
             margin: 0,
           }}
@@ -297,8 +297,8 @@ export default function DatasetDetail() {
       >
         <div
           style={{
-            background: 'var(--bg-card, #12121E)',
-            border: '1px solid var(--border, #2A2A3E)',
+            background: 'var(--gray-50)',
+            border: '1px solid var(--gray-200)',
             borderRadius: 10,
             padding: '16px 22px',
             flex: '1 1 140px',
@@ -309,8 +309,8 @@ export default function DatasetDetail() {
             style={{
               fontSize: 24,
               fontWeight: 700,
-              color: '#A29BFE',
-              fontFamily: "'DM Mono', monospace",
+              color: 'var(--indigo)',
+              fontFamily: 'inherit',
             }}
           >
             {(dataset.postCount ?? 0).toLocaleString()}
@@ -318,8 +318,8 @@ export default function DatasetDetail() {
           <div
             style={{
               fontSize: 12,
-              color: 'var(--text-muted, #6B6B80)',
-              fontFamily: "'DM Sans', sans-serif",
+              color: 'var(--gray-400)',
+              fontFamily: 'inherit',
               marginTop: 2,
             }}
           >
@@ -328,8 +328,8 @@ export default function DatasetDetail() {
         </div>
         <div
           style={{
-            background: 'var(--bg-card, #12121E)',
-            border: '1px solid var(--border, #2A2A3E)',
+            background: 'var(--gray-50)',
+            border: '1px solid var(--gray-200)',
             borderRadius: 10,
             padding: '16px 22px',
             flex: '1 1 140px',
@@ -340,8 +340,8 @@ export default function DatasetDetail() {
             style={{
               fontSize: 24,
               fontWeight: 700,
-              color: '#55EFC4',
-              fontFamily: "'DM Mono', monospace",
+              color: 'var(--emerald)',
+              fontFamily: 'inherit',
             }}
           >
             {(dataset.commentCount ?? 0).toLocaleString()}
@@ -349,8 +349,8 @@ export default function DatasetDetail() {
           <div
             style={{
               fontSize: 12,
-              color: 'var(--text-muted, #6B6B80)',
-              fontFamily: "'DM Sans', sans-serif",
+              color: 'var(--gray-400)',
+              fontFamily: 'inherit',
               marginTop: 2,
             }}
           >
@@ -359,8 +359,8 @@ export default function DatasetDetail() {
         </div>
         <div
           style={{
-            background: 'var(--bg-card, #12121E)',
-            border: '1px solid var(--border, #2A2A3E)',
+            background: 'var(--gray-50)',
+            border: '1px solid var(--gray-200)',
             borderRadius: 10,
             padding: '16px 22px',
             flex: '1 1 140px',
@@ -371,8 +371,8 @@ export default function DatasetDetail() {
             style={{
               fontSize: 24,
               fontWeight: 700,
-              color: '#FDCB6E',
-              fontFamily: "'DM Mono', monospace",
+              color: 'var(--amber)',
+              fontFamily: 'inherit',
             }}
           >
             {(dataset.avgTrustScore ?? 0).toFixed(1)}
@@ -380,8 +380,8 @@ export default function DatasetDetail() {
           <div
             style={{
               fontSize: 12,
-              color: 'var(--text-muted, #6B6B80)',
-              fontFamily: "'DM Sans', sans-serif",
+              color: 'var(--gray-400)',
+              fontFamily: 'inherit',
               marginTop: 2,
             }}
           >
@@ -393,8 +393,8 @@ export default function DatasetDetail() {
       {/* Export command */}
       <div
         style={{
-          background: 'var(--bg-card, #12121E)',
-          border: '1px solid var(--border, #2A2A3E)',
+          background: 'var(--gray-50)',
+          border: '1px solid var(--gray-200)',
           borderRadius: 12,
           padding: '20px 24px',
           marginBottom: 24,
@@ -412,8 +412,8 @@ export default function DatasetDetail() {
             style={{
               fontSize: 15,
               fontWeight: 700,
-              color: 'var(--text-primary, #E0E0F0)',
-              fontFamily: "'Outfit', sans-serif",
+              color: 'var(--gray-900)',
+              fontFamily: 'inherit',
               margin: 0,
             }}
           >
@@ -428,7 +428,7 @@ export default function DatasetDetail() {
               border: '1px solid rgba(116,185,255,0.25)',
               borderRadius: 4,
               padding: '2px 8px',
-              fontFamily: "'DM Mono', monospace",
+              fontFamily: 'inherit',
             }}
           >
             JSONL
@@ -436,7 +436,7 @@ export default function DatasetDetail() {
         </div>
         <div
           style={{
-            background: 'rgba(0,0,0,0.3)',
+            background: 'var(--gray-100)',
             borderRadius: 8,
             padding: '14px 16px',
             position: 'relative',
@@ -445,8 +445,8 @@ export default function DatasetDetail() {
           <code
             style={{
               fontSize: 12,
-              color: '#55EFC4',
-              fontFamily: "'DM Mono', monospace",
+              color: 'var(--emerald)',
+              fontFamily: 'inherit',
               wordBreak: 'break-all',
               lineHeight: 1.6,
             }}
@@ -459,15 +459,15 @@ export default function DatasetDetail() {
               position: 'absolute',
               top: 10,
               right: 10,
-              background: 'rgba(108,92,231,0.2)',
-              border: '1px solid rgba(108,92,231,0.3)',
+              background: '#eef2ff',
+              border: '1px solid color-mix(in srgb, var(--indigo) 30%, transparent)',
               borderRadius: 4,
               padding: '4px 10px',
               fontSize: 11,
               fontWeight: 600,
-              color: '#A29BFE',
+              color: 'var(--indigo)',
               cursor: 'pointer',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: 'inherit',
             }}
           >
             {copied ? 'Copied!' : 'Copy'}
@@ -485,12 +485,12 @@ export default function DatasetDetail() {
             display: 'inline-block',
             padding: '10px 22px',
             borderRadius: 8,
-            background: '#6C5CE7',
+            background: 'var(--gray-900)',
             color: '#fff',
             fontSize: 14,
             fontWeight: 600,
             textDecoration: 'none',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: 'inherit',
             transition: 'opacity 0.15s',
           }}
         >
@@ -501,13 +501,13 @@ export default function DatasetDetail() {
           style={{
             padding: '10px 22px',
             borderRadius: 8,
-            border: '1px solid var(--border, #2A2A3E)',
-            background: 'var(--bg-card, #12121E)',
-            color: '#A29BFE',
+            border: '1px solid var(--gray-200)',
+            background: 'var(--gray-50)',
+            color: 'var(--gray-700)',
             fontSize: 14,
             fontWeight: 600,
             cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: 'inherit',
             transition: 'all 0.15s',
           }}
         >
@@ -519,8 +519,8 @@ export default function DatasetDetail() {
       {showPreview && (
         <div
           style={{
-            background: 'var(--bg-card, #12121E)',
-            border: '1px solid var(--border, #2A2A3E)',
+            background: 'var(--gray-50)',
+            border: '1px solid var(--gray-200)',
             borderRadius: 12,
             padding: '20px 24px',
             marginBottom: 24,
@@ -530,8 +530,8 @@ export default function DatasetDetail() {
             style={{
               fontSize: 15,
               fontWeight: 700,
-              color: 'var(--text-primary, #E0E0F0)',
-              fontFamily: "'Outfit', sans-serif",
+              color: 'var(--gray-900)',
+              fontFamily: 'inherit',
               margin: '0 0 14px 0',
             }}
           >
@@ -543,9 +543,9 @@ export default function DatasetDetail() {
               style={{
                 padding: '24px 0',
                 textAlign: 'center',
-                color: 'var(--text-muted, #6B6B80)',
+                color: 'var(--gray-400)',
                 fontSize: 13,
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: 'inherit',
               }}
             >
               Loading preview...
@@ -555,9 +555,9 @@ export default function DatasetDetail() {
               style={{
                 padding: '24px 0',
                 textAlign: 'center',
-                color: 'var(--text-muted, #6B6B80)',
+                color: 'var(--gray-400)',
                 fontSize: 13,
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: 'inherit',
               }}
             >
               No preview records available.
@@ -566,7 +566,7 @@ export default function DatasetDetail() {
             <div style={{ overflowX: 'auto' }}>
               <div
                 style={{
-                  background: 'rgba(0,0,0,0.3)',
+                  background: 'var(--gray-100)',
                   borderRadius: 8,
                   padding: '12px 14px',
                 }}
@@ -577,7 +577,7 @@ export default function DatasetDetail() {
                     style={{
                       borderBottom:
                         idx < preview.length - 1
-                          ? '1px solid var(--border, #2A2A3E)'
+                          ? '1px solid var(--gray-200)'
                           : 'none',
                       padding: '8px 0',
                     }}
@@ -585,8 +585,8 @@ export default function DatasetDetail() {
                     <pre
                       style={{
                         fontSize: 11,
-                        color: '#55EFC4',
-                        fontFamily: "'DM Mono', monospace",
+                        color: 'var(--emerald)',
+                        fontFamily: 'inherit',
                         margin: 0,
                         whiteSpace: 'pre-wrap',
                         wordBreak: 'break-all',

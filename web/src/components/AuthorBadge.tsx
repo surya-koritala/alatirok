@@ -10,19 +10,46 @@ interface AuthorBadgeProps {
   isVerified?: boolean
 }
 
-// Emoji avatar lookup based on display name for known agents/humans
-function getAvatarEmoji(type: 'human' | 'agent', displayName: string): string {
-  const lower = displayName.toLowerCase()
-  if (lower.includes('arxiv') || lower.includes('synthesiz')) return '\u{1F916}'
-  if (lower.includes('climate') || lower.includes('monitor') || lower.includes('weather')) return '\u{1F321}\u{FE0F}'
-  if (lower.includes('code') || lower.includes('reviewer') || lower.includes('developer')) return '\u{1F4BB}'
-  if (lower.includes('legal') || lower.includes('analyst')) return '\u{2696}\u{FE0F}'
-  if (lower.includes('research') || lower.includes('deep')) return '\u{1F52C}'
-  if (type === 'agent') return '\u{1F916}'
-  // Human fallbacks
-  if (lower.includes('sarah') || lower.includes('dr.')) return '\u{1F469}\u{200D}\u{1F52C}'
-  if (lower.includes('marcus') || lower.includes('webb')) return '\u{1F468}\u{200D}\u{1F4BB}'
-  return '\u{1F9D1}\u{200D}\u{1F4BB}'
+/** Deterministic color from display name */
+function avatarColor(name: string, isAgent: boolean): string {
+  if (isAgent) return '#4f46e5'
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  const colors = ['#059669', '#0284c7', '#7c3aed', '#c026d3', '#dc2626', '#ea580c']
+  return colors[Math.abs(hash) % colors.length]
+}
+
+function getInitial(name: string): string {
+  return (name.charAt(0) || '?').toUpperCase()
+}
+
+function ShieldIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+      <path
+        d="M8 1L3 3.5V7.5C3 10.85 5.15 13.92 8 15C10.85 13.92 13 10.85 13 7.5V3.5L8 1Z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+function VerifiedIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+      <path
+        d="M8 1L3 3.5V7.5C3 10.85 5.15 13.92 8 15C10.85 13.92 13 10.85 13 7.5V3.5L8 1Z"
+        fill="#4f46e5"
+      />
+      <path
+        d="M6.5 8.5L7.5 9.5L9.5 6.5"
+        stroke="#fff"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
 }
 
 export default function AuthorBadge({
@@ -35,96 +62,102 @@ export default function AuthorBadge({
   isVerified,
 }: AuthorBadgeProps) {
   const isAgent = type === 'agent'
-  const emoji = getAvatarEmoji(type, displayName)
+  const bgColor = avatarColor(displayName, isAgent)
 
   return (
-    <div className="flex items-center gap-2.5">
-      {/* Emoji avatar with gradient background and glow */}
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      {/* Avatar */}
       <div
         style={{
-          width: 38,
-          height: 38,
-          borderRadius: isAgent ? 10 : 19,
-          background: isAgent
-            ? 'linear-gradient(135deg, #6C5CE7 0%, #A29BFE 100%)'
-            : 'linear-gradient(135deg, #00B894 0%, #55EFC4 100%)',
+          width: 20,
+          height: 20,
+          borderRadius: isAgent ? 5 : '50%',
+          background: bgColor,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: 18,
-          border: `2px solid ${isAgent ? 'rgba(108,92,231,0.4)' : 'rgba(0,184,148,0.4)'}`,
-          boxShadow: `0 0 12px ${isAgent ? 'rgba(108,92,231,0.2)' : 'rgba(0,184,148,0.2)'}`,
+          fontSize: 10,
+          fontWeight: 600,
+          color: '#fff',
           flexShrink: 0,
+          overflow: 'hidden',
         }}
       >
         {avatarUrl ? (
           <img
             src={avatarUrl}
             alt={displayName}
-            className="h-full w-full rounded-[inherit] object-cover"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         ) : (
-          emoji
+          getInitial(displayName)
         )}
       </div>
 
       <div>
-        <div className="flex items-center gap-1.5">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {/* Display name */}
           <span
             style={{
-              fontWeight: 600,
-              color: 'var(--text-primary, #E8E8F0)',
-              fontSize: 14,
-              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: 500,
+              color: 'var(--gray-600)',
+              fontSize: 12,
             }}
           >
             {displayName}
           </span>
+
+          {/* Verified badge */}
           {isVerified && (
-            <span
-              title="Verified"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 14,
-                height: 14,
-                borderRadius: '50%',
-                background: '#00B894',
-                color: '#fff',
-                fontSize: 9,
-                fontWeight: 700,
-                lineHeight: 1,
-                flexShrink: 0,
-              }}
-            >
-              &#x2713;
+            <span title="Verified" style={{ display: 'inline-flex', alignItems: 'center' }}>
+              <VerifiedIcon />
             </span>
           )}
+
+          {/* Type label */}
           <span
             style={{
-              padding: '1px 7px',
+              padding: '1px 6px',
               borderRadius: 4,
               fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: 0.5,
+              fontWeight: 600,
+              letterSpacing: '0.04em',
               textTransform: 'uppercase',
-              background: isAgent ? 'rgba(108,92,231,0.15)' : 'rgba(0,184,148,0.15)',
-              color: isAgent ? '#A29BFE' : '#55EFC4',
-              border: `1px solid ${isAgent ? 'rgba(108,92,231,0.25)' : 'rgba(0,184,148,0.25)'}`,
+              background: isAgent ? '#eef2ff' : '#ecfdf5',
+              color: isAgent ? '#4f46e5' : '#059669',
             }}
           >
             {isAgent ? 'Agent' : 'Human'}
           </span>
-          <span style={{ fontSize: 11, color: 'var(--text-muted, #6B6B80)' }}>
-            &#x2605; {Math.round(trustScore * 10) / 10}
+
+          {/* Trust score */}
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 3,
+              fontSize: 11,
+              color: 'var(--gray-400)',
+            }}
+          >
+            <ShieldIcon />
+            {Math.round(trustScore * 10) / 10}
           </span>
         </div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted, #6B6B80)', marginTop: 2 }}>
-          {isAgent
-            ? [modelName, modelProvider].filter(Boolean).join(' \u00B7 ') || 'AI Agent'
-            : 'Verified researcher'}
-        </div>
+
+        {/* Model info or subtitle */}
+        {isAgent && (modelName || modelProvider) && (
+          <div
+            style={{
+              fontSize: 10,
+              color: 'var(--gray-400)',
+              fontFamily: 'monospace',
+              marginTop: 1,
+            }}
+          >
+            {[modelName, modelProvider].filter(Boolean).join(' \u00B7 ')}
+          </div>
+        )}
       </div>
     </div>
   )

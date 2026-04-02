@@ -96,10 +96,8 @@ export default function Search() {
               <h1
                 className="text-2xl font-bold"
                 style={{
-                  fontFamily: 'Outfit, sans-serif',
-                  background: 'linear-gradient(135deg, #A29BFE 0%, #55EFC4 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  color: 'var(--gray-950)',
+                  letterSpacing: '-0.02em',
                 }}
               >
                 Search Results
@@ -107,14 +105,15 @@ export default function Search() {
               {/* Search mode toggle */}
               <div
                 className="flex rounded-lg overflow-hidden text-xs"
-                style={{ border: '1px solid rgba(255,255,255,0.1)' }}
+                style={{ border: '1px solid var(--border)' }}
               >
                 <button
                   onClick={() => setSearchMode('hybrid')}
                   className="px-3 py-1 transition-colors"
                   style={{
-                    background: searchMode === 'hybrid' ? 'rgba(108,92,231,0.3)' : 'transparent',
-                    color: searchMode === 'hybrid' ? '#A29BFE' : 'var(--text-secondary, #8888AA)',
+                    background: searchMode === 'hybrid' ? 'var(--bg-surface)' : 'transparent',
+                    color: searchMode === 'hybrid' ? 'var(--gray-950)' : 'var(--text-secondary)',
+                    fontWeight: searchMode === 'hybrid' ? 600 : 400,
                   }}
                 >
                   Hybrid
@@ -123,35 +122,36 @@ export default function Search() {
                   onClick={() => setSearchMode('text')}
                   className="px-3 py-1 transition-colors"
                   style={{
-                    background: searchMode === 'text' ? 'rgba(108,92,231,0.3)' : 'transparent',
-                    color: searchMode === 'text' ? '#A29BFE' : 'var(--text-secondary, #8888AA)',
+                    background: searchMode === 'text' ? 'var(--bg-surface)' : 'transparent',
+                    color: searchMode === 'text' ? 'var(--gray-950)' : 'var(--text-secondary)',
+                    fontWeight: searchMode === 'text' ? 600 : 400,
                   }}
                 >
                   Text
                 </button>
               </div>
             </div>
-            <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary, #8888AA)' }}>
+            <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
               {loading
                 ? 'Searching...'
                 : `${total} result${total !== 1 ? 's' : ''} for `}
               {!loading && (
                 <span
                   className="font-semibold"
-                  style={{ color: '#A29BFE' }}
+                  style={{ color: 'var(--indigo)' }}
                 >
                   &ldquo;{query}&rdquo;
                 </span>
               )}
               {!loading && searchMode === 'hybrid' && (
-                <span style={{ color: 'var(--text-secondary, #666688)' }}>
+                <span style={{ color: 'var(--text-muted)' }}>
                   {' '}(ranked by relevance)
                 </span>
               )}
             </p>
           </>
         ) : (
-          <p className="text-sm" style={{ color: 'var(--text-secondary, #8888AA)' }}>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             Enter a search query in the search bar above.
           </p>
         )}
@@ -165,8 +165,8 @@ export default function Search() {
               key={i}
               className="h-28 animate-pulse rounded-xl"
               style={{
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.05)',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-light)',
               }}
             />
           ))}
@@ -185,9 +185,9 @@ export default function Search() {
         <div
           className="rounded-xl p-8 text-center"
           style={{
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(255,255,255,0.05)',
-            color: 'var(--text-secondary, #8888AA)',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-light)',
+            color: 'var(--text-secondary)',
           }}
         >
           No results found for &ldquo;{query}&rdquo;. Try a different search term.

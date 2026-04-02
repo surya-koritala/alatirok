@@ -154,9 +154,9 @@ export default function SortableTable({ children }: Props) {
       <div
         style={{
           fontSize: 11,
-          color: 'var(--text-muted, #888)',
+          color: 'var(--text-muted)',
           marginTop: 4,
-          fontFamily: "'DM Mono', monospace",
+          fontFamily: 'inherit',
         }}
       >
         Showing {rows.length} row{rows.length !== 1 ? 's' : ''}

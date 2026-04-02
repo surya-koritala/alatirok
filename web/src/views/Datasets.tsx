@@ -22,14 +22,14 @@ interface Dataset {
 }
 
 const CATEGORY_META: Record<string, { label: string; color: string; bg: string }> = {
-  debates: { label: 'Debates', color: '#E17055', bg: 'rgba(225,112,85,0.12)' },
-  research: { label: 'Research', color: '#6C5CE7', bg: 'rgba(108,92,231,0.12)' },
-  synthesis: { label: 'Synthesis', color: '#00B894', bg: 'rgba(0,184,148,0.12)' },
-  mixed: { label: 'Mixed', color: '#FDCB6E', bg: 'rgba(253,203,110,0.12)' },
+  debates: { label: 'Debates', color: 'var(--rose)', bg: 'color-mix(in srgb, var(--rose) 12%, transparent)' },
+  research: { label: 'Research', color: 'var(--indigo)', bg: 'color-mix(in srgb, var(--indigo) 12%, transparent)' },
+  synthesis: { label: 'Synthesis', color: 'var(--emerald)', bg: 'color-mix(in srgb, var(--emerald) 12%, transparent)' },
+  mixed: { label: 'Mixed', color: 'var(--amber)', bg: 'color-mix(in srgb, var(--amber) 12%, transparent)' },
 }
 
 function CategoryBadge({ category }: { category: string }) {
-  const meta = CATEGORY_META[category] || { label: category, color: '#8888AA', bg: 'rgba(255,255,255,0.05)' }
+  const meta = CATEGORY_META[category] || { label: category, color: 'var(--gray-500)', bg: 'var(--gray-50)' }
   return (
     <span
       style={{
@@ -40,8 +40,8 @@ function CategoryBadge({ category }: { category: string }) {
         fontWeight: 600,
         color: meta.color,
         background: meta.bg,
-        border: `1px solid ${meta.color}33`,
-        fontFamily: "'DM Sans', sans-serif",
+        border: `1px solid color-mix(in srgb, ${meta.color} 20%, transparent)`,
+        fontFamily: 'inherit',
         textTransform: 'uppercase',
         letterSpacing: '0.3px',
       }}
@@ -64,18 +64,18 @@ function DatasetCard({ dataset }: { dataset: Dataset }) {
   return (
     <div
       style={{
-        background: 'var(--bg-card, #12121E)',
-        border: dataset.isFeatured ? '1px solid rgba(108,92,231,0.4)' : '1px solid var(--border, #2A2A3E)',
+        background: 'var(--gray-50)',
+        border: dataset.isFeatured ? '1px solid color-mix(in srgb, var(--indigo) 40%, transparent)' : '1px solid var(--gray-200)',
         borderRadius: 12,
         padding: '20px 24px',
         transition: 'border-color 0.15s, box-shadow 0.15s',
       }}
       onMouseEnter={(e) => {
-        ;(e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(108,92,231,0.5)'
-        ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 20px rgba(108,92,231,0.08)'
+        ;(e.currentTarget as HTMLDivElement).style.borderColor = 'color-mix(in srgb, var(--indigo) 50%, transparent)'
+        ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 20px color-mix(in srgb, var(--indigo) 8%, transparent)'
       }}
       onMouseLeave={(e) => {
-        ;(e.currentTarget as HTMLDivElement).style.borderColor = dataset.isFeatured ? 'rgba(108,92,231,0.4)' : 'var(--border, #2A2A3E)'
+        ;(e.currentTarget as HTMLDivElement).style.borderColor = dataset.isFeatured ? 'color-mix(in srgb, var(--indigo) 40%, transparent)' : 'var(--gray-200)'
         ;(e.currentTarget as HTMLDivElement).style.boxShadow = 'none'
       }}
     >
@@ -88,9 +88,9 @@ function DatasetCard({ dataset }: { dataset: Dataset }) {
               style={{
                 fontSize: 17,
                 fontWeight: 700,
-                color: 'var(--text-primary, #E0E0F0)',
+                color: 'var(--gray-900)',
                 textDecoration: 'none',
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: 'inherit',
               }}
             >
               {dataset.name}
@@ -99,14 +99,14 @@ function DatasetCard({ dataset }: { dataset: Dataset }) {
               <span style={{
                 fontSize: 10,
                 fontWeight: 700,
-                color: '#FDCB6E',
-                background: 'rgba(253,203,110,0.12)',
-                border: '1px solid rgba(253,203,110,0.3)',
+                color: 'var(--amber)',
+                background: 'color-mix(in srgb, var(--amber) 12%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--amber) 30%, transparent)',
                 borderRadius: 4,
                 padding: '1px 6px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: 'inherit',
               }}>
                 Featured
               </span>
@@ -119,10 +119,10 @@ function DatasetCard({ dataset }: { dataset: Dataset }) {
       {/* Description */}
       <p style={{
         fontSize: 14,
-        color: 'var(--text-secondary, #A0A0B8)',
+        color: 'var(--gray-600)',
         lineHeight: 1.5,
         margin: '0 0 16px 0',
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: 'inherit',
       }}>
         {dataset.description}
       </p>
@@ -130,26 +130,26 @@ function DatasetCard({ dataset }: { dataset: Dataset }) {
       {/* Stats row */}
       <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ fontSize: 16, fontWeight: 700, color: '#A29BFE', fontFamily: "'DM Mono', monospace" }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--indigo)', fontFamily: 'inherit' }}>
             {(dataset.postCount ?? 0).toLocaleString()}
           </span>
-          <span style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Sans', sans-serif" }}>
+          <span style={{ fontSize: 12, color: 'var(--gray-400)', fontFamily: 'inherit' }}>
             posts
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ fontSize: 16, fontWeight: 700, color: '#55EFC4', fontFamily: "'DM Mono', monospace" }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--emerald)', fontFamily: 'inherit' }}>
             {(dataset.commentCount ?? 0).toLocaleString()}
           </span>
-          <span style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Sans', sans-serif" }}>
+          <span style={{ fontSize: 12, color: 'var(--gray-400)', fontFamily: 'inherit' }}>
             comments
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ fontSize: 16, fontWeight: 700, color: '#FDCB6E', fontFamily: "'DM Mono', monospace" }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--amber)', fontFamily: 'inherit' }}>
             {(dataset.avgTrustScore ?? 0).toFixed(1)}
           </span>
-          <span style={{ fontSize: 12, color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Sans', sans-serif" }}>
+          <span style={{ fontSize: 12, color: 'var(--gray-400)', fontFamily: 'inherit' }}>
             avg trust
           </span>
         </div>
@@ -162,7 +162,7 @@ function DatasetCard({ dataset }: { dataset: Dataset }) {
             border: '1px solid rgba(116,185,255,0.25)',
             borderRadius: 4,
             padding: '1px 6px',
-            fontFamily: "'DM Mono', monospace",
+            fontFamily: 'inherit',
           }}>
             JSONL
           </span>
@@ -175,17 +175,17 @@ function DatasetCard({ dataset }: { dataset: Dataset }) {
           onClick={() => setShowExport(!showExport)}
           style={{
             background: 'none',
-            border: '1px solid var(--border, #2A2A3E)',
+            border: '1px solid var(--gray-200)',
             borderRadius: 6,
             padding: '6px 12px',
-            color: '#A29BFE',
+            color: 'var(--indigo)',
             fontSize: 12,
             fontWeight: 600,
             cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: 'inherit',
             transition: 'background 0.1s',
           }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(108,92,231,0.08)' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#eef2ff' }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'none' }}
         >
           {showExport ? 'Hide' : 'Show'} Export Command
@@ -194,15 +194,15 @@ function DatasetCard({ dataset }: { dataset: Dataset }) {
         {showExport && (
           <div style={{
             marginTop: 10,
-            background: 'rgba(0,0,0,0.3)',
+            background: 'var(--gray-100)',
             borderRadius: 8,
             padding: '12px 14px',
             position: 'relative',
           }}>
             <code style={{
               fontSize: 12,
-              color: '#55EFC4',
-              fontFamily: "'DM Mono', monospace",
+              color: 'var(--emerald)',
+              fontFamily: 'inherit',
               wordBreak: 'break-all',
               lineHeight: 1.5,
             }}>
@@ -214,15 +214,15 @@ function DatasetCard({ dataset }: { dataset: Dataset }) {
                 position: 'absolute',
                 top: 8,
                 right: 8,
-                background: 'rgba(108,92,231,0.2)',
-                border: '1px solid rgba(108,92,231,0.3)',
+                background: '#eef2ff',
+                border: '1px solid color-mix(in srgb, var(--indigo) 30%, transparent)',
                 borderRadius: 4,
                 padding: '3px 8px',
                 fontSize: 10,
                 fontWeight: 600,
-                color: '#A29BFE',
+                color: 'var(--indigo)',
                 cursor: 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: 'inherit',
               }}
             >
               {copied ? 'Copied!' : 'Copy'}
@@ -263,11 +263,13 @@ export default function Datasets() {
 
   return (
     <div
-      className="max-w-7xl mx-auto"
       style={{
+        maxWidth: 1200,
+        margin: '0 auto',
+        padding: '24px 24px 60px',
         display: 'grid',
-        gridTemplateColumns: '1fr 280px',
-        gap: 24,
+        gridTemplateColumns: 'minmax(0, 1fr) 300px',
+        gap: 48,
         opacity: loaded ? 1 : 0,
         transition: 'opacity 0.3s ease',
       }}
@@ -278,16 +280,16 @@ export default function Datasets() {
           <h1 style={{
             fontSize: 28,
             fontWeight: 700,
-            color: 'var(--text-primary, #E0E0F0)',
-            fontFamily: "'DM Sans', sans-serif",
+            color: 'var(--gray-900)',
+            fontFamily: 'inherit',
             margin: 0,
           }}>
             Training Datasets
           </h1>
           <p style={{
             fontSize: 14,
-            color: 'var(--text-secondary, #A0A0B8)',
-            fontFamily: "'DM Sans', sans-serif",
+            color: 'var(--gray-600)',
+            fontFamily: 'inherit',
             margin: '8px 0 0 0',
             lineHeight: 1.5,
           }}>
@@ -307,10 +309,10 @@ export default function Datasets() {
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
-                border: category === cat ? '1px solid rgba(108,92,231,0.5)' : '1px solid var(--border, #2A2A3E)',
-                background: category === cat ? 'rgba(108,92,231,0.15)' : 'var(--bg-card, #12121E)',
-                color: category === cat ? '#A29BFE' : 'var(--text-secondary, #A0A0B8)',
+                fontFamily: 'inherit',
+                border: category === cat ? '1px solid color-mix(in srgb, var(--indigo) 50%, transparent)' : '1px solid var(--gray-200)',
+                background: category === cat ? '#eef2ff' : 'var(--gray-50)',
+                color: category === cat ? 'var(--indigo)' : 'var(--gray-600)',
                 transition: 'all 0.15s',
               }}
             >
@@ -326,15 +328,15 @@ export default function Datasets() {
               <div
                 key={i}
                 style={{
-                  background: 'var(--bg-card, #12121E)',
-                  border: '1px solid var(--border, #2A2A3E)',
+                  background: 'var(--gray-50)',
+                  border: '1px solid var(--gray-200)',
                   borderRadius: 12,
                   padding: '20px 24px',
                   height: 180,
                 }}
               >
                 <div style={{
-                  background: 'linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%)',
+                  background: 'linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%)',
                   backgroundSize: '200% 100%',
                   animation: 'shimmer 1.5s infinite',
                   borderRadius: 6,
@@ -343,7 +345,7 @@ export default function Datasets() {
                   marginBottom: 12,
                 }} />
                 <div style={{
-                  background: 'linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%)',
+                  background: 'linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%)',
                   backgroundSize: '200% 100%',
                   animation: 'shimmer 1.5s infinite',
                   borderRadius: 6,
@@ -352,7 +354,7 @@ export default function Datasets() {
                   marginBottom: 8,
                 }} />
                 <div style={{
-                  background: 'linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%)',
+                  background: 'linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%)',
                   backgroundSize: '200% 100%',
                   animation: 'shimmer 1.5s infinite',
                   borderRadius: 6,
@@ -365,29 +367,29 @@ export default function Datasets() {
           </div>
         ) : error ? (
           <div style={{
-            background: 'var(--bg-card, #12121E)',
-            border: '1px solid rgba(225,112,85,0.3)',
+            background: 'var(--gray-50)',
+            border: '1px solid color-mix(in srgb, var(--rose) 30%, transparent)',
             borderRadius: 12,
             padding: 24,
             textAlign: 'center',
-            color: '#E17055',
-            fontFamily: "'DM Sans', sans-serif",
+            color: 'var(--rose)',
+            fontFamily: 'inherit',
           }}>
             {error}
           </div>
         ) : datasets.length === 0 ? (
           <div style={{
-            background: 'var(--bg-card, #12121E)',
-            border: '1px solid var(--border, #2A2A3E)',
+            background: 'var(--gray-50)',
+            border: '1px solid var(--gray-200)',
             borderRadius: 12,
             padding: 40,
             textAlign: 'center',
           }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>📊</div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary, #E0E0F0)', fontFamily: "'DM Sans', sans-serif", marginBottom: 6 }}>
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--gray-900)', fontFamily: 'inherit', marginBottom: 6 }}>
               No datasets found
             </div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Sans', sans-serif" }}>
+            <div style={{ fontSize: 13, color: 'var(--gray-400)', fontFamily: 'inherit' }}>
               {category ? 'No datasets in this category yet.' : 'Datasets will appear here as the platform grows.'}
             </div>
           </div>
@@ -401,9 +403,9 @@ export default function Datasets() {
       </div>
 
       {/* Sidebar */}
-      <div className="hidden lg:block">
+      <aside className="hidden lg:block" style={{ position: 'sticky', top: 80, alignSelf: 'flex-start' }}>
         <Sidebar />
-      </div>
+      </aside>
     </div>
   )
 }

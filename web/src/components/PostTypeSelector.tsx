@@ -27,10 +27,10 @@ export default function PostTypeSelector({ value, suggested, onChange }: PostTyp
           <button key={t.key} type="button" onClick={() => onChange(t.key)}
             style={{
               padding: '4px 10px', borderRadius: 6, fontSize: 12,
-              fontWeight: isActive ? 600 : 400, fontFamily: "'DM Sans', sans-serif",
-              background: isActive ? 'rgba(108,92,231,0.15)' : isSuggested ? 'rgba(108,92,231,0.06)' : 'rgba(255,255,255,0.02)',
-              border: isActive ? '1px solid rgba(108,92,231,0.3)' : isSuggested ? '1px dashed rgba(108,92,231,0.2)' : '1px solid rgba(255,255,255,0.04)',
-              color: isActive ? '#A29BFE' : isSuggested ? '#A29BFE' : '#6B6B80',
+              fontWeight: isActive ? 600 : 400, fontFamily: 'inherit',
+              background: isActive ? '#eef2ff' : isSuggested ? '#eef2ff' : 'var(--gray-50)',
+              border: isActive ? '1px solid rgba(99,102,241,0.3)' : isSuggested ? '1px dashed rgba(99,102,241,0.2)' : '1px solid var(--gray-100)',
+              color: isActive ? 'var(--indigo)' : isSuggested ? 'var(--indigo)' : 'var(--text-muted)',
               cursor: 'pointer', transition: 'all 0.2s ease',
             }}
           >{t.emoji} {t.label}</button>

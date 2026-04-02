@@ -102,22 +102,22 @@ export default function Notifications() {
     <div className="mx-auto max-w-2xl py-6">
       <div className="flex items-center justify-between mb-5">
         <h1
-          className="text-xl font-bold text-[#E0E0F0]"
-          style={{ fontFamily: 'Outfit, sans-serif' }}
+          className="text-xl font-bold text-[var(--gray-900)]"
+          style={{ fontFamily: 'inherit' }}
         >
           Notifications
           {unreadCount > 0 && (
             <span
               style={{
                 marginLeft: 8,
-                background: 'rgba(108,92,231,0.15)',
-                border: '1px solid rgba(108,92,231,0.3)',
+                background: '#eef2ff',
+                border: '1px solid var(--indigo)',
                 borderRadius: 10,
                 padding: '2px 8px',
                 fontSize: 12,
                 fontWeight: 700,
-                color: '#A29BFE',
-                fontFamily: "'DM Mono', monospace",
+                color: 'var(--indigo)',
+                fontFamily: 'inherit',
                 verticalAlign: 'middle',
               }}
             >
@@ -129,8 +129,8 @@ export default function Notifications() {
           <button
             onClick={handleMarkAllRead}
             disabled={markingAll}
-            className="rounded-lg border border-[#2A2A3E] px-4 py-1.5 text-sm text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#A29BFE] disabled:opacity-50"
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
+            className="rounded-lg border border-[var(--gray-200)] px-4 py-1.5 text-sm text-[var(--gray-500)] transition hover:border-[var(--indigo)] hover:text-[var(--indigo)] disabled:opacity-50"
+            style={{ fontFamily: 'inherit' }}
           >
             {markingAll ? 'Marking...' : 'Mark all as read'}
           </button>
@@ -142,12 +142,12 @@ export default function Notifications() {
           {[...Array(5)].map((_, i) => (
             <div
               key={i}
-              className="h-16 animate-pulse rounded-xl border border-[#2A2A3E] bg-[#12121E]"
+              className="h-16 animate-pulse rounded-xl border border-[var(--gray-200)] bg-[var(--gray-50)]"
             />
           ))}
         </div>
       ) : notifications.length === 0 ? (
-        <div className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-10 text-center text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+        <div className="rounded-xl border border-[var(--gray-200)] bg-[var(--gray-50)] p-10 text-center text-[var(--gray-500)]" style={{ fontFamily: 'inherit' }}>
           No notifications yet.
         </div>
       ) : (
@@ -156,25 +156,25 @@ export default function Notifications() {
             <button
               key={n.id}
               onClick={() => handleNotificationClick(n)}
-              className="w-full text-left rounded-xl border border-[#2A2A3E] bg-[#12121E] px-4 py-3 transition hover:border-[#6C5CE7] hover:bg-[#16162A]"
+              className="w-full text-left rounded-xl border border-[var(--gray-200)] bg-[var(--gray-50)] px-4 py-3 transition hover:border-[var(--indigo)] hover:bg-[var(--gray-100)]"
               style={{
-                borderLeft: !n.isRead ? '3px solid #6C5CE7' : undefined,
+                borderLeft: !n.isRead ? '3px solid var(--indigo)' : undefined,
                 paddingLeft: !n.isRead ? 14 : undefined,
               }}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex flex-col gap-0.5">
-                  <p className="text-sm text-[#E0E0F0]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  <p className="text-sm text-[var(--gray-900)]" style={{ fontFamily: 'inherit' }}>
                     {n.actor ? (
                       <>
-                        <span style={{ fontWeight: 600, color: n.actor.type === 'agent' ? '#55EFC4' : '#A29BFE' }}>
+                        <span style={{ fontWeight: 600, color: n.actor.type === 'agent' ? 'var(--emerald)' : 'var(--indigo)' }}>
                           {n.actor.displayName}
                         </span>
                         {' '}
-                        <span className="text-[#C0C0D8]">{actionText(n)}</span>
+                        <span className="text-[var(--gray-600)]">{actionText(n)}</span>
                       </>
                     ) : (
-                      <span className="text-[#C0C0D8]">{actionText(n)}</span>
+                      <span className="text-[var(--gray-600)]">{actionText(n)}</span>
                     )}
                   </p>
                 </div>
@@ -185,15 +185,15 @@ export default function Notifications() {
                         width: 7,
                         height: 7,
                         borderRadius: '50%',
-                        background: '#6C5CE7',
+                        background: 'var(--indigo)',
                         display: 'inline-block',
                         flexShrink: 0,
                       }}
                     />
                   )}
                   <span
-                    className="text-xs text-[#8888AA]"
-                    style={{ fontFamily: 'DM Mono, monospace' }}
+                    className="text-xs text-[var(--gray-500)]"
+                    style={{ fontFamily: 'inherit' }}
                   >
                     {relativeTime(n.createdAt)}
                   </span>

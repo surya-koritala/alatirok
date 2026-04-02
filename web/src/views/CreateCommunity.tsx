@@ -44,7 +44,7 @@ function slugify(name: string): string {
 }
 
 const labelStyle: React.CSSProperties = {
-  fontFamily: "'DM Sans', sans-serif",
+  fontFamily: 'inherit',
   fontSize: 12,
   color: 'var(--text-secondary)',
   fontWeight: 500,
@@ -54,14 +54,14 @@ const labelStyle: React.CSSProperties = {
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  background: 'var(--bg-card)',
-  border: '1px solid var(--border)',
+  background: 'var(--gray-50)',
+  border: '1px solid var(--gray-200)',
   borderRadius: 8,
   color: 'var(--text-primary)',
   padding: '9px 12px',
   fontSize: 14,
   outline: 'none',
-  fontFamily: "'DM Sans', sans-serif",
+  fontFamily: 'inherit',
   boxSizing: 'border-box',
 }
 
@@ -139,7 +139,7 @@ export default function CreateCommunity() {
     <div className="mx-auto max-w-2xl py-8">
       <h1
         style={{
-          fontFamily: "'Outfit', sans-serif",
+          fontFamily: 'inherit',
           fontSize: 26,
           fontWeight: 700,
           color: 'var(--text-primary)',
@@ -150,7 +150,7 @@ export default function CreateCommunity() {
       </h1>
       <p
         style={{
-          fontFamily: "'DM Sans', sans-serif",
+          fontFamily: 'inherit',
           fontSize: 14,
           color: 'var(--text-secondary)',
           marginBottom: 28,
@@ -170,8 +170,8 @@ export default function CreateCommunity() {
             placeholder="e.g. Quantum Computing"
             maxLength={80}
             style={inputStyle}
-            onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-            onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
+            onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+            onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
           />
         </div>
 
@@ -190,9 +190,9 @@ export default function CreateCommunity() {
                 left: 12,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: '#6C5CE7',
+                color: 'var(--indigo)',
                 fontSize: 14,
-                fontFamily: "'DM Mono', monospace",
+                fontFamily: 'inherit',
                 pointerEvents: 'none',
               }}
             >
@@ -204,9 +204,9 @@ export default function CreateCommunity() {
               onChange={(e) => handleSlugChange(e.target.value)}
               placeholder="quantum-computing"
               maxLength={48}
-              style={{ ...inputStyle, paddingLeft: 32, fontFamily: "'DM Mono', monospace" }}
-              onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
+              style={{ ...inputStyle, paddingLeft: 32, fontFamily: 'inherit' }}
+              onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
             />
           </div>
         </div>
@@ -246,12 +246,12 @@ export default function CreateCommunity() {
                   padding: '10px 14px',
                   borderRadius: 10,
                   border: agentPolicy === p.value
-                    ? '2px solid #6C5CE7'
-                    : '1px solid var(--border)',
+                    ? '2px solid var(--indigo)'
+                    : '1px solid var(--gray-200)',
                   background: agentPolicy === p.value
-                    ? 'rgba(108,92,231,0.12)'
-                    : 'var(--bg-card)',
-                  color: agentPolicy === p.value ? '#A29BFE' : 'var(--text-secondary)',
+                    ? '#eef2ff'
+                    : 'var(--gray-50)',
+                  color: agentPolicy === p.value ? 'var(--indigo)' : 'var(--text-secondary)',
                   cursor: 'pointer',
                   textAlign: 'left',
                   transition: 'all 0.15s ease',
@@ -259,7 +259,7 @@ export default function CreateCommunity() {
               >
                 <div
                   style={{
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: 'inherit',
                     fontSize: 13,
                     fontWeight: 600,
                     marginBottom: 3,
@@ -269,9 +269,9 @@ export default function CreateCommunity() {
                 </div>
                 <div
                   style={{
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: 'inherit',
                     fontSize: 11,
-                    color: agentPolicy === p.value ? '#A29BFE' : 'var(--text-muted)',
+                    color: agentPolicy === p.value ? 'var(--indigo)' : 'var(--text-muted)',
                     lineHeight: 1.4,
                   }}
                 >
@@ -308,8 +308,8 @@ export default function CreateCommunity() {
                     gap: 10,
                     padding: '10px 12px',
                     borderRadius: 8,
-                    border: checked ? '1px solid rgba(108,92,231,0.4)' : '1px solid var(--border)',
-                    background: checked ? 'rgba(108,92,231,0.08)' : 'var(--bg-card)',
+                    border: checked ? '1px solid var(--indigo)' : '1px solid var(--gray-200)',
+                    background: checked ? '#eef2ff' : 'var(--gray-50)',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
@@ -318,22 +318,22 @@ export default function CreateCommunity() {
                     type="checkbox"
                     checked={checked}
                     onChange={() => togglePostType(pt.value)}
-                    style={{ marginTop: 1, accentColor: '#6C5CE7', flexShrink: 0 }}
+                    style={{ marginTop: 1, accentColor: 'var(--indigo)', flexShrink: 0 }}
                   />
                   <div>
                     <div
                       style={{
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: 'inherit',
                         fontSize: 13,
                         fontWeight: 600,
-                        color: checked ? '#A29BFE' : 'var(--text-primary)',
+                        color: checked ? 'var(--indigo)' : 'var(--text-primary)',
                       }}
                     >
                       {pt.label}
                     </div>
                     <div
                       style={{
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: 'inherit',
                         fontSize: 11,
                         color: 'var(--text-muted)',
                         lineHeight: 1.4,
@@ -358,8 +358,8 @@ export default function CreateCommunity() {
               gap: 10,
               padding: '10px 14px',
               borderRadius: 8,
-              border: requireTags ? '1px solid rgba(108,92,231,0.4)' : '1px solid var(--border)',
-              background: requireTags ? 'rgba(108,92,231,0.08)' : 'var(--bg-card)',
+              border: requireTags ? '1px solid var(--indigo)' : '1px solid var(--gray-200)',
+              background: requireTags ? '#eef2ff' : 'var(--gray-50)',
               cursor: 'pointer',
               flex: '0 0 auto',
               transition: 'all 0.15s ease',
@@ -369,20 +369,20 @@ export default function CreateCommunity() {
               type="checkbox"
               checked={requireTags}
               onChange={(e) => setRequireTags(e.target.checked)}
-              style={{ accentColor: '#6C5CE7' }}
+              style={{ accentColor: 'var(--indigo)' }}
             />
             <div>
               <div
                 style={{
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: 'inherit',
                   fontSize: 13,
                   fontWeight: 600,
-                  color: requireTags ? '#A29BFE' : 'var(--text-primary)',
+                  color: requireTags ? 'var(--indigo)' : 'var(--text-primary)',
                 }}
               >
                 Require Tags
               </div>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: 'var(--text-muted)' }}>
+              <div style={{ fontFamily: 'inherit', fontSize: 11, color: 'var(--text-muted)' }}>
                 Posts must include at least one tag
               </div>
             </div>
@@ -397,11 +397,11 @@ export default function CreateCommunity() {
               min={0}
               max={5000}
               onChange={(e) => setMinBodyLength(Math.max(0, parseInt(e.target.value) || 0))}
-              style={{ ...inputStyle, fontFamily: "'DM Mono', monospace" }}
-              onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
+              style={{ ...inputStyle, fontFamily: 'inherit' }}
+              onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
             />
-            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: 'var(--text-muted)' }}>
+            <span style={{ fontFamily: 'inherit', fontSize: 11, color: 'var(--text-muted)' }}>
               Minimum characters required in post body (0 = no minimum)
             </span>
           </div>
@@ -411,11 +411,11 @@ export default function CreateCommunity() {
         {error && (
           <p
             style={{
-              color: '#FF7675',
+              color: 'var(--rose)',
               fontSize: 13,
-              fontFamily: "'DM Sans', sans-serif",
-              background: 'rgba(255,118,117,0.08)',
-              border: '1px solid rgba(255,118,117,0.25)',
+              fontFamily: 'inherit',
+              background: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.25)',
               borderRadius: 8,
               padding: '10px 14px',
             }}
@@ -431,23 +431,23 @@ export default function CreateCommunity() {
             onClick={() => router.back()}
             style={{
               background: 'transparent',
-              color: 'var(--text-secondary)',
-              border: '1px solid var(--border)',
+              color: 'var(--gray-700)',
+              border: '1px solid var(--gray-200)',
               borderRadius: 8,
               padding: '10px 22px',
               fontSize: 14,
               fontWeight: 500,
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: 'inherit',
               cursor: 'pointer',
               transition: 'all 0.15s ease',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#6C5CE7'
+              e.currentTarget.style.borderColor = 'var(--indigo)'
               e.currentTarget.style.color = 'var(--text-primary)'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'var(--border)'
-              e.currentTarget.style.color = 'var(--text-secondary)'
+              e.currentTarget.style.borderColor = 'var(--gray-200)'
+              e.currentTarget.style.color = 'var(--gray-700)'
             }}
           >
             Cancel
@@ -456,20 +456,18 @@ export default function CreateCommunity() {
             type="submit"
             disabled={submitting}
             style={{
-              background: submitting ? '#4A3BB1' : '#6C5CE7',
+              background: 'var(--gray-900)',
               color: '#fff',
               border: 'none',
               borderRadius: 8,
               padding: '10px 28px',
               fontSize: 14,
               fontWeight: 600,
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: 'inherit',
               cursor: submitting ? 'not-allowed' : 'pointer',
               opacity: submitting ? 0.7 : 1,
               transition: 'background 0.2s ease',
             }}
-            onMouseEnter={(e) => { if (!submitting) e.currentTarget.style.background = '#5a4bd1' }}
-            onMouseLeave={(e) => { if (!submitting) e.currentTarget.style.background = '#6C5CE7' }}
           >
             {submitting ? 'Creating...' : 'Create Community'}
           </button>

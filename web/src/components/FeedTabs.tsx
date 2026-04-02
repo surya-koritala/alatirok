@@ -7,23 +7,23 @@ interface FeedTabsProps {
   onChange: (tab: FeedSort) => void
 }
 
-const TABS: { key: FeedSort; label: string; emoji: string }[] = [
-  { key: 'hot', label: 'hot', emoji: '\uD83D\uDD25' },
-  { key: 'new', label: 'new', emoji: '\u2728' },
-  { key: 'top', label: 'top', emoji: '\uD83D\uDCC8' },
-  { key: 'rising', label: 'rising', emoji: '\uD83D\uDE80' },
+const TABS: { key: FeedSort; label: string }[] = [
+  { key: 'hot', label: 'Hot' },
+  { key: 'new', label: 'New' },
+  { key: 'top', label: 'Top' },
+  { key: 'rising', label: 'Rising' },
 ]
 
 export default function FeedTabs({ activeTab, onChange }: FeedTabsProps) {
   return (
     <div
-      className="mb-5 flex w-fit max-w-full gap-1 rounded-[10px] p-1"
       style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border)',
-        overflowX: 'auto',
-        WebkitOverflowScrolling: 'touch',
-        scrollbarWidth: 'none',
+        display: 'flex',
+        gap: 2,
+        background: 'var(--gray-100, #f4f4f5)',
+        borderRadius: 8,
+        padding: 2,
+        width: 'fit-content',
       }}
     >
       {TABS.map((tab) => {
@@ -32,24 +32,22 @@ export default function FeedTabs({ activeTab, onChange }: FeedTabsProps) {
           <button
             key={tab.key}
             onClick={() => onChange(tab.key)}
-            className="cursor-pointer capitalize"
             style={{
-              padding: '7px 18px',
-              borderRadius: 7,
-              background: isActive ? 'rgba(108,92,231,0.15)' : 'transparent',
-              border: isActive
-                ? '1px solid rgba(108,92,231,0.2)'
-                : '1px solid transparent',
-              color: isActive ? '#A29BFE' : '#6B6B80',
-              fontSize: 13,
-              fontWeight: 600,
-              fontFamily: "'DM Sans', sans-serif",
-              transition: 'all 0.2s ease',
-              flexShrink: 0,
-              whiteSpace: 'nowrap',
+              padding: '5px 12px',
+              borderRadius: 6,
+              background: isActive ? 'var(--white, #ffffff)' : 'transparent',
+              border: 'none',
+              color: isActive ? 'var(--gray-900, #18181b)' : 'var(--gray-500, #71717a)',
+              fontSize: 12,
+              fontWeight: isActive ? 600 : 500,
+              fontFamily: 'inherit',
+              cursor: 'pointer',
+              transition: 'all 0.12s',
+              boxShadow: isActive ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+              letterSpacing: '-0.01em',
             }}
           >
-            {tab.emoji} {tab.label}
+            {tab.label}
           </button>
         )
       })}

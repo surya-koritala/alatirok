@@ -22,6 +22,8 @@ interface SavedComment {
   }
 }
 
+const cardStyle: React.CSSProperties = { borderColor: 'var(--border)', background: 'var(--bg-card)' }
+
 export default function Bookmarks() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'posts' | 'comments'>('posts')
@@ -74,13 +76,8 @@ export default function Bookmarks() {
       .then(async (data: any) => {
         const ids = data.commentIds ?? data.comment_ids ?? []
         const commentPromises = ids.map((id: string) =>
-          // Get individual comments via their post — we use a simpler approach:
-          // fetch from the comment bookmark list which returns comment_ids
-          // then we need to fetch each comment. Since there's no direct GET /comments/{id}
-          // endpoint, we'll store the raw IDs and show minimal info via a placeholder.
           Promise.resolve({ id, body: '', postId: '', score: 0, createdAt: new Date().toISOString(), author: { displayName: 'Loading...', type: 'human' as const } })
         )
-        // Attempt to get comment data via search or direct fetch
         const rawComments = await Promise.all(commentPromises)
         setSavedComments(rawComments)
       })
@@ -115,27 +112,19 @@ export default function Bookmarks() {
       <div className="flex items-center justify-between mb-6">
         <h1
           className="text-xl font-bold"
-          style={{
-            fontFamily: 'Outfit, sans-serif',
-            background: 'linear-gradient(135deg, #A29BFE 0%, #55EFC4 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
+          style={{ color: 'var(--gray-950)', letterSpacing: '-0.02em' }}
         >
           Bookmarks
         </h1>
         {!loading && (
-          <span
-            className="text-sm text-[#8888AA]"
-            style={{ fontFamily: 'DM Mono, monospace' }}
-          >
+          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
             {activeTab === 'posts' ? posts.length : savedComments.length} saved
           </span>
         )}
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 p-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border, #2A2A3E)' }}>
+      <div className="flex gap-1 mb-6 p-1 rounded-lg" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
         {(['posts', 'comments'] as const).map((tab) => (
           <button
             key={tab}
@@ -147,14 +136,14 @@ export default function Bookmarks() {
               border: 'none',
               fontSize: 13,
               fontWeight: 600,
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: 'inherit',
               cursor: 'pointer',
-              background: activeTab === tab ? '#6C5CE7' : 'transparent',
-              color: activeTab === tab ? '#fff' : '#8888AA',
+              background: activeTab === tab ? 'var(--gray-900)' : 'transparent',
+              color: activeTab === tab ? '#fff' : 'var(--text-muted)',
               transition: 'all 0.15s ease',
             }}
           >
-            {tab === 'posts' ? '📌 Posts' : '💬 Comments'}
+            {tab === 'posts' ? 'Posts' : 'Comments'}
           </button>
         ))}
       </div>
@@ -165,7 +154,8 @@ export default function Bookmarks() {
           {[...Array(5)].map((_, i) => (
             <div
               key={i}
-              className="h-24 animate-pulse rounded-xl border border-[#2A2A3E] bg-[#12121E]"
+              className="h-24 animate-pulse rounded-xl border"
+              style={cardStyle}
             />
           ))}
         </div>
@@ -173,7 +163,7 @@ export default function Bookmarks() {
 
       {/* Error */}
       {!loading && error && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-400">
+        <div className="rounded-xl p-6 text-sm" style={{ border: '1px solid color-mix(in srgb, var(--rose) 30%, transparent)', background: 'color-mix(in srgb, var(--rose) 10%, transparent)', color: 'var(--rose)' }}>
           Failed to load bookmarks: {error}
         </div>
       )}
@@ -183,13 +173,14 @@ export default function Bookmarks() {
         <>
           {posts.length === 0 ? (
             <div
-              className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-12 text-center"
-              style={{ fontFamily: 'DM Sans, sans-serif' }}
+              className="rounded-xl border p-12 text-center"
+              style={cardStyle}
             >
-              <p className="text-[#8888AA] mb-3">No saved posts yet.</p>
+              <p style={{ color: 'var(--text-muted)' }} className="mb-3">No saved posts yet.</p>
               <Link
                 href="/"
-                className="inline-block rounded-lg bg-[#6C5CE7] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#5a4bd1]"
+                className="inline-block rounded-lg px-5 py-2 text-sm font-medium text-white transition"
+                style={{ background: 'var(--gray-900)' }}
               >
                 Browse posts
               </Link>
@@ -201,9 +192,9 @@ export default function Bookmarks() {
                   <PostCard post={post} />
                   <button
                     onClick={() => handleRemovePost(post.id)}
-                    className="absolute top-3 right-3 z-10 rounded-lg border border-[#2A2A3E] px-3 py-1 text-xs text-[#8888AA] transition hover:border-red-500/50 hover:text-red-400 bg-[#12121E]"
+                    className="absolute top-3 right-3 z-10 rounded-lg border px-3 py-1 text-xs transition"
                     title="Remove bookmark"
-                    style={{ fontFamily: 'DM Sans, sans-serif' }}
+                    style={{ ...cardStyle, color: 'var(--text-muted)' }}
                   >
                     Remove
                   </button>
@@ -219,37 +210,38 @@ export default function Bookmarks() {
         <>
           {savedComments.length === 0 ? (
             <div
-              className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-12 text-center"
-              style={{ fontFamily: 'DM Sans, sans-serif' }}
+              className="rounded-xl border p-12 text-center"
+              style={cardStyle}
             >
-              <p className="text-[#8888AA] mb-3">No saved comments yet.</p>
-              <p className="text-[#6B6B80] text-xs">Save comments using the 🔖 button on any comment.</p>
+              <p style={{ color: 'var(--text-muted)' }} className="mb-3">No saved comments yet.</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Save comments using the bookmark button on any comment.</p>
             </div>
           ) : (
             <div className="flex flex-col gap-3">
               {savedComments.map((comment) => (
                 <div
                   key={comment.id}
-                  className="relative rounded-xl border border-[#2A2A3E] bg-[#12121E] p-4"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  className="relative rounded-xl border p-4"
+                  style={cardStyle}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span style={{ fontSize: 11, color: 'var(--text-secondary, #8888AA)', fontFamily: 'DM Mono, monospace' }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
                       Comment {comment.id.slice(0, 8)}...
                     </span>
                     <button
                       onClick={() => handleRemoveComment(comment.id)}
-                      className="rounded-lg border border-[#2A2A3E] px-3 py-1 text-xs text-[#8888AA] transition hover:border-red-500/50 hover:text-red-400"
+                      className="rounded-lg border px-3 py-1 text-xs transition"
+                      style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
                     >
                       Remove
                     </button>
                   </div>
                   {comment.body ? (
-                    <div className="text-sm text-[#C0C0D8]">
+                    <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                       <MarkdownContent content={comment.body} />
                     </div>
                   ) : (
-                    <p className="text-xs text-[#6B6B80]">Saved comment (click to view in context)</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Saved comment (click to view in context)</p>
                   )}
                 </div>
               ))}

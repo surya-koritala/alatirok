@@ -94,16 +94,16 @@ export default function Debates() {
         }
       `}</style>
 
-      <div className="flex gap-6 py-4 md:py-6 px-0">
-        <div className="min-w-0 flex-1 w-full lg:max-w-[680px]">
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 60px', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: 48 }}>
+        <div className="min-w-0">
           {/* Header */}
           <div style={{ marginBottom: 20 }}>
             <h1
               style={{
                 fontSize: 24,
                 fontWeight: 700,
-                color: 'var(--text-primary, #E0E0F0)',
-                fontFamily: "'Outfit', sans-serif",
+                color: 'var(--gray-900)',
+                fontFamily: 'inherit',
                 margin: '0 0 6px',
               }}
             >
@@ -112,8 +112,8 @@ export default function Debates() {
             <p
               style={{
                 fontSize: 14,
-                color: 'var(--text-secondary, #8888A0)',
-                fontFamily: "'DM Sans', sans-serif",
+                color: 'var(--gray-500)',
+                fontFamily: 'inherit',
                 margin: 0,
               }}
             >
@@ -129,8 +129,8 @@ export default function Debates() {
                   key={i}
                   className="h-28 animate-pulse rounded-xl"
                   style={{
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border)',
+                    background: 'var(--gray-50)',
+                    border: '1px solid var(--gray-200)',
                   }}
                 />
               ))}
@@ -139,7 +139,7 @@ export default function Debates() {
 
           {/* Error */}
           {error && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
+            <div className="rounded-xl p-4 text-sm" style={{ border: '1px solid color-mix(in srgb, var(--rose) 30%, transparent)', background: 'color-mix(in srgb, var(--rose) 10%, transparent)', color: 'var(--rose)' }}>
               Failed to load debates: {error}
             </div>
           )}
@@ -149,9 +149,9 @@ export default function Debates() {
             <div
               className="rounded-xl p-8 text-center"
               style={{
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border)',
-                color: 'var(--text-secondary, #8888AA)',
+                background: 'var(--gray-50)',
+                border: '1px solid var(--gray-200)',
+                color: 'var(--gray-500)',
               }}
             >
               No debates yet. Start one by creating a post with the Debate type.
@@ -184,13 +184,13 @@ export default function Debates() {
                         flex: 1,
                         fontSize: 11,
                         fontWeight: 600,
-                        color: '#55EFC4',
-                        background: 'rgba(0,184,148,0.06)',
-                        border: '1px solid rgba(0,184,148,0.15)',
+                        color: 'var(--emerald)',
+                        background: 'color-mix(in srgb, var(--emerald) 6%, transparent)',
+                        border: '1px solid color-mix(in srgb, var(--emerald) 15%, transparent)',
                         borderBottom: 'none',
                         borderRadius: '8px 8px 0 0',
                         padding: '6px 12px',
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: 'inherit',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
@@ -203,13 +203,13 @@ export default function Debates() {
                         flex: 1,
                         fontSize: 11,
                         fontWeight: 600,
-                        color: '#FF7675',
-                        background: 'rgba(255,118,117,0.06)',
-                        border: '1px solid rgba(255,118,117,0.15)',
+                        color: 'var(--rose)',
+                        background: 'color-mix(in srgb, var(--rose) 6%, transparent)',
+                        border: '1px solid color-mix(in srgb, var(--rose) 15%, transparent)',
                         borderBottom: 'none',
                         borderRadius: '8px 8px 0 0',
                         padding: '6px 12px',
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: 'inherit',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
@@ -228,8 +228,8 @@ export default function Debates() {
             <div
               style={{
                 background:
-                  'linear-gradient(135deg, rgba(108,92,231,0.1) 0%, rgba(0,184,148,0.1) 100%)',
-                border: '1px solid rgba(108,92,231,0.2)',
+                  'linear-gradient(135deg, #eef2ff 0%, color-mix(in srgb, var(--emerald) 10%, transparent) 100%)',
+                border: '1px solid color-mix(in srgb, var(--indigo) 20%, transparent)',
                 borderRadius: 14,
                 padding: '24px 28px',
                 marginTop: 20,
@@ -240,8 +240,8 @@ export default function Debates() {
                 style={{
                   fontSize: 18,
                   fontWeight: 700,
-                  color: 'var(--text-primary, #E0E0F0)',
-                  fontFamily: "'Outfit', sans-serif",
+                  color: 'var(--gray-900)',
+                  fontFamily: 'inherit',
                   margin: '0 0 8px',
                 }}
               >
@@ -250,8 +250,8 @@ export default function Debates() {
               <p
                 style={{
                   fontSize: 14,
-                  color: 'var(--text-secondary, #8888A0)',
-                  fontFamily: "'DM Sans', sans-serif",
+                  color: 'var(--gray-500)',
+                  fontFamily: 'inherit',
                   margin: '0 0 16px',
                 }}
               >
@@ -262,13 +262,13 @@ export default function Debates() {
                 style={{
                   padding: '10px 28px',
                   borderRadius: 8,
-                  background: '#6C5CE7',
+                  background: 'var(--gray-900)',
                   color: '#fff',
                   fontWeight: 700,
                   fontSize: 14,
                   border: 'none',
                   cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: 'inherit',
                 }}
               >
                 Sign up free
@@ -277,17 +277,9 @@ export default function Debates() {
           )}
         </div>
 
-        {/* Sidebar */}
-        <div
-          className="hidden lg:block"
-          style={{
-            width: 300,
-            flexShrink: 0,
-            animation: loaded ? 'slideIn 0.6s ease 0.3s both' : 'none',
-          }}
-        >
+        <aside className="hidden lg:block" style={{ position: 'sticky', top: 80, alignSelf: 'flex-start' }}>
           <Sidebar />
-        </div>
+        </aside>
       </div>
     </>
   )

@@ -31,9 +31,9 @@ const SUGGESTED_CAPABILITIES = [
 ]
 
 function trustScoreColor(score: number): string {
-  if (score >= 7.5) return '#00B894'
-  if (score >= 5) return '#FDCB6E'
-  return '#E17055'
+  if (score >= 7.5) return 'var(--emerald)'
+  if (score >= 5) return 'var(--amber)'
+  return 'var(--rose)'
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -51,7 +51,7 @@ function StarRating({ rating }: { rating: number }) {
         <span
           key={i}
           style={{
-            color: s === 'empty' ? 'var(--border, #2A2A3E)' : '#FDCB6E',
+            color: s === 'empty' ? 'var(--gray-200)' : 'var(--amber)',
             fontSize: 12,
           }}
         >
@@ -105,8 +105,8 @@ export default function DiscoverCapabilities() {
           style={{
             fontSize: 28,
             fontWeight: 800,
-            color: 'var(--text-primary, #E0E0F0)',
-            fontFamily: "'Outfit', sans-serif",
+            color: 'var(--gray-900)',
+            fontFamily: 'inherit',
             margin: 0,
           }}
         >
@@ -116,8 +116,8 @@ export default function DiscoverCapabilities() {
           style={{
             marginTop: 6,
             fontSize: 14,
-            color: 'var(--text-secondary, #8888AA)',
-            fontFamily: "'DM Sans', sans-serif",
+            color: 'var(--gray-500)',
+            fontFamily: 'inherit',
             lineHeight: 1.5,
           }}
         >
@@ -136,17 +136,17 @@ export default function DiscoverCapabilities() {
             style={{
               flex: 1,
               borderRadius: 10,
-              border: '1px solid var(--border, #2A2A3E)',
-              background: 'var(--bg-card, #12121E)',
-              color: 'var(--text-primary, #E0E0F0)',
+              border: '1px solid var(--gray-200)',
+              background: 'var(--gray-50)',
+              color: 'var(--gray-900)',
               padding: '10px 14px',
               fontSize: 14,
               outline: 'none',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: 'inherit',
               transition: 'border-color 0.15s',
             }}
-            onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-            onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
+            onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+            onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
           />
           <button
             type="submit"
@@ -154,12 +154,12 @@ export default function DiscoverCapabilities() {
               padding: '10px 20px',
               borderRadius: 10,
               border: 'none',
-              background: '#6C5CE7',
+              background: 'var(--gray-900)',
               color: '#fff',
               fontSize: 14,
               fontWeight: 600,
               cursor: 'pointer',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: 'inherit',
               transition: 'opacity 0.15s',
               opacity: query.trim() ? 1 : 0.5,
             }}
@@ -174,8 +174,8 @@ export default function DiscoverCapabilities() {
         <span
           style={{
             fontSize: 12,
-            color: 'var(--text-muted, #6B6B80)',
-            fontFamily: "'DM Sans', sans-serif",
+            color: 'var(--gray-400)',
+            fontFamily: 'inherit',
             alignSelf: 'center',
           }}
         >
@@ -190,17 +190,17 @@ export default function DiscoverCapabilities() {
               borderRadius: 999,
               border:
                 searchedCapability === cap
-                  ? '1px solid rgba(108,92,231,0.5)'
-                  : '1px solid var(--border, #2A2A3E)',
+                  ? '1px solid color-mix(in srgb, var(--indigo) 50%, transparent)'
+                  : '1px solid var(--gray-200)',
               background:
                 searchedCapability === cap
-                  ? 'rgba(108,92,231,0.15)'
-                  : 'var(--bg-card, #12121E)',
-              color: searchedCapability === cap ? '#A29BFE' : 'var(--text-secondary, #8888AA)',
+                  ? '#eef2ff'
+                  : 'var(--gray-50)',
+              color: searchedCapability === cap ? 'var(--indigo)' : 'var(--gray-500)',
               fontSize: 13,
               fontWeight: 500,
               cursor: 'pointer',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: 'inherit',
               transition: 'all 0.15s',
             }}
           >
@@ -214,12 +214,12 @@ export default function DiscoverCapabilities() {
         <div
           style={{
             borderRadius: 10,
-            border: '1px solid rgba(225,112,85,0.3)',
-            background: 'rgba(225,112,85,0.08)',
+            border: '1px solid color-mix(in srgb, var(--rose) 30%, transparent)',
+            background: 'color-mix(in srgb, var(--rose) 8%, transparent)',
             padding: '12px 16px',
             fontSize: 14,
-            color: '#E17055',
-            fontFamily: "'DM Sans', sans-serif",
+            color: 'var(--rose)',
+            fontFamily: 'inherit',
             marginBottom: 20,
           }}
         >
@@ -234,14 +234,14 @@ export default function DiscoverCapabilities() {
             <div
               key={i}
               style={{
-                background: 'var(--bg-card, #12121F)',
-                border: '1px solid var(--border, #2A2A3E)',
+                background: 'var(--gray-50)',
+                border: '1px solid var(--gray-200)',
                 borderRadius: 12,
                 padding: '20px 24px',
                 height: 100,
                 animation: 'shimmer 1.5s infinite',
                 backgroundImage:
-                  'linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%)',
+                  'linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%)',
                 backgroundSize: '200% 100%',
               }}
             />
@@ -253,8 +253,8 @@ export default function DiscoverCapabilities() {
       {!loading && hasSearched && results.length === 0 && !error && (
         <div
           style={{
-            background: 'var(--bg-card, #12121E)',
-            border: '1px solid var(--border, #2A2A3E)',
+            background: 'var(--gray-50)',
+            border: '1px solid var(--gray-200)',
             borderRadius: 12,
             padding: '40px 20px',
             textAlign: 'center',
@@ -265,8 +265,8 @@ export default function DiscoverCapabilities() {
             style={{
               fontSize: 15,
               fontWeight: 600,
-              color: 'var(--text-primary, #E0E0F0)',
-              fontFamily: "'DM Sans', sans-serif",
+              color: 'var(--gray-900)',
+              fontFamily: 'inherit',
               marginBottom: 4,
             }}
           >
@@ -275,8 +275,8 @@ export default function DiscoverCapabilities() {
           <div
             style={{
               fontSize: 13,
-              color: 'var(--text-muted, #6B6B80)',
-              fontFamily: "'DM Sans', sans-serif",
+              color: 'var(--gray-400)',
+              fontFamily: 'inherit',
             }}
           >
             Try a different capability or check the spelling.
@@ -289,8 +289,8 @@ export default function DiscoverCapabilities() {
           <div
             style={{
               fontSize: 12,
-              color: 'var(--text-muted, #6B6B80)',
-              fontFamily: "'DM Mono', monospace",
+              color: 'var(--gray-400)',
+              fontFamily: 'inherit',
               marginBottom: 14,
             }}
           >
@@ -307,8 +307,8 @@ export default function DiscoverCapabilities() {
                 >
                   <div
                     style={{
-                      background: 'var(--bg-card, #12121E)',
-                      border: '1px solid var(--border, #2A2A3E)',
+                      background: 'var(--gray-50)',
+                      border: '1px solid var(--gray-200)',
                       borderRadius: 12,
                       padding: '18px 22px',
                       transition: 'all 0.15s ease',
@@ -316,15 +316,15 @@ export default function DiscoverCapabilities() {
                     }}
                     onMouseEnter={(e) => {
                       ;(e.currentTarget as HTMLDivElement).style.borderColor =
-                        'rgba(108,92,231,0.4)'
+                        'color-mix(in srgb, var(--indigo) 40%, transparent)'
                       ;(e.currentTarget as HTMLDivElement).style.background =
-                        'rgba(108,92,231,0.03)'
+                        '#eef2ff'
                     }}
                     onMouseLeave={(e) => {
                       ;(e.currentTarget as HTMLDivElement).style.borderColor =
-                        'var(--border, #2A2A3E)'
+                        'var(--gray-200)'
                       ;(e.currentTarget as HTMLDivElement).style.background =
-                        'var(--bg-card, #12121E)'
+                        'var(--gray-50)'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
@@ -347,7 +347,7 @@ export default function DiscoverCapabilities() {
                               width: 42,
                               height: 42,
                               borderRadius: 10,
-                              background: 'linear-gradient(135deg, #6C5CE7, #A29BFE)',
+                              background: 'linear-gradient(135deg, var(--indigo), color-mix(in srgb, var(--indigo) 70%, white))',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -376,14 +376,14 @@ export default function DiscoverCapabilities() {
                             style={{
                               fontWeight: 700,
                               fontSize: 15,
-                              color: 'var(--text-primary, #E0E0F0)',
-                              fontFamily: "'Outfit', sans-serif",
+                              color: 'var(--gray-900)',
+                              fontFamily: 'inherit',
                             }}
                           >
                             {agent.agentName}
                           </span>
                           {agent.isVerified && (
-                            <span style={{ color: '#00B894', fontSize: 12 }}>
+                            <span style={{ color: 'var(--emerald)', fontSize: 12 }}>
                               &#10003;
                             </span>
                           )}
@@ -391,11 +391,11 @@ export default function DiscoverCapabilities() {
                             style={{
                               padding: '2px 8px',
                               borderRadius: 999,
-                              background: 'rgba(108,92,231,0.1)',
+                              background: '#eef2ff',
                               fontSize: 11,
                               fontWeight: 500,
-                              color: '#A29BFE',
-                              fontFamily: "'DM Sans', sans-serif",
+                              color: 'var(--indigo)',
+                              fontFamily: 'inherit',
                             }}
                           >
                             {agent.capability}
@@ -406,8 +406,8 @@ export default function DiscoverCapabilities() {
                           <p
                             style={{
                               fontSize: 13,
-                              color: 'var(--text-secondary, #8888AA)',
-                              fontFamily: "'DM Sans', sans-serif",
+                              color: 'var(--gray-500)',
+                              fontFamily: 'inherit',
                               margin: '0 0 8px 0',
                               lineHeight: 1.5,
                             }}
@@ -428,8 +428,8 @@ export default function DiscoverCapabilities() {
                           <span
                             style={{
                               fontSize: 12,
-                              fontFamily: "'DM Sans', sans-serif",
-                              color: 'var(--text-muted, #6B6B80)',
+                              fontFamily: 'inherit',
+                              color: 'var(--gray-400)',
                             }}
                           >
                             Trust:{' '}
@@ -437,7 +437,7 @@ export default function DiscoverCapabilities() {
                               style={{
                                 color: trustScoreColor(agent.trustScore),
                                 fontWeight: 600,
-                                fontFamily: "'DM Mono', monospace",
+                                fontFamily: 'inherit',
                               }}
                             >
                               {agent.trustScore.toFixed(1)}
@@ -447,8 +447,8 @@ export default function DiscoverCapabilities() {
                           <span
                             style={{
                               fontSize: 12,
-                              fontFamily: "'DM Sans', sans-serif",
-                              color: 'var(--text-muted, #6B6B80)',
+                              fontFamily: 'inherit',
+                              color: 'var(--gray-400)',
                               display: 'flex',
                               alignItems: 'center',
                               gap: 4,
@@ -457,15 +457,15 @@ export default function DiscoverCapabilities() {
                             <StarRating rating={agent.avgRating} />
                             <span
                               style={{
-                                fontFamily: "'DM Mono', monospace",
+                                fontFamily: 'inherit',
                                 fontWeight: 600,
-                                color: 'var(--text-secondary, #8888AA)',
+                                color: 'var(--gray-500)',
                               }}
                             >
                               {agent.avgRating.toFixed(1)}
                             </span>
                             {agent.ratingCount > 0 && (
-                              <span style={{ fontSize: 11, color: 'var(--text-muted, #6B6B80)' }}>
+                              <span style={{ fontSize: 11, color: 'var(--gray-400)' }}>
                                 ({agent.ratingCount})
                               </span>
                             )}
@@ -474,16 +474,16 @@ export default function DiscoverCapabilities() {
                           <span
                             style={{
                               fontSize: 12,
-                              fontFamily: "'DM Sans', sans-serif",
-                              color: 'var(--text-muted, #6B6B80)',
+                              fontFamily: 'inherit',
+                              color: 'var(--gray-400)',
                             }}
                           >
                             Used{' '}
                             <span
                               style={{
                                 fontWeight: 600,
-                                fontFamily: "'DM Mono', monospace",
-                                color: '#55EFC4',
+                                fontFamily: 'inherit',
+                                color: 'var(--emerald)',
                               }}
                             >
                               {agent.usageCount}
@@ -505,8 +505,8 @@ export default function DiscoverCapabilities() {
       {!hasSearched && !loading && (
         <div
           style={{
-            background: 'var(--bg-card, #12121E)',
-            border: '1px solid var(--border, #2A2A3E)',
+            background: 'var(--gray-50)',
+            border: '1px solid var(--gray-200)',
             borderRadius: 12,
             padding: '40px 20px',
             textAlign: 'center',
@@ -517,8 +517,8 @@ export default function DiscoverCapabilities() {
             style={{
               fontSize: 15,
               fontWeight: 600,
-              color: 'var(--text-primary, #E0E0F0)',
-              fontFamily: "'DM Sans', sans-serif",
+              color: 'var(--gray-900)',
+              fontFamily: 'inherit',
               marginBottom: 4,
             }}
           >
@@ -527,8 +527,8 @@ export default function DiscoverCapabilities() {
           <div
             style={{
               fontSize: 13,
-              color: 'var(--text-muted, #6B6B80)',
-              fontFamily: "'DM Sans', sans-serif",
+              color: 'var(--gray-400)',
+              fontFamily: 'inherit',
             }}
           >
             Or click a suggested capability to get started.
@@ -540,8 +540,8 @@ export default function DiscoverCapabilities() {
       <div
         style={{
           marginTop: 40,
-          background: 'var(--bg-card, #12121E)',
-          border: '1px solid var(--border, #2A2A3E)',
+          background: 'var(--gray-50)',
+          border: '1px solid var(--gray-200)',
           borderRadius: 12,
           padding: '24px 28px',
         }}
@@ -550,8 +550,8 @@ export default function DiscoverCapabilities() {
           style={{
             fontSize: 17,
             fontWeight: 700,
-            color: 'var(--text-primary, #E0E0F0)',
-            fontFamily: "'Outfit', sans-serif",
+            color: 'var(--gray-900)',
+            fontFamily: 'inherit',
             margin: '0 0 8px 0',
           }}
         >
@@ -560,8 +560,8 @@ export default function DiscoverCapabilities() {
         <p
           style={{
             fontSize: 13,
-            color: 'var(--text-secondary, #8888AA)',
-            fontFamily: "'DM Sans', sans-serif",
+            color: 'var(--gray-500)',
+            fontFamily: 'inherit',
             lineHeight: 1.5,
             margin: '0 0 14px 0',
           }}
@@ -575,13 +575,13 @@ export default function DiscoverCapabilities() {
             display: 'inline-block',
             padding: '8px 18px',
             borderRadius: 8,
-            background: 'rgba(108,92,231,0.15)',
-            border: '1px solid rgba(108,92,231,0.3)',
-            color: '#A29BFE',
+            background: '#eef2ff',
+            border: '1px solid color-mix(in srgb, var(--indigo) 30%, transparent)',
+            color: 'var(--indigo)',
             fontSize: 13,
             fontWeight: 600,
             textDecoration: 'none',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: 'inherit',
             transition: 'background 0.15s',
           }}
         >

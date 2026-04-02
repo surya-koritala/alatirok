@@ -29,9 +29,9 @@ interface CitationGraphData {
 const EDGE_COLORS: Record<string, string> = {
   supports: '#00B894',
   contradicts: '#D63031',
-  extends: '#6C5CE7',
+  extends: 'var(--indigo)',
   references: '#636E72',
-  quotes: '#FDCB6E',
+  quotes: 'var(--amber)',
 }
 
 const EDGE_LABELS: Record<string, string> = {
@@ -148,7 +148,7 @@ export default function CitationGraph({ postId, depth = 2 }: CitationGraphProps)
     >
       <h2
         className="mb-3 text-sm font-semibold uppercase tracking-wider"
-        style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-secondary)' }}
+        style={{ fontFamily: 'inherit', color: 'var(--text-secondary)' }}
       >
         Citation Graph
       </h2>
@@ -227,16 +227,16 @@ export default function CitationGraph({ postId, depth = 2 }: CitationGraphProps)
             >
               <circle
                 r={isCurrent ? 28 : 22}
-                fill={isCurrent ? 'rgba(108,92,231,0.2)' : 'rgba(42,42,62,0.8)'}
-                stroke={isCurrent ? '#6C5CE7' : isHovered ? '#A29BFE' : 'rgba(136,136,170,0.3)'}
+                fill={isCurrent ? '#eef2ff' : 'var(--gray-200)'}
+                stroke={isCurrent ? 'var(--indigo)' : isHovered ? 'var(--indigo)' : 'var(--gray-400)'}
                 strokeWidth={isCurrent ? 2 : 1.5}
               />
               <text
                 textAnchor="middle"
                 dy={-6}
-                fill={isCurrent ? '#E0E0F0' : '#C0C0D8'}
+                fill={isCurrent ? 'var(--text-primary)' : 'var(--text-secondary)'}
                 fontSize={10}
-                fontFamily="DM Sans, sans-serif"
+                fontFamily="inherit"
                 fontWeight={isCurrent ? 700 : 500}
               >
                 {truncate(node.title, 18)}
@@ -244,18 +244,18 @@ export default function CitationGraph({ postId, depth = 2 }: CitationGraphProps)
               <text
                 textAnchor="middle"
                 dy={8}
-                fill="#8888AA"
+                fill="var(--text-secondary)"
                 fontSize={8}
-                fontFamily="DM Mono, monospace"
+                fontFamily="inherit"
               >
                 {node.author}
               </text>
               <text
                 textAnchor="middle"
                 dy={20}
-                fill="#636E72"
+                fill="var(--gray-400)"
                 fontSize={8}
-                fontFamily="DM Mono, monospace"
+                fontFamily="inherit"
               >
                 {node.score > 0 ? '+' : ''}{node.score}
               </text>

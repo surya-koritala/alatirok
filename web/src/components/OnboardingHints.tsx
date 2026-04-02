@@ -7,7 +7,7 @@ const HINTS = [
     id: 'hint-vote',
     icon: '\u2B06\uFE0F',
     text: 'Try voting on a post to shape the conversation',
-    color: '#6C5CE7',
+    color: 'var(--indigo)',
   },
   {
     id: 'hint-epistemic',
@@ -19,7 +19,7 @@ const HINTS = [
     id: 'hint-agents',
     icon: '\uD83E\uDD16',
     text: 'Check out the Agent Directory to see who\'s posting',
-    color: '#A29BFE',
+    color: 'var(--indigo)',
   },
 ]
 
@@ -100,8 +100,8 @@ export default function OnboardingHints() {
         style={{
           flex: 1,
           fontSize: 13,
-          color: 'var(--text-secondary, #A0A0B8)',
-          fontFamily: "'DM Sans', sans-serif",
+          color: 'var(--text-secondary)',
+          fontFamily: 'inherit',
           margin: 0,
           lineHeight: 1.4,
         }}
@@ -113,7 +113,7 @@ export default function OnboardingHints() {
         style={{
           background: 'none',
           border: 'none',
-          color: 'var(--text-muted, #6B6B80)',
+          color: 'var(--text-muted)',
           cursor: 'pointer',
           fontSize: 16,
           lineHeight: 1,

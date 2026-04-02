@@ -82,12 +82,11 @@ export default function Leaderboard() {
       <div style={{ marginBottom: 24 }}>
         <h1
           style={{
-            fontSize: 28,
-            fontWeight: 800,
-            fontFamily: 'Outfit, sans-serif',
-            background: 'linear-gradient(135deg, #A29BFE 0%, #55EFC4 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
+            fontSize: 24,
+            fontWeight: 700,
+            fontFamily: 'inherit',
+            color: 'var(--gray-950)',
+            letterSpacing: '-0.03em',
             margin: 0,
           }}
         >
@@ -104,9 +103,9 @@ export default function Leaderboard() {
           display: 'flex',
           gap: 4,
           marginBottom: 20,
-          background: 'var(--bg-card)',
+          background: 'var(--gray-50)',
           borderRadius: 10,
-          border: '1px solid var(--border)',
+          border: '1px solid var(--gray-200)',
           padding: 4,
           width: 'fit-content',
         }}
@@ -120,10 +119,10 @@ export default function Leaderboard() {
               borderRadius: 8,
               border: 'none',
               cursor: 'pointer',
-              fontFamily: 'DM Sans, sans-serif',
+              fontFamily: 'inherit',
               fontWeight: 600,
               fontSize: 14,
-              background: tab === opt.value ? '#6C5CE7' : 'transparent',
+              background: tab === opt.value ? 'var(--gray-900)' : 'transparent',
               color: tab === opt.value ? '#fff' : 'var(--text-muted)',
               transition: 'all 0.15s',
             }}
@@ -135,42 +134,46 @@ export default function Leaderboard() {
 
       {/* Controls: Period + Metric */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div style={{ display: 'flex', gap: 2, background: 'var(--gray-100)', borderRadius: 8, padding: 2 }}>
           {PERIOD_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setPeriod(opt.value)}
               style={{
-                padding: '6px 14px',
-                borderRadius: 20,
-                border: `1px solid ${period === opt.value ? '#6C5CE7' : 'var(--border)'}`,
+                padding: '5px 12px',
+                borderRadius: 6,
+                border: 'none',
                 cursor: 'pointer',
-                fontFamily: 'DM Sans, sans-serif',
-                fontSize: 13,
-                background: period === opt.value ? 'rgba(108,92,231,0.15)' : 'transparent',
-                color: period === opt.value ? '#A29BFE' : 'var(--text-muted)',
-                transition: 'all 0.15s',
+                fontFamily: 'inherit',
+                fontSize: 12,
+                fontWeight: period === opt.value ? 600 : 500,
+                background: period === opt.value ? '#fff' : 'transparent',
+                color: period === opt.value ? 'var(--gray-900)' : 'var(--gray-500)',
+                boxShadow: period === opt.value ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                transition: 'all 0.12s',
               }}
             >
               {opt.label}
             </button>
           ))}
         </div>
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div style={{ display: 'flex', gap: 2, background: 'var(--gray-100)', borderRadius: 8, padding: 2 }}>
           {METRIC_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setMetric(opt.value)}
               style={{
-                padding: '6px 14px',
-                borderRadius: 20,
-                border: `1px solid ${metric === opt.value ? '#00B894' : 'var(--border)'}`,
+                padding: '5px 12px',
+                borderRadius: 6,
+                border: 'none',
                 cursor: 'pointer',
-                fontFamily: 'DM Sans, sans-serif',
-                fontSize: 13,
-                background: metric === opt.value ? 'rgba(0,184,148,0.12)' : 'transparent',
-                color: metric === opt.value ? '#00B894' : 'var(--text-muted)',
-                transition: 'all 0.15s',
+                fontFamily: 'inherit',
+                fontSize: 12,
+                fontWeight: metric === opt.value ? 600 : 500,
+                background: metric === opt.value ? '#fff' : 'transparent',
+                color: metric === opt.value ? 'var(--gray-900)' : 'var(--gray-500)',
+                boxShadow: metric === opt.value ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                transition: 'all 0.12s',
               }}
             >
               {opt.label}
@@ -188,11 +191,11 @@ export default function Leaderboard() {
         <div
           style={{
             textAlign: 'center',
-            color: '#E17055',
+            color: 'var(--rose)',
             padding: '48px 0',
-            background: 'rgba(225,112,85,0.08)',
+            background: 'rgba(239,68,68,0.08)',
             borderRadius: 12,
-            border: '1px solid rgba(225,112,85,0.2)',
+            border: '1px solid rgba(239,68,68,0.2)',
           }}
         >
           {error}
@@ -216,10 +219,10 @@ export default function Leaderboard() {
                   gap: 16,
                   padding: '14px 16px',
                   borderRadius: 12,
-                  border: `1px solid ${isMedal ? medalColor + '40' : 'var(--border)'}`,
+                  border: `1px solid var(--gray-200)`,
                   background: isMedal
-                    ? `linear-gradient(135deg, ${medalColor}08, transparent)`
-                    : 'var(--bg-card)',
+                    ? 'var(--white)'
+                    : 'var(--gray-50)',
                   transition: 'border-color 0.15s',
                 }}
               >
@@ -228,14 +231,14 @@ export default function Leaderboard() {
                   style={{
                     minWidth: 36,
                     textAlign: 'center',
-                    fontFamily: 'DM Mono, monospace',
+                    fontFamily: 'inherit',
                     fontWeight: 700,
                     fontSize: isMedal ? 18 : 14,
-                    color: isMedal ? medalColor : 'var(--text-muted)',
+                    color: 'var(--gray-400)',
                   }}
                   title={MEDAL_LABELS[entry.rank]}
                 >
-                  {isMedal ? (entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : '🥉') : `#${entry.rank}`}
+                  {`#${entry.rank}`}
                 </div>
 
                 {/* Avatar */}
@@ -252,14 +255,14 @@ export default function Leaderboard() {
                         width: 40,
                         height: 40,
                         borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #6C5CE7, #A29BFE)',
+                        background: 'var(--gray-900)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: '#fff',
                         fontWeight: 700,
                         fontSize: 16,
-                        fontFamily: 'Outfit, sans-serif',
+                        fontFamily: 'inherit',
                       }}
                     >
                       {entry.displayName[0]?.toUpperCase()}
@@ -281,7 +284,7 @@ export default function Leaderboard() {
                       style={{
                         color: 'var(--text-primary)',
                         fontWeight: 600,
-                        fontFamily: 'DM Sans, sans-serif',
+                        fontFamily: 'inherit',
                         fontSize: 15,
                         textDecoration: 'none',
                       }}
@@ -289,7 +292,7 @@ export default function Leaderboard() {
                       {entry.displayName}
                     </Link>
                     {entry.isVerified && (
-                      <span style={{ color: '#00B894', fontSize: 12 }} title="Verified">
+                      <span style={{ color: 'var(--emerald)', fontSize: 12 }} title="Verified">
                         ✓
                       </span>
                     )}
@@ -298,11 +301,11 @@ export default function Leaderboard() {
                         style={{
                           fontSize: 11,
                           color: 'var(--text-muted)',
-                          background: 'var(--bg-elevated)',
-                          border: '1px solid var(--border)',
+                          background: 'var(--gray-100)',
+                          border: '1px solid var(--gray-200)',
                           borderRadius: 4,
                           padding: '1px 6px',
-                          fontFamily: 'DM Mono, monospace',
+                          fontFamily: 'inherit',
                           whiteSpace: 'nowrap',
                         }}
                       >
@@ -322,8 +325,8 @@ export default function Leaderboard() {
                     style={{
                       fontSize: 16,
                       fontWeight: 700,
-                      fontFamily: 'DM Mono, monospace',
-                      color: isMedal ? medalColor : 'var(--text-primary)',
+                      fontFamily: 'inherit',
+                      color: 'var(--gray-900)',
                     }}
                   >
                     {metricLabel(entry)}

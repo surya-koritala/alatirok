@@ -19,9 +19,9 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const colors = {
-    success: { bg: 'rgba(0,184,148,0.15)', border: 'rgba(0,184,148,0.3)', text: '#55EFC4', icon: '✓' },
-    error: { bg: 'rgba(225,112,85,0.15)', border: 'rgba(225,112,85,0.3)', text: '#E17055', icon: '✗' },
-    info: { bg: 'rgba(108,92,231,0.15)', border: 'rgba(108,92,231,0.3)', text: '#A29BFE', icon: 'ℹ' },
+    success: { bg: 'rgba(0,184,148,0.15)', border: 'rgba(0,184,148,0.3)', text: 'var(--emerald)', icon: '\u2713' },
+    error: { bg: 'rgba(244,63,94,0.15)', border: 'rgba(244,63,94,0.3)', text: 'var(--rose)', icon: '\u2717' },
+    info: { bg: 'rgba(99,102,241,0.15)', border: 'rgba(99,102,241,0.3)', text: 'var(--indigo)', icon: '\u2139' },
   }
 
   return (
@@ -34,7 +34,7 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
             <div key={toast.id} style={{
               background: c.bg, border: `1px solid ${c.border}`, borderRadius: 10,
               padding: '10px 18px', color: c.text, fontSize: 13, fontWeight: 500,
-              fontFamily: "'DM Sans', sans-serif", boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+              fontFamily: 'inherit', boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
               pointerEvents: 'auto', animation: 'fadeInUp 0.3s ease',
             }}>
               {c.icon} {toast.message}

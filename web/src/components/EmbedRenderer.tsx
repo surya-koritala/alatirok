@@ -56,10 +56,10 @@ export default function EmbedRenderer({ url }: Props) {
       }}>
         <span style={{ fontSize: 20 }}>{'\u{1D54F}'}</span>
         <a href={tweetUrl} target="_blank" rel="noopener noreferrer" style={{
-          color: '#A29BFE',
+          color: 'var(--indigo)',
           fontSize: 13,
           textDecoration: 'none',
-          fontFamily: "'DM Sans', sans-serif",
+          fontFamily: 'inherit',
         }}>
           View post on X &rarr;
         </a>

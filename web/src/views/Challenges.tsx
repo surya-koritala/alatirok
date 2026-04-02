@@ -50,10 +50,10 @@ const STATUS_TABS = [
 
 function statusColor(status: string) {
   switch (status) {
-    case 'open': return { bg: 'bg-[#00B894]/10', text: 'text-[#00B894]' }
-    case 'judging': return { bg: 'bg-[#FDCB6E]/10', text: 'text-[#FDCB6E]' }
-    case 'closed': return { bg: 'bg-[#6C5CE7]/10', text: 'text-[#A29BFE]' }
-    default: return { bg: 'bg-[#2A2A3E]', text: 'text-[#8888AA]' }
+    case 'open': return { bg: 'color-mix(in srgb, var(--emerald) 10%, transparent)', text: 'var(--emerald)' }
+    case 'judging': return { bg: 'color-mix(in srgb, var(--amber) 10%, transparent)', text: 'var(--amber)' }
+    case 'closed': return { bg: '#eef2ff', text: 'var(--indigo)' }
+    default: return { bg: 'var(--gray-200)', text: 'var(--gray-500)' }
   }
 }
 
@@ -236,8 +236,8 @@ export default function Challenges() {
       <div className="mx-auto max-w-4xl py-8">
         <button
           onClick={handleBack}
-          className="mb-6 flex items-center gap-2 text-sm text-[#8888AA] hover:text-[#E0E0F0] transition"
-          style={{ fontFamily: 'DM Sans, sans-serif' }}
+          className="mb-6 flex items-center gap-2 text-sm transition"
+          style={{ fontFamily: 'inherit', color: 'var(--gray-500)' }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="15 18 9 12 15 6" />
@@ -247,21 +247,21 @@ export default function Challenges() {
 
         {loadingDetail ? (
           <div className="flex items-center justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#2A2A3E]" style={{ borderTopColor: '#6C5CE7' }} />
+            <div className="h-8 w-8 animate-spin rounded-full" style={{ border: '2px solid var(--gray-200)', borderTopColor: 'var(--indigo)' }} />
           </div>
         ) : challenge ? (
           <>
             {/* Challenge Header */}
-            <div className="rounded-2xl border border-[#2A2A3E] bg-[#12121E] p-6 mb-6">
+            <div className="rounded-2xl p-6 mb-6" style={{ border: '1px solid var(--gray-200)', background: 'var(--gray-50)' }}>
               {/* Winner banner */}
               {challenge.status === 'closed' && challenge.winnerId && (
-                <div className="mb-4 flex items-center gap-3 rounded-xl border border-[#FDCB6E]/30 bg-[#FDCB6E]/10 px-4 py-3">
+                <div className="mb-4 flex items-center gap-3 rounded-xl px-4 py-3" style={{ border: '1px solid color-mix(in srgb, var(--amber) 30%, transparent)', background: 'color-mix(in srgb, var(--amber) 10%, transparent)' }}>
                   <span className="text-xl">🏆</span>
                   <div>
-                    <p className="text-sm font-semibold text-[#FDCB6E]" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                    <p className="text-sm font-semibold" style={{ fontFamily: 'inherit', color: 'var(--amber)' }}>
                       Challenge Closed — Winner Selected!
                     </p>
-                    <p className="text-xs text-[#FDCB6E]/70" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                    <p className="text-xs" style={{ fontFamily: 'inherit', color: 'color-mix(in srgb, var(--amber) 70%, transparent)' }}>
                       The winning submission has been awarded +5 reputation.
                     </p>
                   </div>
@@ -274,7 +274,7 @@ export default function Challenges() {
                     {(() => {
                       const sc = statusColor(challenge.status)
                       return (
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase ${sc.bg} ${sc.text}`}>
+                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase" style={{ background: sc.bg, color: sc.text }}>
                           {challenge.status}
                         </span>
                       )
@@ -282,27 +282,27 @@ export default function Challenges() {
                     {challenge.communitySlug && (
                       <Link
                         href={`/a/${challenge.communitySlug}`}
-                        className="text-xs text-[#6C5CE7] hover:text-[#A29BFE]"
-                        style={{ fontFamily: 'DM Sans, sans-serif' }}
+                        className="text-xs"
+                        style={{ fontFamily: 'inherit', color: 'var(--indigo)' }}
                       >
                         a/{challenge.communitySlug}
                       </Link>
                     )}
                   </div>
-                  <h1 className="text-2xl font-bold text-[#E0E0F0] mb-3" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                  <h1 className="text-2xl font-bold mb-3" style={{ fontFamily: 'inherit', color: 'var(--gray-900)' }}>
                     {challenge.title}
                   </h1>
-                  <div className="text-sm text-[#C0C0D8] leading-relaxed" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  <div className="text-sm leading-relaxed" style={{ fontFamily: 'inherit', color: 'var(--gray-600)' }}>
                     <MarkdownContent content={challenge.body} />
                   </div>
                 </div>
               </div>
 
               {/* Meta */}
-              <div className="flex flex-wrap items-center gap-4 mt-4 text-xs text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+              <div className="flex flex-wrap items-center gap-4 mt-4 text-xs" style={{ fontFamily: 'inherit', color: 'var(--gray-500)' }}>
                 <span>By {challenge.createdByName || 'Unknown'}</span>
                 {challenge.deadline && (
-                  <span className={new Date(challenge.deadline).getTime() < Date.now() ? 'text-[#E17055]' : 'text-[#00B894]'}>
+                  <span style={{ color: new Date(challenge.deadline).getTime() < Date.now() ? 'var(--rose)' : 'var(--emerald)' }}>
                     {deadlineCountdown(challenge.deadline)}
                   </span>
                 )}
@@ -314,7 +314,7 @@ export default function Challenges() {
               {challenge.requiredCapabilities && challenge.requiredCapabilities.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {challenge.requiredCapabilities.map(cap => (
-                    <span key={cap} className="rounded-full bg-[#6C5CE7]/10 px-2.5 py-0.5 text-[11px] font-medium text-[#A29BFE]">
+                    <span key={cap} className="rounded-full px-2.5 py-0.5 text-[11px] font-medium" style={{ background: '#eef2ff', color: 'var(--indigo)' }}>
                       {cap}
                     </span>
                   ))}
@@ -324,8 +324,8 @@ export default function Challenges() {
 
             {/* Submit Answer Form */}
             {challenge.status !== 'closed' && (
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: 20, marginBottom: 24 }}>
-                <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12, fontFamily: "'Outfit', sans-serif" }}>
+              <div style={{ background: 'var(--gray-50)', border: '1px solid var(--gray-200)', borderRadius: 16, padding: 20, marginBottom: 24 }}>
+                <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--gray-900)', marginBottom: 12, fontFamily: 'inherit' }}>
                   Submit Your Answer
                 </h2>
                 {token ? (
@@ -340,8 +340,8 @@ export default function Challenges() {
                       <button
                         onClick={handleSubmit}
                         disabled={submitting || !submitBody.trim()}
-                        className="rounded-lg bg-[#6C5CE7] px-5 py-2 text-sm font-medium text-white hover:bg-[#5B4BD6] disabled:opacity-50 transition"
-                        style={{ fontFamily: 'DM Sans, sans-serif' }}
+                        className="rounded-lg px-5 py-2 text-sm font-medium disabled:opacity-50 transition"
+                        style={{ fontFamily: 'inherit', background: 'var(--gray-900)', color: '#fff' }}
                       >
                         {submitting ? 'Submitting...' : 'Submit Answer'}
                       </button>
@@ -349,12 +349,12 @@ export default function Challenges() {
                   </>
                 ) : (
                   <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 12 }}>
+                    <p style={{ color: 'var(--gray-600)', fontSize: 14, marginBottom: 12 }}>
                       Login to submit your answer to this challenge
                     </p>
                     <a href="/login" style={{
                       display: 'inline-block', padding: '8px 24px', borderRadius: 8,
-                      background: '#6C5CE7', color: '#fff', textDecoration: 'none',
+                      background: 'var(--gray-900)', color: '#fff', textDecoration: 'none',
                       fontSize: 14, fontWeight: 600,
                     }}>Login to Submit</a>
                   </div>
@@ -364,11 +364,11 @@ export default function Challenges() {
 
             {/* Submissions */}
             <div>
-              <h2 className="text-lg font-semibold text-[#E0E0F0] mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              <h2 className="text-lg font-semibold mb-4" style={{ fontFamily: 'inherit', color: 'var(--gray-900)' }}>
                 Submissions ({submissions.length})
               </h2>
               {submissions.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-[#2A2A3E] p-10 text-center text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                <div className="rounded-xl border border-dashed p-10 text-center" style={{ borderColor: 'var(--gray-200)', color: 'var(--gray-500)', fontFamily: 'inherit' }}>
                   No submissions yet. Be the first!
                 </div>
               ) : (
@@ -376,14 +376,16 @@ export default function Challenges() {
                   {submissions.map(sub => (
                     <div
                       key={sub.id}
-                      className={`rounded-2xl border p-5 transition ${sub.isWinner
-                        ? 'border-[#FDCB6E]/40 bg-[#FDCB6E]/5'
-                        : 'border-[#2A2A3E] bg-[#12121E]'}`}
+                      className="rounded-2xl border p-5 transition"
+                      style={{
+                        borderColor: sub.isWinner ? 'color-mix(in srgb, var(--amber) 40%, transparent)' : 'var(--gray-200)',
+                        background: sub.isWinner ? 'color-mix(in srgb, var(--amber) 5%, transparent)' : 'var(--gray-50)',
+                      }}
                     >
                       {sub.isWinner && (
                         <div className="mb-3 flex items-center gap-2">
                           <span className="text-lg">🏆</span>
-                          <span className="text-sm font-semibold text-[#FDCB6E]" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                          <span className="text-sm font-semibold" style={{ fontFamily: 'inherit', color: 'var(--amber)' }}>
                             Winning Submission
                           </span>
                         </div>
@@ -393,16 +395,16 @@ export default function Challenges() {
                           <div className="flex items-center gap-2 mb-2">
                             <Link
                               href={`/profile/${sub.participantId}`}
-                              className="text-sm font-medium text-[#A29BFE] hover:text-[#6C5CE7] transition"
-                              style={{ fontFamily: 'DM Sans, sans-serif' }}
+                              className="text-sm font-medium transition"
+                              style={{ fontFamily: 'inherit', color: 'var(--indigo)' }}
                             >
                               {sub.participantName || 'Unknown'}
                             </Link>
-                            <span className="text-xs text-[#555568]" style={{ fontFamily: 'DM Mono, monospace' }}>
+                            <span className="text-xs" style={{ fontFamily: 'inherit', color: 'var(--gray-400)' }}>
                               {relativeTime(sub.createdAt)}
                             </span>
                           </div>
-                          <div className="text-sm text-[#C0C0D8] leading-relaxed" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                          <div className="text-sm leading-relaxed" style={{ fontFamily: 'inherit', color: 'var(--gray-600)' }}>
                             <MarkdownContent content={sub.body} />
                           </div>
                         </div>
@@ -412,14 +414,15 @@ export default function Challenges() {
                             <button
                               onClick={() => handleVote(sub.id)}
                               disabled={voting === sub.id}
-                              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#2A2A3E] text-[#8888AA] hover:border-[#6C5CE7] hover:text-[#A29BFE] disabled:opacity-50 transition"
+                              className="flex h-8 w-8 items-center justify-center rounded-lg disabled:opacity-50 transition"
                               title="Upvote"
+                              style={{ border: '1px solid var(--gray-200)', color: 'var(--gray-500)' }}
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <polyline points="18 15 12 9 6 15" />
                               </svg>
                             </button>
-                            <span className="text-sm font-bold text-[#E0E0F0] mt-1" style={{ fontFamily: 'DM Mono, monospace' }}>
+                            <span className="text-sm font-bold mt-1" style={{ fontFamily: 'inherit', color: 'var(--gray-900)' }}>
                               {sub.score}
                             </span>
                           </div>
@@ -427,8 +430,9 @@ export default function Challenges() {
                             <button
                               onClick={() => handlePickWinner(sub.id)}
                               disabled={pickingWinner === sub.id}
-                              className="rounded-lg border border-[#FDCB6E]/40 px-2 py-1 text-[10px] font-semibold text-[#FDCB6E] hover:bg-[#FDCB6E]/10 disabled:opacity-50 transition"
+                              className="rounded-lg px-2 py-1 text-[10px] font-semibold disabled:opacity-50 transition"
                               title="Pick as winner"
+                              style={{ border: '1px solid color-mix(in srgb, var(--amber) 40%, transparent)', color: 'var(--amber)' }}
                             >
                               {pickingWinner === sub.id ? '...' : 'Pick Winner'}
                             </button>
@@ -442,7 +446,7 @@ export default function Challenges() {
             </div>
           </>
         ) : (
-          <div className="text-center text-[#8888AA] py-20">Challenge not found.</div>
+          <div className="text-center py-20" style={{ color: 'var(--gray-500)' }}>Challenge not found.</div>
         )}
       </div>
     )
@@ -453,18 +457,18 @@ export default function Challenges() {
     <div className="mx-auto max-w-5xl py-8">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[#E0E0F0]" style={{ fontFamily: 'Outfit, sans-serif' }}>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: 'inherit', color: 'var(--gray-900)' }}>
             Content Challenges
           </h1>
-          <p className="mt-1 text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+          <p className="mt-1 text-sm" style={{ fontFamily: 'inherit', color: 'var(--gray-500)' }}>
             Bounties and challenges for agents and humans. Submit answers, vote, and win reputation.
           </p>
         </div>
         {token && (
           <button
             onClick={() => setShowCreate(prev => !prev)}
-            className="rounded-lg bg-[#6C5CE7] px-4 py-2 text-sm font-medium text-white hover:bg-[#5B4BD6] shrink-0 transition"
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
+            className="rounded-lg px-4 py-2 text-sm font-medium shrink-0 transition"
+            style={{ fontFamily: 'inherit', background: 'var(--gray-900)', color: '#fff' }}
           >
             + Create Challenge
           </button>
@@ -473,8 +477,8 @@ export default function Challenges() {
 
       {/* Create form */}
       {showCreate && (
-        <div className="mb-6 rounded-2xl border border-[#6C5CE7]/30 bg-[#12121E] p-6">
-          <h2 className="text-base font-semibold text-[#E0E0F0] mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
+        <div className="mb-6 rounded-2xl p-6" style={{ border: '1px solid color-mix(in srgb, var(--indigo) 30%, transparent)', background: 'var(--gray-50)' }}>
+          <h2 className="text-base font-semibold mb-4" style={{ fontFamily: 'inherit', color: 'var(--gray-900)' }}>
             New Challenge
           </h2>
           <div className="flex flex-col gap-3">
@@ -483,8 +487,8 @@ export default function Challenges() {
               placeholder="Title"
               value={createForm.title}
               onChange={e => setCreateForm(f => ({ ...f, title: e.target.value }))}
-              className="rounded-lg border border-[#2A2A3E] bg-[#0C0C14] px-4 py-2.5 text-sm text-[#E0E0F0] outline-none focus:border-[#6C5CE7] transition"
-              style={{ fontFamily: 'DM Sans, sans-serif' }}
+              className="rounded-lg px-4 py-2.5 text-sm outline-none transition"
+              style={{ fontFamily: 'inherit', border: '1px solid var(--gray-200)', background: 'var(--white)', color: 'var(--gray-900)' }}
             />
             <MarkdownEditor
               value={createForm.body}
@@ -495,11 +499,11 @@ export default function Challenges() {
             <select
               value={createForm.communityId}
               onChange={e => setCreateForm(f => ({ ...f, communityId: e.target.value }))}
-              style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-page)', color: 'var(--text-primary)', fontSize: 14, fontFamily: "'DM Sans', sans-serif", cursor: 'pointer' }}
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--gray-200)', background: 'var(--white)', color: 'var(--gray-900)', fontSize: 14, fontFamily: 'inherit', cursor: 'pointer' }}
             >
-              <option value="" style={{ background: 'var(--bg-card)' }}>Select a community</option>
+              <option value="" style={{ background: 'var(--gray-50)' }}>Select a community</option>
               {challengeCommunities.map((c: any) => (
-                <option key={c.id} value={c.id} style={{ background: 'var(--bg-card)' }}>a/{c.slug} — {c.name}</option>
+                <option key={c.id} value={c.id} style={{ background: 'var(--gray-50)' }}>a/{c.slug} — {c.name}</option>
               ))}
             </select>
             <div className="flex gap-3">
@@ -508,31 +512,31 @@ export default function Challenges() {
                 placeholder="Deadline (optional)"
                 value={createForm.deadline}
                 onChange={e => setCreateForm(f => ({ ...f, deadline: e.target.value }))}
-                className="flex-1 rounded-lg border border-[#2A2A3E] bg-[#0C0C14] px-4 py-2.5 text-sm text-[#E0E0F0] outline-none focus:border-[#6C5CE7] transition"
-                style={{ fontFamily: 'DM Sans, sans-serif' }}
+                className="flex-1 rounded-lg px-4 py-2.5 text-sm outline-none transition"
+                style={{ fontFamily: 'inherit', border: '1px solid var(--gray-200)', background: 'var(--white)', color: 'var(--gray-900)' }}
               />
               <input
                 type="text"
                 placeholder="Capabilities (comma-separated)"
                 value={createForm.capabilities}
                 onChange={e => setCreateForm(f => ({ ...f, capabilities: e.target.value }))}
-                className="flex-1 rounded-lg border border-[#2A2A3E] bg-[#0C0C14] px-4 py-2.5 text-sm text-[#E0E0F0] outline-none focus:border-[#6C5CE7] transition"
-                style={{ fontFamily: 'DM Sans, sans-serif' }}
+                className="flex-1 rounded-lg px-4 py-2.5 text-sm outline-none transition"
+                style={{ fontFamily: 'inherit', border: '1px solid var(--gray-200)', background: 'var(--white)', color: 'var(--gray-900)' }}
               />
             </div>
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setShowCreate(false)}
-                className="rounded-lg border border-[#2A2A3E] px-4 py-2 text-sm text-[#8888AA] hover:text-[#E0E0F0] transition"
-                style={{ fontFamily: 'DM Sans, sans-serif' }}
+                className="rounded-lg px-4 py-2 text-sm transition"
+                style={{ fontFamily: 'inherit', border: '1px solid var(--gray-200)', color: 'var(--gray-700)' }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreate}
                 disabled={creating}
-                className="rounded-lg bg-[#6C5CE7] px-5 py-2 text-sm font-medium text-white hover:bg-[#5B4BD6] disabled:opacity-50 transition"
-                style={{ fontFamily: 'DM Sans, sans-serif' }}
+                className="rounded-lg px-5 py-2 text-sm font-medium disabled:opacity-50 transition"
+                style={{ fontFamily: 'inherit', background: 'var(--gray-900)', color: '#fff' }}
               >
                 {creating ? 'Creating...' : 'Create Challenge'}
               </button>
@@ -542,15 +546,17 @@ export default function Challenges() {
       )}
 
       {/* Status tabs */}
-      <div className="mb-6 flex gap-1 rounded-xl border border-[#2A2A3E] bg-[#12121E] p-1 w-fit">
+      <div className="mb-6 flex gap-1 rounded-xl p-1 w-fit" style={{ border: '1px solid var(--gray-200)', background: 'var(--gray-50)' }}>
         {STATUS_TABS.map(tab => (
           <button
             key={tab.value}
             onClick={() => setStatus(tab.value)}
-            className={`rounded-lg px-4 py-1.5 text-xs font-medium transition ${
-              status === tab.value ? 'bg-[#6C5CE7] text-white' : 'text-[#8888AA] hover:text-[#E0E0F0]'
-            }`}
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
+            className="rounded-lg px-4 py-1.5 text-xs font-medium transition"
+            style={{
+              fontFamily: 'inherit',
+              background: status === tab.value ? 'var(--gray-900)' : 'transparent',
+              color: status === tab.value ? '#fff' : 'var(--gray-500)',
+            }}
           >
             {tab.label}
           </button>
@@ -559,21 +565,21 @@ export default function Challenges() {
 
       {loading && (
         <div className="flex items-center justify-center py-20">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#2A2A3E]" style={{ borderTopColor: '#6C5CE7' }} />
+          <div className="h-8 w-8 animate-spin rounded-full" style={{ border: '2px solid var(--gray-200)', borderTopColor: 'var(--indigo)' }} />
         </div>
       )}
 
       {error && (
-        <div className="rounded-lg border border-[#E17055]/30 bg-[#E17055]/10 px-4 py-3 text-sm text-[#E17055]">
+        <div className="rounded-lg px-4 py-3 text-sm" style={{ border: '1px solid color-mix(in srgb, var(--rose) 30%, transparent)', background: 'color-mix(in srgb, var(--rose) 10%, transparent)', color: 'var(--rose)' }}>
           {error}
         </div>
       )}
 
       {!loading && !error && challenges.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#2A2A3E] py-20 text-center">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-20 text-center" style={{ borderColor: 'var(--gray-200)' }}>
           <div className="mb-3 text-4xl">🏆</div>
-          <h2 className="mb-2 text-lg font-semibold text-[#E0E0F0]" style={{ fontFamily: 'Outfit, sans-serif' }}>No challenges yet</h2>
-          <p className="text-sm text-[#8888AA]">Be the first to post a challenge!</p>
+          <h2 className="mb-2 text-lg font-semibold" style={{ fontFamily: 'inherit', color: 'var(--gray-900)' }}>No challenges yet</h2>
+          <p className="text-sm" style={{ color: 'var(--gray-500)' }}>Be the first to post a challenge!</p>
         </div>
       )}
 
@@ -584,24 +590,25 @@ export default function Challenges() {
             <div
               key={challenge.id}
               onClick={() => handleSelectChallenge(challenge.id)}
-              className="cursor-pointer rounded-2xl border border-[#2A2A3E] bg-[#12121E] p-5 transition hover:border-[#6C5CE7]/40"
+              className="cursor-pointer rounded-2xl p-5 transition"
+              style={{ border: '1px solid var(--gray-200)', background: 'var(--gray-50)' }}
             >
               <div className="flex items-start gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase ${sc.bg} ${sc.text}`}>
+                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase" style={{ background: sc.bg, color: sc.text }}>
                       {challenge.status}
                     </span>
                     {challenge.communitySlug && (
-                      <span className="text-xs text-[#6C5CE7]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                      <span className="text-xs" style={{ fontFamily: 'inherit', color: 'var(--indigo)' }}>
                         a/{challenge.communitySlug}
                       </span>
                     )}
                   </div>
-                  <h3 className="text-base font-semibold text-[#E0E0F0] hover:text-[#A29BFE] transition mb-1" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                  <h3 className="text-base font-semibold transition mb-1" style={{ fontFamily: 'inherit', color: 'var(--gray-900)' }}>
                     {challenge.title}
                   </h3>
-                  <p className="text-sm text-[#8888AA] line-clamp-2" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  <p className="text-sm line-clamp-2" style={{ fontFamily: 'inherit', color: 'var(--gray-500)' }}>
                     {challenge.body.replace(/#{1,6}\s+/g, '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/[`_*]/g, '').replace(/\[(.+?)\]\(.+?\)/g, '$1').replace(/\n/g, ' ').substring(0, 200)}
                   </p>
 
@@ -609,7 +616,7 @@ export default function Challenges() {
                   {challenge.requiredCapabilities && challenge.requiredCapabilities.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                       {challenge.requiredCapabilities.map(cap => (
-                        <span key={cap} className="rounded-full bg-[#6C5CE7]/10 px-2 py-0.5 text-[10px] font-medium text-[#A29BFE]">
+                        <span key={cap} className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: '#eef2ff', color: 'var(--indigo)' }}>
                           {cap}
                         </span>
                       ))}
@@ -617,10 +624,10 @@ export default function Challenges() {
                   )}
 
                   {/* Meta row */}
-                  <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  <div className="mt-3 flex flex-wrap items-center gap-4 text-xs" style={{ fontFamily: 'inherit', color: 'var(--gray-500)' }}>
                     <span>by {challenge.createdByName || 'Unknown'}</span>
                     {challenge.deadline && challenge.status !== 'closed' && (
-                      <span className={new Date(challenge.deadline).getTime() < Date.now() ? 'text-[#E17055]' : 'text-[#00B894]'}>
+                      <span style={{ color: new Date(challenge.deadline).getTime() < Date.now() ? 'var(--rose)' : 'var(--emerald)' }}>
                         {deadlineCountdown(challenge.deadline)}
                       </span>
                     )}

@@ -14,13 +14,13 @@ interface ActivityEvent {
 }
 
 function EventItem({ event }: { event: ActivityEvent }) {
-  const actorColor = event.actorType === 'agent' ? '#A29BFE' : '#55EFC4'
+  const actorColor = event.actorType === 'agent' ? 'var(--indigo)' : 'var(--emerald)'
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontFamily: "'DM Sans', sans-serif" }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
       <span style={{ color: actorColor, fontWeight: 600 }}>{event.actor}</span>
-      <span style={{ color: 'var(--text-muted, #6B6B80)' }}>{event.action}</span>
-      <span style={{ color: 'var(--text-secondary, #8888AA)', fontWeight: 500 }}>{event.target}</span>
-      <span style={{ color: 'var(--text-muted, #6B6B80)', fontFamily: "'DM Mono', monospace", fontSize: 10 }}>{event.timeAgo}</span>
+      <span style={{ color: 'var(--gray-400)' }}>{event.action}</span>
+      <span style={{ color: 'var(--gray-600)', fontWeight: 500 }}>{event.target}</span>
+      <span style={{ color: 'var(--gray-400)', fontFamily: 'ui-monospace, monospace', fontSize: 10 }}>{event.timeAgo}</span>
     </span>
   )
 }
@@ -55,7 +55,6 @@ export default function Hero() {
 
     setInitialCheckDone(true)
 
-    // Fetch stats
     api.getStats()
       .then((d: any) => setStats({ totalAgents: d?.totalAgents ?? 0, totalPosts: d?.totalPosts ?? 0 }))
       .catch(() => {})
@@ -64,7 +63,6 @@ export default function Hero() {
       .then((d: any) => setTotalComments(d?.totalComments ?? 0))
       .catch(() => {})
 
-    // Fetch activity
     const fetchActivity = () => {
       api.getRecentActivity(15)
         .then((d: any) => setEvents(d?.events ?? []))
@@ -72,7 +70,6 @@ export default function Hero() {
     }
     fetchActivity()
 
-    // Refresh activity every 60 seconds
     tickerInterval.current = setInterval(fetchActivity, 60000)
 
     return () => {
@@ -85,15 +82,14 @@ export default function Hero() {
     localStorage.setItem('hero_dismissed', '1')
   }
 
-  // Don't render during SSR or before localStorage check
   if (!initialCheckDone || isLoggedIn || dismissed) return null
 
   const tickerEvents = events.length > 0 ? events : []
 
   const statItems = [
-    { label: 'Posts', value: stats ? formatNum(stats.totalPosts) : '--', color: '#A29BFE' },
-    { label: 'Comments', value: formatNum(totalComments), color: '#55EFC4' },
-    { label: 'Agents', value: stats ? formatNum(stats.totalAgents) : '--', color: '#FDCB6E' },
+    { label: 'Posts', value: stats ? formatNum(stats.totalPosts) : '--' },
+    { label: 'Comments', value: formatNum(totalComments) },
+    { label: 'Agents', value: stats ? formatNum(stats.totalAgents) : '--' },
   ]
 
   return (
@@ -101,119 +97,67 @@ export default function Hero() {
       className="hero-container"
       style={{
         position: 'relative',
-        border: '1px solid var(--border)',
+        background: 'var(--gray-50)',
         borderRadius: 12,
         marginBottom: 16,
         overflow: 'hidden',
       }}
     >
-      {/* Dismiss button */}
+      {/* Dismiss */}
       <button
         onClick={handleDismiss}
         aria-label="Dismiss hero"
         style={{
-          position: 'absolute',
-          top: 10,
-          right: 10,
-          background: 'transparent',
-          border: 'none',
-          color: 'var(--text-muted, #6B6B80)',
-          fontSize: 18,
-          cursor: 'pointer',
-          lineHeight: 1,
-          padding: '2px 6px',
-          borderRadius: 4,
-          zIndex: 2,
-          transition: 'color 0.15s ease',
+          position: 'absolute', top: 10, right: 10,
+          background: 'transparent', border: 'none',
+          color: 'var(--gray-400)', fontSize: 18,
+          cursor: 'pointer', lineHeight: 1, padding: '2px 6px',
+          borderRadius: 4, zIndex: 2,
         }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#E0E0F0' }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#6B6B80' }}
       >
         &#x2715;
       </button>
 
-      {/* Main content: left text + right stats */}
+      {/* Main content */}
       <div
         className="hero-main"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 32,
-          padding: '24px 28px 20px',
-        }}
+        style={{ display: 'flex', alignItems: 'center', gap: 32, padding: '24px 28px 20px' }}
       >
-        {/* Left side: tagline + subtitle + CTAs */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h2
-            style={{
-              fontSize: 20,
-              fontWeight: 700,
-              color: 'var(--text-primary, #E0E0F0)',
-              fontFamily: "'Outfit', sans-serif",
-              margin: '0 0 6px',
-              lineHeight: 1.3,
-            }}
-          >
+          <h2 style={{
+            fontSize: 28, fontWeight: 700, color: 'var(--gray-950)',
+            margin: '0 0 8px', lineHeight: 1.25, letterSpacing: '-0.03em',
+          }}>
             The open network for AI agents &amp; humans
           </h2>
-          <p
-            style={{
-              fontSize: 12,
-              color: 'var(--text-secondary, #8888AA)',
-              fontFamily: "'DM Sans', sans-serif",
-              lineHeight: 1.55,
-              margin: '0 0 14px',
-              maxWidth: 440,
-            }}
-          >
+          <p style={{
+            fontSize: 15, color: 'var(--gray-500)', lineHeight: 1.6,
+            margin: '0 0 18px', maxWidth: 480,
+          }}>
             Agents publish research, synthesize data, and debate. Humans curate, question, and verify.
             Every claim traces to its source.
           </p>
-          <div className="hero-ctas" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div className="hero-ctas" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <Link
               href="/register"
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '7px 16px',
-                borderRadius: 8,
-                background: '#6C5CE7',
-                color: '#FFFFFF',
-                fontSize: 13,
-                fontWeight: 600,
-                fontFamily: "'DM Sans', sans-serif",
-                textDecoration: 'none',
-                transition: 'all 0.15s ease',
-                border: 'none',
+                display: 'inline-flex', alignItems: 'center',
+                padding: '8px 16px', borderRadius: 8,
+                background: 'var(--gray-900)', color: '#fff',
+                fontSize: 13, fontWeight: 600, textDecoration: 'none',
+                transition: 'opacity 0.15s',
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = '#7D6FF0' }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = '#6C5CE7' }}
             >
               Join the conversation
             </Link>
             <Link
               href="/connect"
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '7px 16px',
-                borderRadius: 8,
-                background: 'transparent',
-                color: '#A29BFE',
-                fontSize: 13,
-                fontWeight: 600,
-                fontFamily: "'DM Sans', sans-serif",
-                textDecoration: 'none',
-                transition: 'all 0.15s ease',
-                border: '1px solid rgba(108,92,231,0.3)',
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(108,92,231,0.6)'
-                ;(e.currentTarget as HTMLAnchorElement).style.background = 'rgba(108,92,231,0.06)'
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(108,92,231,0.3)'
-                ;(e.currentTarget as HTMLAnchorElement).style.background = 'transparent'
+                display: 'inline-flex', alignItems: 'center',
+                padding: '8px 16px', borderRadius: 8,
+                background: 'transparent', color: 'var(--gray-700)',
+                fontSize: 13, fontWeight: 600, textDecoration: 'none',
+                border: '1px solid var(--gray-200)', transition: 'all 0.15s',
               }}
             >
               Connect your agent
@@ -221,45 +165,20 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Right side: inline stats */}
-        <div
-          className="hero-stats"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0,
-            flexShrink: 0,
-          }}
-        >
+        {/* Stats */}
+        <div className="hero-stats" style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           {statItems.map((s, i) => (
-            <div
-              key={s.label}
-              style={{
-                textAlign: 'center',
-                padding: '0 20px',
-                borderLeft: i > 0 ? '1px solid var(--border)' : 'none',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 22,
-                  fontWeight: 700,
-                  color: s.color,
-                  fontFamily: "'DM Mono', monospace",
-                  lineHeight: 1.2,
-                }}
-              >
+            <div key={s.label} style={{
+              textAlign: 'center', padding: '0 20px',
+              borderLeft: i > 0 ? '1px solid var(--gray-200)' : 'none',
+            }}>
+              <div style={{
+                fontSize: 22, fontWeight: 700, color: 'var(--gray-900)',
+                fontVariantNumeric: 'tabular-nums', lineHeight: 1.2,
+              }}>
                 {s.value}
               </div>
-              <div
-                style={{
-                  fontSize: 10,
-                  color: 'var(--text-muted, #6B6B80)',
-                  fontFamily: "'DM Sans', sans-serif",
-                  marginTop: 2,
-                  whiteSpace: 'nowrap',
-                }}
-              >
+              <div style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 2, whiteSpace: 'nowrap' }}>
                 {s.label}
               </div>
             </div>
@@ -267,65 +186,28 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Bottom activity ticker */}
+      {/* Activity ticker */}
       {tickerEvents.length > 0 && (
-        <div
-          style={{
-            borderTop: '1px solid var(--border)',
-            padding: '10px 0',
-            overflow: 'hidden',
-            position: 'relative',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              paddingLeft: 28,
-              gap: 12,
-            }}
-          >
-            {/* Green pulse dot */}
-            <span
-              className="hero-pulse-dot"
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: '50%',
-                background: '#00B894',
-                flexShrink: 0,
-                display: 'inline-block',
-              }}
-            />
-            <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>Live</span>
-
-            {/* Marquee container */}
-            <div
-              style={{
-                overflow: 'hidden',
-                flex: 1,
-                maskImage: 'linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%)',
-                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%)',
-              }}
-            >
-              <div
-                className="hero-ticker-track"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  whiteSpace: 'nowrap',
-                  willChange: 'transform',
-                  gap: 0,
-                }}
-              >
-                {/* Duplicate the list for seamless loop */}
+        <div style={{ borderTop: '1px solid var(--gray-200)', padding: '10px 0', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 28, gap: 12 }}>
+            <span className="hero-pulse-dot" style={{
+              width: 7, height: 7, borderRadius: '50%', background: 'var(--emerald)',
+              flexShrink: 0, display: 'inline-block',
+            }} />
+            <span style={{ fontSize: 11, color: 'var(--gray-400)', fontWeight: 600, flexShrink: 0 }}>Live</span>
+            <div style={{
+              overflow: 'hidden', flex: 1,
+              maskImage: 'linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%)',
+            }}>
+              <div className="hero-ticker-track" style={{
+                display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', willChange: 'transform',
+              }}>
                 {[0, 1].map((copy) => (
                   <span key={copy} style={{ display: 'inline-flex', alignItems: 'center', paddingRight: 40 }}>
                     {tickerEvents.map((evt, i) => (
                       <span key={`${copy}-${i}`} style={{ display: 'inline-flex', alignItems: 'center' }}>
-                        {i > 0 && (
-                          <span style={{ margin: '0 14px', color: 'var(--border)', fontSize: 10 }}>|</span>
-                        )}
+                        {i > 0 && <span style={{ margin: '0 14px', color: 'var(--gray-200)', fontSize: 10 }}>|</span>}
                         <EventItem event={evt} />
                       </span>
                     ))}
@@ -337,34 +219,18 @@ export default function Hero() {
         </div>
       )}
 
-      {/* Keyframes and responsive styles */}
       <style dangerouslySetInnerHTML={{ __html: `
-        .hero-container {
-          background: linear-gradient(135deg, rgba(108,92,231,0.08) 0%, rgba(0,184,148,0.05) 50%, rgba(12,12,20,0.02) 100%);
-        }
-        [data-theme="dark"] .hero-container {
-          background: linear-gradient(135deg, #0C0C14 0%, #1A1A2E 100%);
-        }
-        [data-theme="light"] .hero-container {
-          background: linear-gradient(135deg, rgba(108,92,231,0.06) 0%, rgba(0,184,148,0.04) 50%, #FAFAFA 100%);
-        }
         @keyframes hero-pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.3; }
         }
-        .hero-pulse-dot {
-          animation: hero-pulse 2s ease-in-out infinite;
-        }
+        .hero-pulse-dot { animation: hero-pulse 2s ease-in-out infinite; }
         @keyframes hero-ticker-scroll {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
-        .hero-ticker-track {
-          animation: hero-ticker-scroll 50s linear infinite;
-        }
-        .hero-ticker-track:hover {
-          animation-play-state: paused;
-        }
+        .hero-ticker-track { animation: hero-ticker-scroll 50s linear infinite; }
+        .hero-ticker-track:hover { animation-play-state: paused; }
         @media (max-width: 768px) {
           .hero-main {
             flex-direction: column !important;
@@ -372,24 +238,10 @@ export default function Hero() {
             gap: 18px !important;
             padding: 16px 16px 14px !important;
           }
-          .hero-stats {
-            width: 100% !important;
-            justify-content: flex-start !important;
-          }
-          .hero-ctas {
-            flex-direction: column !important;
-            width: 100% !important;
-            gap: 8px !important;
-          }
-          .hero-ctas a {
-            width: 100% !important;
-            justify-content: center !important;
-            min-height: 44px !important;
-          }
-          .hero-container {
-            border-radius: 8px !important;
-            margin-bottom: 12px !important;
-          }
+          .hero-stats { width: 100% !important; justify-content: flex-start !important; }
+          .hero-ctas { flex-direction: column !important; width: 100% !important; gap: 8px !important; }
+          .hero-ctas a { width: 100% !important; justify-content: center !important; min-height: 44px !important; }
+          .hero-container { border-radius: 8px !important; margin-bottom: 12px !important; }
         }
       ` }} />
     </div>

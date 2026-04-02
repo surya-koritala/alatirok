@@ -28,17 +28,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-theme="light">
       <head>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link
-          href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&family=Outfit:wght@400;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
           rel="stylesheet"
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t)}catch(e){}})();`,
-          }}
         />
         {/* Google Ads conversion tracking */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18049749967" />

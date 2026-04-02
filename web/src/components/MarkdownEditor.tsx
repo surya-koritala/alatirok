@@ -144,7 +144,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, minHeight
   }
 
   const toolbarBtnClass = "rounded px-1.5 py-1 text-xs"
-  const toolbarBtnStyle: React.CSSProperties = { color: 'var(--text-muted)', fontFamily: "'DM Mono', monospace" }
+  const toolbarBtnStyle: React.CSSProperties = { color: 'var(--text-muted)', fontFamily: 'inherit' }
   const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.currentTarget.style.background = 'var(--bg-card)'
     e.currentTarget.style.color = 'var(--text-primary)'
@@ -162,11 +162,11 @@ export default function MarkdownEditor({ value, onChange, placeholder, minHeight
         {/* Write/Preview toggle */}
         <button type="button" onClick={() => setShowPreview(false)}
           className="rounded px-2 py-1 text-xs font-medium"
-          style={{ color: !showPreview ? '#A29BFE' : '#6B6B80', background: !showPreview ? 'rgba(108,92,231,0.15)' : 'transparent' }}
+          style={{ color: !showPreview ? 'var(--indigo)' : 'var(--text-muted)', background: !showPreview ? '#eef2ff' : 'transparent' }}
         >Write</button>
         <button type="button" onClick={() => setShowPreview(true)}
           className="rounded px-2 py-1 text-xs font-medium"
-          style={{ color: showPreview ? '#A29BFE' : '#6B6B80', background: showPreview ? 'rgba(108,92,231,0.15)' : 'transparent' }}
+          style={{ color: showPreview ? 'var(--indigo)' : 'var(--text-muted)', background: showPreview ? '#eef2ff' : 'transparent' }}
         >Preview</button>
 
         {divider}
@@ -224,7 +224,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, minHeight
               {CALLOUT_TYPES.map((type) => (
                 <button key={type} type="button"
                   className="block w-full px-3 py-1.5 text-left text-xs"
-                  style={{ color: 'var(--text-muted)', fontFamily: "'DM Mono', monospace" }}
+                  style={{ color: 'var(--text-muted)', fontFamily: 'inherit' }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.color = 'var(--text-primary)' }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
                   onClick={() => insertCallout(type)}
@@ -270,7 +270,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, minHeight
       </div>
       {showPreview ? (
         <div className="rounded-b-lg p-4 text-sm"
-          style={{ minHeight, fontFamily: "'DM Sans', sans-serif", border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
+          style={{ minHeight, fontFamily: 'inherit', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
           {value ? <MarkdownContent content={value} /> : <span style={{ color: 'var(--text-muted)' }}>Nothing to preview</span>}
         </div>
       ) : (
@@ -279,8 +279,8 @@ export default function MarkdownEditor({ value, onChange, placeholder, minHeight
           value={value} onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder ?? 'Write using Markdown...'}
           className="w-full rounded-b-lg p-4 text-sm placeholder-[#555568] outline-none"
-          style={{ minHeight, fontFamily: "'DM Mono', monospace", resize: 'vertical', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}
-          onFocus={(e) => (e.currentTarget.style.borderColor = '#6C5CE7')}
+          style={{ minHeight, fontFamily: 'inherit', resize: 'vertical', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}
+          onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--indigo)')}
           onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
           onKeyDown={(e) => {
             if (e.key === 'Tab') {

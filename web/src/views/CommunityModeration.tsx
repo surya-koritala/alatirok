@@ -60,11 +60,11 @@ const reasonLabels: Record<string, string> = {
 }
 
 const reasonColors: Record<string, string> = {
-  spam: '#F0C040',
-  harassment: '#FF6B6B',
-  misinformation: '#FF7675',
-  off_topic: '#A29BFE',
-  other: '#8888AA',
+  spam: 'var(--amber)',
+  harassment: 'var(--rose)',
+  misinformation: 'var(--rose)',
+  off_topic: 'var(--indigo)',
+  other: 'var(--gray-500)',
 }
 
 export default function CommunityModeration() {
@@ -184,14 +184,14 @@ export default function CommunityModeration() {
   }
 
   const inputStyle: React.CSSProperties = {
-    background: 'var(--bg-card, #12121E)',
-    border: '1px solid var(--border, #2A2A3E)',
+    background: 'var(--gray-50)',
+    border: '1px solid var(--gray-200)',
     borderRadius: 8,
-    color: 'var(--text-primary, #E0E0F0)',
+    color: 'var(--text-primary)',
     padding: '8px 12px',
     fontSize: 14,
     outline: 'none',
-    fontFamily: "'DM Sans', sans-serif",
+    fontFamily: 'inherit',
     width: '100%',
   }
 
@@ -200,7 +200,7 @@ export default function CommunityModeration() {
       <div className="mx-auto max-w-4xl py-8">
         <div className="flex flex-col gap-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-20 animate-pulse rounded-xl border border-[#2A2A3E] bg-[#12121E]" />
+            <div key={i} className="h-20 animate-pulse rounded-xl border border-[var(--gray-200)] bg-[var(--gray-50)]" />
           ))}
         </div>
       </div>
@@ -213,7 +213,7 @@ export default function CommunityModeration() {
         <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-400">
           {error}
         </div>
-        <Link href={`/a/${slug}`} className="mt-4 inline-block text-sm text-[#6C5CE7] hover:underline">
+        <Link href={`/a/${slug}`} className="mt-4 inline-block text-sm text-[var(--indigo)] hover:underline">
           Back to community
         </Link>
       </div>
@@ -230,20 +230,20 @@ export default function CommunityModeration() {
           <div className="flex items-center gap-3">
             <Link
               href={`/a/${slug}`}
-              className="text-sm text-[#8888AA] hover:text-[#E0E0F0] transition"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
+              className="text-sm text-[var(--gray-500)] hover:text-[var(--gray-900)] transition"
+              style={{ fontFamily: 'inherit' }}
             >
               a/{slug}
             </Link>
-            <span className="text-[#8888AA]">/</span>
+            <span className="text-[var(--gray-500)]">/</span>
             <h1
-              className="text-xl font-bold text-[#E0E0F0]"
-              style={{ fontFamily: "'Outfit', sans-serif" }}
+              className="text-xl font-bold text-[var(--gray-900)]"
+              style={{ fontFamily: 'inherit' }}
             >
               Moderation Dashboard
             </h1>
           </div>
-          <p className="mt-1 text-sm text-[#8888AA]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <p className="mt-1 text-sm text-[var(--gray-500)]" style={{ fontFamily: 'inherit' }}>
             {data.moderators.length} moderator{data.moderators.length !== 1 ? 's' : ''} &middot;{' '}
             {data.pendingReports.length} pending report{data.pendingReports.length !== 1 ? 's' : ''}
           </p>
@@ -252,18 +252,18 @@ export default function CommunityModeration() {
 
       {/* Moderators Section */}
       <div
-        className="mb-6 rounded-2xl border border-[#2A2A3E] bg-[#12121E] p-6"
-        style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
+        className="mb-6 rounded-2xl border border-[var(--gray-200)] bg-[var(--gray-50)] p-6"
+        style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}
       >
         <h2
-          className="mb-4 text-base font-semibold text-[#E0E0F0]"
-          style={{ fontFamily: "'Outfit', sans-serif" }}
+          className="mb-4 text-base font-semibold text-[var(--gray-900)]"
+          style={{ fontFamily: 'inherit' }}
         >
           Moderators
         </h2>
 
         {data.moderators.length === 0 ? (
-          <p className="text-sm text-[#8888AA]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <p className="text-sm text-[var(--gray-500)]" style={{ fontFamily: 'inherit' }}>
             No moderators yet.
           </p>
         ) : (
@@ -271,7 +271,7 @@ export default function CommunityModeration() {
             {data.moderators.map((mod) => (
               <div
                 key={mod.id}
-                className="flex items-center justify-between rounded-xl border border-[#2A2A3E] px-4 py-3 bg-[#0C0C14]"
+                className="flex items-center justify-between rounded-xl border border-[var(--gray-200)] px-4 py-3 bg-[var(--white)]"
               >
                 <div className="flex items-center gap-3">
                   <div
@@ -279,39 +279,40 @@ export default function CommunityModeration() {
                     style={{
                       background:
                         mod.type === 'agent'
-                          ? 'linear-gradient(135deg, #00B894 0%, #55EFC4 100%)'
-                          : 'linear-gradient(135deg, #6C5CE7 0%, #A29BFE 100%)',
+                          ? 'linear-gradient(135deg, var(--emerald) 0%, var(--emerald) 100%)'
+                          : 'linear-gradient(135deg, var(--indigo) 0%, var(--indigo) 100%)',
                     }}
                   >
                     {mod.displayName[0].toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-[#E0E0F0]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    <p className="text-sm font-medium text-[var(--gray-900)]" style={{ fontFamily: 'inherit' }}>
                       {mod.displayName}
                     </p>
-                    <p className="text-xs text-[#8888AA]" style={{ fontFamily: "'DM Mono', monospace" }}>
+                    <p className="text-xs text-[var(--gray-500)]" style={{ fontFamily: 'inherit' }}>
                       {mod.id.slice(0, 8)}...
                     </p>
                   </div>
                   <span
                     className="rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wide"
                     style={{
-                      color: mod.role === 'admin' ? '#F0C040' : '#A29BFE',
-                      background: mod.role === 'admin' ? 'rgba(240,192,64,0.1)' : 'rgba(162,155,254,0.1)',
-                      border: `1px solid ${mod.role === 'admin' ? 'rgba(240,192,64,0.25)' : 'rgba(162,155,254,0.25)'}`,
+                      color: mod.role === 'admin' ? 'var(--amber)' : 'var(--indigo)',
+                      background: mod.role === 'admin' ? '#fffbeb' : '#eef2ff',
+                      border: `1px solid ${mod.role === 'admin' ? 'var(--amber)' : 'var(--indigo)'}`,
+                      borderColor: mod.role === 'admin' ? 'rgba(251,191,36,0.3)' : 'rgba(99,102,241,0.3)',
                     }}
                   >
                     {mod.role}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-[#8888AA]" style={{ fontFamily: "'DM Mono', monospace" }}>
+                  <span className="text-xs text-[var(--gray-500)]" style={{ fontFamily: 'inherit' }}>
                     {relativeTime(mod.createdAt)}
                   </span>
                   <button
                     onClick={() => handleRemoveModerator(mod.id)}
-                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-[#FF6B6B] transition hover:bg-red-500/10 border border-red-500/20"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--rose)] transition hover:bg-red-500/10 border border-red-500/20"
+                    style={{ fontFamily: 'inherit' }}
                   >
                     Remove
                   </button>
@@ -325,8 +326,8 @@ export default function CommunityModeration() {
         <form onSubmit={handleAddModerator} className="flex gap-3 items-end">
           <div className="flex-1">
             <label
-              className="mb-1 block text-xs font-medium text-[#8888AA]"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
+              className="mb-1 block text-xs font-medium text-[var(--gray-500)]"
+              style={{ fontFamily: 'inherit' }}
             >
               Add Moderator — Participant ID
             </label>
@@ -336,14 +337,14 @@ export default function CommunityModeration() {
               onChange={(e) => setAddParticipantId(e.target.value)}
               placeholder="Paste participant UUID..."
               style={inputStyle}
-              onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
+              onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
             />
           </div>
           <div>
             <label
-              className="mb-1 block text-xs font-medium text-[#8888AA]"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
+              className="mb-1 block text-xs font-medium text-[var(--gray-500)]"
+              style={{ fontFamily: 'inherit' }}
             >
               Role
             </label>
@@ -351,25 +352,25 @@ export default function CommunityModeration() {
               value={addRole}
               onChange={(e) => setAddRole(e.target.value)}
               style={{ ...inputStyle, width: 'auto', cursor: 'pointer' }}
-              onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
+              onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
             >
-              <option value="moderator" style={{ background: 'var(--bg-card, #12121E)' }}>Moderator</option>
-              <option value="admin" style={{ background: 'var(--bg-card, #12121E)' }}>Admin</option>
+              <option value="moderator" style={{ background: 'var(--gray-50)' }}>Moderator</option>
+              <option value="admin" style={{ background: 'var(--gray-50)' }}>Admin</option>
             </select>
           </div>
           <button
             type="submit"
             disabled={adding || !addParticipantId.trim()}
             style={{
-              background: adding ? '#4A3BB1' : '#6C5CE7',
+              background: 'var(--gray-900)',
               color: '#fff',
               border: 'none',
               borderRadius: 8,
               padding: '8px 18px',
               fontSize: 14,
               fontWeight: 600,
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: 'inherit',
               cursor: adding ? 'not-allowed' : 'pointer',
               opacity: adding || !addParticipantId.trim() ? 0.6 : 1,
               whiteSpace: 'nowrap',
@@ -379,7 +380,7 @@ export default function CommunityModeration() {
           </button>
         </form>
         {addError && (
-          <p className="mt-2 text-xs text-red-400" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <p className="mt-2 text-xs text-red-400" style={{ fontFamily: 'inherit' }}>
             {addError}
           </p>
         )}
@@ -387,20 +388,20 @@ export default function CommunityModeration() {
 
       {/* Community Settings Section */}
       <div
-        className="mb-6 rounded-2xl border border-[#2A2A3E] bg-[#12121E] p-6"
-        style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
+        className="mb-6 rounded-2xl border border-[var(--gray-200)] bg-[var(--gray-50)] p-6"
+        style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}
       >
         <h2
-          className="mb-4 text-base font-semibold text-[#E0E0F0]"
-          style={{ fontFamily: "'Outfit', sans-serif" }}
+          className="mb-4 text-base font-semibold text-[var(--gray-900)]"
+          style={{ fontFamily: 'inherit' }}
         >
           Community Settings
         </h2>
         <form onSubmit={handleSaveSettings} className="flex flex-col gap-4">
           <div>
             <label
-              className="mb-1 block text-xs font-medium text-[#8888AA]"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
+              className="mb-1 block text-xs font-medium text-[var(--gray-500)]"
+              style={{ fontFamily: 'inherit' }}
             >
               Description
             </label>
@@ -410,14 +411,14 @@ export default function CommunityModeration() {
               placeholder="Describe your community..."
               rows={3}
               style={{ ...inputStyle, resize: 'vertical' }}
-              onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
+              onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
             />
           </div>
           <div>
             <label
-              className="mb-1 block text-xs font-medium text-[#8888AA]"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
+              className="mb-1 block text-xs font-medium text-[var(--gray-500)]"
+              style={{ fontFamily: 'inherit' }}
             >
               Rules
             </label>
@@ -427,14 +428,14 @@ export default function CommunityModeration() {
               placeholder="Community rules (markdown supported)..."
               rows={4}
               style={{ ...inputStyle, resize: 'vertical' }}
-              onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
+              onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
             />
           </div>
           <div>
             <label
-              className="mb-1 block text-xs font-medium text-[#8888AA]"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
+              className="mb-1 block text-xs font-medium text-[var(--gray-500)]"
+              style={{ fontFamily: 'inherit' }}
             >
               Agent Policy
             </label>
@@ -442,21 +443,21 @@ export default function CommunityModeration() {
               value={settingsAgentPolicy}
               onChange={(e) => setSettingsAgentPolicy(e.target.value)}
               style={{ ...inputStyle, width: 'auto', cursor: 'pointer' }}
-              onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-              onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
+              onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
             >
-              <option value="open" style={{ background: 'var(--bg-card, #12121E)' }}>Open — agents can post freely</option>
-              <option value="verified" style={{ background: 'var(--bg-card, #12121E)' }}>Verified — verified agents only</option>
-              <option value="restricted" style={{ background: 'var(--bg-card, #12121E)' }}>Restricted — humans only</option>
+              <option value="open" style={{ background: 'var(--gray-50)' }}>Open — agents can post freely</option>
+              <option value="verified" style={{ background: 'var(--gray-50)' }}>Verified — verified agents only</option>
+              <option value="restricted" style={{ background: 'var(--gray-50)' }}>Restricted — humans only</option>
             </select>
           </div>
           <div>
             <label
-              className="mb-1 block text-xs font-medium text-[#8888AA]"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
+              className="mb-1 block text-xs font-medium text-[var(--gray-500)]"
+              style={{ fontFamily: 'inherit' }}
             >
               Minimum Trust Score{' '}
-              <span style={{ color: 'var(--text-muted, #6B6B80)', fontWeight: 400 }}>
+              <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>
                 ({settingsQualityThreshold > 0 ? settingsQualityThreshold.toFixed(1) : 'Off'})
               </span>
             </label>
@@ -470,7 +471,7 @@ export default function CommunityModeration() {
                 onChange={(e) => setSettingsQualityThreshold(Number(e.target.value))}
                 style={{
                   flex: 1,
-                  accentColor: '#6C5CE7',
+                  accentColor: 'var(--indigo)',
                   cursor: 'pointer',
                 }}
               />
@@ -485,13 +486,13 @@ export default function CommunityModeration() {
                   if (v >= 0 && v <= 100) setSettingsQualityThreshold(v)
                 }}
                 style={{ ...inputStyle, width: 70, textAlign: 'center' as const }}
-                onFocus={(e) => (e.target.style.borderColor = '#6C5CE7')}
-                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #2A2A3E)')}
+                onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
               />
             </div>
             <p
-              className="mt-1 text-xs text-[#6B6B80]"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
+              className="mt-1 text-xs text-[var(--gray-400)]"
+              style={{ fontFamily: 'inherit' }}
             >
               {settingsQualityThreshold > 0
                 ? `Participants need a trust score of at least ${settingsQualityThreshold.toFixed(1)} to post in this community.`
@@ -503,14 +504,14 @@ export default function CommunityModeration() {
               type="submit"
               disabled={settingsSaving}
               style={{
-                background: settingsSaving ? '#4A3BB1' : '#6C5CE7',
+                background: 'var(--gray-900)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 8,
                 padding: '8px 20px',
                 fontSize: 14,
                 fontWeight: 600,
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: 'inherit',
                 cursor: settingsSaving ? 'not-allowed' : 'pointer',
                 opacity: settingsSaving ? 0.6 : 1,
               }}
@@ -518,13 +519,13 @@ export default function CommunityModeration() {
               {settingsSaving ? 'Saving...' : 'Save Settings'}
             </button>
             {settingsSuccess && (
-              <span className="text-sm text-[#55EFC4]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <span className="text-sm text-[var(--emerald)]" style={{ fontFamily: 'inherit' }}>
                 Settings saved!
               </span>
             )}
           </div>
           {settingsError && (
-            <p className="text-xs text-red-400" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <p className="text-xs text-red-400" style={{ fontFamily: 'inherit' }}>
               {settingsError}
             </p>
           )}
@@ -533,21 +534,21 @@ export default function CommunityModeration() {
 
       {/* Pending Reports Section */}
       <div
-        className="rounded-2xl border border-[#2A2A3E] bg-[#12121E] p-6"
-        style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
+        className="rounded-2xl border border-[var(--gray-200)] bg-[var(--gray-50)] p-6"
+        style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}
       >
         <h2
-          className="mb-4 text-base font-semibold text-[#E0E0F0]"
-          style={{ fontFamily: "'Outfit', sans-serif" }}
+          className="mb-4 text-base font-semibold text-[var(--gray-900)]"
+          style={{ fontFamily: 'inherit' }}
         >
           Pending Reports
           {data.pendingReports.length > 0 && (
             <span
               className="ml-2 rounded-full px-2 py-0.5 text-xs font-bold"
               style={{
-                background: 'rgba(255,107,107,0.15)',
-                color: '#FF6B6B',
-                border: '1px solid rgba(255,107,107,0.25)',
+                background: 'rgba(239,68,68,0.1)',
+                color: 'var(--rose)',
+                border: '1px solid rgba(239,68,68,0.25)',
               }}
             >
               {data.pendingReports.length}
@@ -557,8 +558,8 @@ export default function CommunityModeration() {
 
         {data.pendingReports.length === 0 ? (
           <div
-            className="rounded-xl border border-[#2A2A3E] bg-[#0C0C14] p-8 text-center text-[#8888AA]"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
+            className="rounded-xl border border-[var(--gray-200)] bg-[var(--white)] p-8 text-center text-[var(--gray-500)]"
+            style={{ fontFamily: 'inherit' }}
           >
             No pending reports. The community is clean!
           </div>
@@ -567,7 +568,7 @@ export default function CommunityModeration() {
             {data.pendingReports.map((report) => (
               <div
                 key={report.id}
-                className="rounded-xl border border-[#2A2A3E] bg-[#0C0C14] p-4"
+                className="rounded-xl border border-[var(--gray-200)] bg-[var(--white)] p-4"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -575,9 +576,9 @@ export default function CommunityModeration() {
                       <span
                         className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
                         style={{
-                          color: reasonColors[report.reason] ?? '#8888AA',
-                          background: `${reasonColors[report.reason] ?? '#8888AA'}18`,
-                          border: `1px solid ${reasonColors[report.reason] ?? '#8888AA'}40`,
+                          color: reasonColors[report.reason] ?? 'var(--gray-500)',
+                          background: `color-mix(in srgb, ${reasonColors[report.reason] ?? 'var(--gray-500)'} 10%, transparent)`,
+                          border: `1px solid color-mix(in srgb, ${reasonColors[report.reason] ?? 'var(--gray-500)'} 25%, transparent)`,
                         }}
                       >
                         {reasonLabels[report.reason] ?? report.reason}
@@ -585,27 +586,27 @@ export default function CommunityModeration() {
                       <span
                         className="rounded-full px-2 py-0.5 text-xs"
                         style={{
-                          color: 'var(--text-secondary, #8888AA)',
-                          background: 'rgba(136,136,170,0.08)',
-                          border: '1px solid rgba(136,136,170,0.2)',
-                          fontFamily: "'DM Mono', monospace",
+                          color: 'var(--text-secondary)',
+                          background: 'var(--gray-100)',
+                          border: '1px solid var(--gray-200)',
+                          fontFamily: 'inherit',
                         }}
                       >
                         {report.contentType}
                       </span>
-                      <span className="text-xs text-[#8888AA]" style={{ fontFamily: "'DM Mono', monospace" }}>
+                      <span className="text-xs text-[var(--gray-500)]" style={{ fontFamily: 'inherit' }}>
                         {relativeTime(report.createdAt)}
                       </span>
                     </div>
-                    <p className="text-sm text-[#C0C0D8] mb-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                      Reported by <span className="text-[#A29BFE]">{report.reporterName}</span>
+                    <p className="text-sm text-[var(--gray-600)] mb-1" style={{ fontFamily: 'inherit' }}>
+                      Reported by <span className="text-[var(--indigo)]">{report.reporterName}</span>
                     </p>
                     {report.details && (
-                      <p className="text-sm text-[#8888AA] mt-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                      <p className="text-sm text-[var(--gray-500)] mt-1" style={{ fontFamily: 'inherit' }}>
                         &quot;{report.details}&quot;
                       </p>
                     )}
-                    <p className="text-xs text-[#6B6B80] mt-1" style={{ fontFamily: "'DM Mono', monospace" }}>
+                    <p className="text-xs text-[var(--gray-400)] mt-1" style={{ fontFamily: 'inherit' }}>
                       Content ID: {report.contentId.slice(0, 12)}...
                     </p>
                   </div>
@@ -615,10 +616,10 @@ export default function CommunityModeration() {
                       disabled={resolvingId === report.id}
                       className="rounded-lg px-3 py-1.5 text-xs font-medium transition border"
                       style={{
-                        color: '#55EFC4',
-                        background: 'rgba(85,239,196,0.08)',
-                        borderColor: 'rgba(85,239,196,0.25)',
-                        fontFamily: "'DM Sans', sans-serif",
+                        color: 'var(--emerald)',
+                        background: 'rgba(16,185,129,0.08)',
+                        borderColor: 'rgba(16,185,129,0.25)',
+                        fontFamily: 'inherit',
                         cursor: resolvingId === report.id ? 'not-allowed' : 'pointer',
                         opacity: resolvingId === report.id ? 0.6 : 1,
                       }}
@@ -630,10 +631,10 @@ export default function CommunityModeration() {
                       disabled={resolvingId === report.id}
                       className="rounded-lg px-3 py-1.5 text-xs font-medium transition border"
                       style={{
-                        color: 'var(--text-secondary, #8888AA)',
-                        background: 'rgba(136,136,170,0.08)',
-                        borderColor: 'rgba(136,136,170,0.2)',
-                        fontFamily: "'DM Sans', sans-serif",
+                        color: 'var(--text-secondary)',
+                        background: 'var(--gray-100)',
+                        borderColor: 'var(--gray-200)',
+                        fontFamily: 'inherit',
                         cursor: resolvingId === report.id ? 'not-allowed' : 'pointer',
                         opacity: resolvingId === report.id ? 0.6 : 1,
                       }}

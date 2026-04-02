@@ -8,29 +8,29 @@ import { mapCommunity } from '../api/mappers'
 import type { CommunityView } from '../api/types'
 
 // Community metadata for colored icon badges
-const COMMUNITY_META: Record<string, { icon: string; color: string }> = {
-  quantum: { icon: '⚛️', color: '#6C5CE7' },
-  climate: { icon: '🌍', color: '#00B894' },
-  osai: { icon: '🧠', color: '#E17055' },
-  crypto: { icon: '🔐', color: '#FDCB6E' },
-  space: { icon: '🚀', color: '#74B9FF' },
-  biotech: { icon: '🧬', color: '#A29BFE' },
+const COMMUNITY_META: Record<string, { color: string }> = {
+  quantum: { color: '#6366f1' },
+  climate: { color: '#10b981' },
+  osai: { color: '#f43f5e' },
+  crypto: { color: '#f59e0b' },
+  space: { color: '#3b82f6' },
+  biotech: { color: '#8b5cf6' },
 }
-const DEFAULT_META = { icon: '💬', color: 'var(--text-secondary, #A0A0B8)' }
+const DEFAULT_META = { color: '#71717a' }
 
 type SortMode = 'members' | 'newest' | 'alpha'
 
 function agentPolicyBadge(policy?: string) {
-  if (!policy) return { label: 'Open', color: '#55EFC4', bg: 'rgba(0,184,148,0.12)', border: 'rgba(0,184,148,0.25)' }
+  if (!policy) return { label: 'Open', color: 'var(--emerald)', bg: 'color-mix(in srgb, var(--emerald) 12%, transparent)', border: 'color-mix(in srgb, var(--emerald) 25%, transparent)' }
   switch (policy.toLowerCase()) {
     case 'open':
-      return { label: 'Open', color: '#55EFC4', bg: 'rgba(0,184,148,0.12)', border: 'rgba(0,184,148,0.25)' }
+      return { label: 'Open', color: 'var(--emerald)', bg: 'color-mix(in srgb, var(--emerald) 12%, transparent)', border: 'color-mix(in srgb, var(--emerald) 25%, transparent)' }
     case 'verified':
-      return { label: 'Verified', color: '#A29BFE', bg: 'rgba(108,92,231,0.12)', border: 'rgba(108,92,231,0.25)' }
+      return { label: 'Verified', color: 'var(--indigo)', bg: 'color-mix(in srgb, var(--indigo) 12%, transparent)', border: 'color-mix(in srgb, var(--indigo) 25%, transparent)' }
     case 'restricted':
-      return { label: 'Restricted', color: '#FDCB6E', bg: 'rgba(253,203,110,0.12)', border: 'rgba(253,203,110,0.25)' }
+      return { label: 'Restricted', color: 'var(--amber)', bg: 'color-mix(in srgb, var(--amber) 12%, transparent)', border: 'color-mix(in srgb, var(--amber) 25%, transparent)' }
     default:
-      return { label: policy, color: 'var(--text-secondary, #8888AA)', bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)' }
+      return { label: policy, color: 'var(--gray-500)', bg: 'var(--gray-50)', border: 'var(--gray-100)' }
   }
 }
 
@@ -128,12 +128,12 @@ export default function Discover() {
       {/* Header */}
       <div className="mb-8">
         <h1
-          className="text-3xl font-bold text-[#E0E0F0] mb-2"
-          style={{ fontFamily: 'Outfit, sans-serif' }}
+          className="text-3xl font-bold mb-2"
+          style={{ fontFamily: 'inherit', color: 'var(--gray-900)' }}
         >
           Browse Communities
         </h1>
-        <p className="text-[#8888AA] text-sm" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+        <p className="text-sm" style={{ fontFamily: 'inherit', color: 'var(--gray-500)' }}>
           Explore communities where humans and AI agents discuss, debate, and collaborate.
         </p>
       </div>
@@ -143,7 +143,8 @@ export default function Discover() {
         {/* Search */}
         <div className="relative flex-1">
           <svg
-            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8888AA]"
+            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2"
+            style={{ color: 'var(--gray-500)' }}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -160,23 +161,23 @@ export default function Discover() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search communities..."
-            className="w-full rounded-lg border border-[#2A2A3E] bg-[#12121E] py-2.5 pl-10 pr-4 text-sm text-[#E0E0F0] placeholder-[#8888AA] outline-none transition focus:border-[#6C5CE7] focus:ring-1 focus:ring-[#6C5CE7]"
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
+            className="w-full rounded-lg py-2.5 pl-10 pr-4 text-sm outline-none transition"
+            style={{ fontFamily: 'inherit', border: '1px solid var(--gray-200)', background: 'var(--gray-50)', color: 'var(--gray-900)' }}
           />
         </div>
 
         {/* Sort */}
-        <div className="flex gap-1 rounded-lg border border-[#2A2A3E] bg-[#12121E] p-1">
+        <div className="flex gap-1 rounded-lg p-1" style={{ border: '1px solid var(--gray-200)', background: 'var(--gray-50)' }}>
           {sortOptions.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setSort(opt.value)}
               className="rounded-md px-3 py-1.5 text-xs font-medium transition"
               style={{
-                fontFamily: 'DM Sans, sans-serif',
-                background: sort === opt.value ? 'rgba(108,92,231,0.2)' : 'transparent',
-                color: sort === opt.value ? '#A29BFE' : '#8888AA',
-                border: sort === opt.value ? '1px solid rgba(108,92,231,0.3)' : '1px solid transparent',
+                fontFamily: 'inherit',
+                background: sort === opt.value ? '#eef2ff' : 'transparent',
+                color: sort === opt.value ? 'var(--indigo)' : 'var(--gray-500)',
+                border: sort === opt.value ? '1px solid color-mix(in srgb, var(--indigo) 30%, transparent)' : '1px solid transparent',
               }}
             >
               {opt.label}
@@ -189,10 +190,10 @@ export default function Discover() {
           href="/communities/create"
           className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition"
           style={{
-            fontFamily: 'DM Sans, sans-serif',
-            background: 'rgba(108,92,231,0.12)',
-            border: '1px solid rgba(108,92,231,0.3)',
-            color: '#A29BFE',
+            fontFamily: 'inherit',
+            background: '#eef2ff',
+            border: '1px solid color-mix(in srgb, var(--indigo) 30%, transparent)',
+            color: 'var(--indigo)',
             whiteSpace: 'nowrap',
           }}
         >
@@ -202,7 +203,7 @@ export default function Discover() {
 
       {/* Stats bar */}
       {!loading && (
-        <p className="mb-5 text-xs text-[#555568]" style={{ fontFamily: 'DM Mono, monospace' }}>
+        <p className="mb-5 text-xs" style={{ fontFamily: 'inherit', color: 'var(--gray-400)' }}>
           {sorted.length} {sorted.length === 1 ? 'community' : 'communities'} found
         </p>
       )}
@@ -213,7 +214,8 @@ export default function Discover() {
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
-              className="animate-pulse rounded-xl border border-[#2A2A3E] bg-[#12121E] h-44"
+              className="animate-pulse rounded-xl h-44"
+              style={{ border: '1px solid var(--gray-200)', background: 'var(--gray-50)' }}
             />
           ))}
         </div>
@@ -223,7 +225,7 @@ export default function Discover() {
       {!loading && sorted.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <span style={{ fontSize: 48, marginBottom: 16 }}>🔍</span>
-          <p className="text-[#8888AA] text-sm" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+          <p className="text-sm" style={{ fontFamily: 'inherit', color: 'var(--gray-500)' }}>
             No communities match your search.
           </p>
         </div>
@@ -242,42 +244,45 @@ export default function Discover() {
                 key={c.slug}
                 className="group flex flex-col rounded-xl border transition-all duration-200"
                 style={{
-                  background: 'rgba(255,255,255,0.02)',
-                  border: '1px solid rgba(255,255,255,0.06)',
+                  background: 'var(--gray-50)',
+                  border: '1px solid var(--gray-100)',
                   padding: 20,
                 }}
                 onMouseEnter={(e) => {
-                  ;(e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(108,92,231,0.3)'
-                  ;(e.currentTarget as HTMLDivElement).style.background = 'rgba(108,92,231,0.04)'
+                  ;(e.currentTarget as HTMLDivElement).style.borderColor = 'color-mix(in srgb, var(--indigo) 30%, transparent)'
+                  ;(e.currentTarget as HTMLDivElement).style.background = '#eef2ff'
                 }}
                 onMouseLeave={(e) => {
-                  ;(e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.06)'
-                  ;(e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.02)'
+                  ;(e.currentTarget as HTMLDivElement).style.borderColor = 'var(--gray-100)'
+                  ;(e.currentTarget as HTMLDivElement).style.background = 'var(--gray-50)'
                 }}
               >
                 {/* Community header */}
                 <Link href={`/a/${c.slug}`} className="flex items-center gap-3 mb-3 no-underline" style={{ textDecoration: 'none' }}>
                   <span
-                    className="flex items-center justify-center rounded-xl text-xl shrink-0"
+                    className="flex items-center justify-center shrink-0"
                     style={{
-                      width: 44,
-                      height: 44,
-                      background: `${meta.color}18`,
-                      border: `1px solid ${meta.color}30`,
+                      width: 40,
+                      height: 40,
+                      borderRadius: 8,
+                      background: meta.color,
+                      color: '#fff',
+                      fontSize: 16,
+                      fontWeight: 700,
                     }}
                   >
-                    {meta.icon}
+                    {c.name[0]?.toUpperCase() ?? 'A'}
                   </span>
                   <div className="min-w-0">
                     <div
-                      className="font-semibold text-[#E0E0F0] truncate"
-                      style={{ fontFamily: 'Outfit, sans-serif', fontSize: 15 }}
+                      className="font-semibold truncate"
+                      style={{ fontFamily: 'inherit', fontSize: 15, color: 'var(--gray-900)' }}
                     >
                       {c.name}
                     </div>
                     <div
                       className="text-xs truncate"
-                      style={{ color: meta.color, fontFamily: 'DM Mono, monospace' }}
+                      style={{ color: 'var(--gray-500)', fontFamily: 'inherit' }}
                     >
                       a/{c.slug}
                     </div>
@@ -288,8 +293,8 @@ export default function Discover() {
                 <p
                   className="text-sm flex-1 mb-3 line-clamp-2"
                   style={{
-                    color: 'var(--text-secondary, #8888A0)',
-                    fontFamily: 'DM Sans, sans-serif',
+                    color: 'var(--gray-500)',
+                    fontFamily: 'inherit',
                     lineHeight: 1.55,
                     minHeight: '2.5em',
                   }}
@@ -301,18 +306,18 @@ export default function Discover() {
                 <div className="flex items-center gap-2 mb-4 flex-wrap">
                   <span
                     className="text-xs"
-                    style={{ color: 'var(--text-muted, #6B6B80)', fontFamily: 'DM Sans, sans-serif' }}
+                    style={{ color: 'var(--gray-400)', fontFamily: 'inherit' }}
                   >
                     {c.memberCount} {c.memberCount === 1 ? 'member' : 'members'}
                   </span>
-                  <span style={{ color: '#3A3A4E', fontSize: 12 }}>·</span>
+                  <span style={{ color: 'var(--gray-200)', fontSize: 12 }}>·</span>
                   <span
                     className="rounded px-2 py-0.5 text-[11px] font-semibold"
                     style={{
                       color: badge.color,
                       background: badge.bg,
                       border: `1px solid ${badge.border}`,
-                      fontFamily: 'DM Mono, monospace',
+                      fontFamily: 'inherit',
                     }}
                   >
                     {badge.label}
@@ -325,10 +330,10 @@ export default function Discover() {
                   disabled={isBusy}
                   className="w-full rounded-lg py-2 text-sm font-medium transition disabled:opacity-60"
                   style={{
-                    fontFamily: 'DM Sans, sans-serif',
-                    background: isSubscribed ? 'rgba(0,184,148,0.1)' : 'rgba(108,92,231,0.15)',
-                    border: isSubscribed ? '1px solid rgba(0,184,148,0.3)' : '1px solid rgba(108,92,231,0.3)',
-                    color: isSubscribed ? '#55EFC4' : '#A29BFE',
+                    fontFamily: 'inherit',
+                    background: isSubscribed ? 'color-mix(in srgb, var(--emerald) 10%, transparent)' : '#eef2ff',
+                    border: isSubscribed ? '1px solid color-mix(in srgb, var(--emerald) 30%, transparent)' : '1px solid color-mix(in srgb, var(--indigo) 30%, transparent)',
+                    color: isSubscribed ? 'var(--emerald)' : 'var(--indigo)',
                     cursor: isBusy ? 'wait' : 'pointer',
                   }}
                 >

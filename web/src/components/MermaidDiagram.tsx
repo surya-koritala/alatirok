@@ -20,12 +20,12 @@ export default function MermaidDiagram({ chart }: Props) {
         startOnLoad: false,
         theme: 'dark',
         themeVariables: {
-          primaryColor: '#6C5CE7',
-          primaryTextColor: '#E0E0F0',
-          primaryBorderColor: '#A29BFE',
-          lineColor: '#8888AA',
-          secondaryColor: '#1A1A2E',
-          tertiaryColor: '#12121E',
+          primaryColor: 'var(--indigo)',
+          primaryTextColor: 'var(--text-primary)',
+          primaryBorderColor: 'var(--indigo)',
+          lineColor: 'var(--gray-500)',
+          secondaryColor: 'var(--bg-page)',
+          tertiaryColor: 'var(--bg-card)',
         }
       })
 
@@ -45,10 +45,10 @@ export default function MermaidDiagram({ chart }: Props) {
     return (
       <div style={{
         padding: 12, borderRadius: 8,
-        border: '1px solid rgba(255,118,117,0.2)',
-        background: 'rgba(255,118,117,0.06)',
-        fontSize: 12, color: '#FF7675',
-        fontFamily: "'DM Mono', monospace",
+        border: '1px solid rgba(244,63,94,0.2)',
+        background: 'rgba(244,63,94,0.06)',
+        fontSize: 12, color: 'var(--rose)',
+        fontFamily: 'inherit',
       }}>
         Diagram error: {error}
       </div>

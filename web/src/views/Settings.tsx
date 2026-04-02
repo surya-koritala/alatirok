@@ -63,7 +63,7 @@ export default function Settings() {
   }
 
   const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '—'
+    if (!dateStr) return '\u2014'
     try {
       return new Date(dateStr).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -81,12 +81,12 @@ export default function Settings() {
     <div className="mx-auto max-w-2xl py-10">
       <div className="mb-8">
         <h1
-          className="text-2xl font-bold text-[#E0E0F0]"
-          style={{ fontFamily: 'Outfit, sans-serif' }}
+          className="text-2xl font-bold"
+          style={{ color: 'var(--gray-950)', letterSpacing: '-0.02em' }}
         >
           Account Settings
         </h1>
-        <p className="mt-1 text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+        <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
           Manage your profile and account preferences.
         </p>
       </div>
@@ -94,8 +94,8 @@ export default function Settings() {
       {loading && (
         <div className="flex items-center justify-center py-20">
           <div
-            className="h-8 w-8 animate-spin rounded-full border-2 border-[#2A2A3E]"
-            style={{ borderTopColor: '#6C5CE7' }}
+            className="h-8 w-8 animate-spin rounded-full border-2"
+            style={{ borderColor: 'var(--gray-200)', borderTopColor: 'var(--gray-900)' }}
           />
         </div>
       )}
@@ -103,10 +103,10 @@ export default function Settings() {
       {!loading && (
         <div className="flex flex-col gap-6">
           {/* Profile form */}
-          <div className="rounded-2xl border border-[#2A2A3E] bg-[#12121E] p-6">
+          <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border)', background: 'var(--bg-card)' }}>
             <h2
-              className="mb-4 text-base font-semibold text-[#E0E0F0]"
-              style={{ fontFamily: 'Outfit, sans-serif' }}
+              className="mb-4 text-base font-semibold"
+              style={{ color: 'var(--gray-950)' }}
             >
               Profile
             </h2>
@@ -117,18 +117,19 @@ export default function Settings() {
                   <img
                     src={avatarUrl}
                     alt={displayName}
-                    className="h-14 w-14 rounded-full object-cover border border-[#2A2A3E]"
+                    className="h-14 w-14 rounded-full object-cover border"
+                    style={{ borderColor: 'var(--border)' }}
                   />
                 ) : (
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#6C5CE7] to-[#A29BFE] text-lg font-bold text-white">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full text-lg font-bold text-white" style={{ background: 'var(--gray-900)' }}>
                     {displayName ? displayName[0].toUpperCase() : 'U'}
                   </div>
                 )}
                 <div className="flex-1">
                   <label
                     htmlFor="avatarUrl"
-                    className="text-xs font-medium text-[#8888AA]"
-                    style={{ fontFamily: 'DM Sans, sans-serif' }}
+                    className="text-xs font-medium"
+                    style={{ color: 'var(--text-muted)' }}
                   >
                     Avatar URL
                   </label>
@@ -138,8 +139,10 @@ export default function Settings() {
                     value={avatarUrl}
                     onChange={(e) => setAvatarUrl(e.target.value)}
                     placeholder="https://example.com/avatar.png"
-                    className="mt-1 w-full rounded-lg border border-[#2A2A3E] bg-[#0C0C14] px-3 py-2 text-sm text-[#E0E0F0] placeholder-[#8888AA] outline-none transition focus:border-[#6C5CE7] focus:ring-1 focus:ring-[#6C5CE7]"
-                    style={{ fontFamily: 'DM Sans, sans-serif' }}
+                    className="mt-1 w-full rounded-lg px-3 py-2 text-sm outline-none transition"
+                    style={{ border: '1px solid var(--border)', background: 'var(--bg-page)', color: 'var(--text-primary)' }}
+                    onFocus={e => { e.currentTarget.style.borderColor = 'var(--gray-400)' }}
+                    onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
                   />
                 </div>
               </div>
@@ -148,8 +151,8 @@ export default function Settings() {
               <div className="flex flex-col gap-1.5">
                 <label
                   htmlFor="displayName"
-                  className="text-sm font-medium text-[#8888AA]"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  className="text-sm font-medium"
+                  style={{ color: 'var(--text-muted)' }}
                 >
                   Display Name
                 </label>
@@ -159,8 +162,10 @@ export default function Settings() {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Your name"
-                  className="rounded-lg border border-[#2A2A3E] bg-[#0C0C14] px-4 py-2.5 text-sm text-[#E0E0F0] placeholder-[#8888AA] outline-none transition focus:border-[#6C5CE7] focus:ring-1 focus:ring-[#6C5CE7]"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  className="rounded-lg px-4 py-2.5 text-sm outline-none transition"
+                  style={{ border: '1px solid var(--border)', background: 'var(--bg-page)', color: 'var(--text-primary)' }}
+                  onFocus={e => { e.currentTarget.style.borderColor = 'var(--gray-400)' }}
+                  onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
                 />
               </div>
 
@@ -168,8 +173,8 @@ export default function Settings() {
               <div className="flex flex-col gap-1.5">
                 <label
                   htmlFor="bio"
-                  className="text-sm font-medium text-[#8888AA]"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  className="text-sm font-medium"
+                  style={{ color: 'var(--text-muted)' }}
                 >
                   Bio
                 </label>
@@ -179,19 +184,21 @@ export default function Settings() {
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="Tell the community about yourself..."
                   rows={4}
-                  className="rounded-lg border border-[#2A2A3E] bg-[#0C0C14] px-4 py-2.5 text-sm text-[#E0E0F0] placeholder-[#8888AA] outline-none transition focus:border-[#6C5CE7] focus:ring-1 focus:ring-[#6C5CE7] resize-none"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  className="rounded-lg px-4 py-2.5 text-sm outline-none transition resize-none"
+                  style={{ border: '1px solid var(--border)', background: 'var(--bg-page)', color: 'var(--text-primary)' }}
+                  onFocus={e => { e.currentTarget.style.borderColor = 'var(--gray-400)' }}
+                  onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
                 />
               </div>
 
               {error && (
-                <div className="rounded-lg border border-[#E17055]/30 bg-[#E17055]/10 px-4 py-3 text-sm text-[#E17055]">
+                <div className="rounded-lg px-4 py-3 text-sm" style={{ border: '1px solid color-mix(in srgb, var(--rose) 30%, transparent)', background: 'color-mix(in srgb, var(--rose) 10%, transparent)', color: 'var(--rose)' }}>
                   {error}
                 </div>
               )}
 
               {success && (
-                <div className="rounded-lg border border-[#00B894]/30 bg-[#00B894]/10 px-4 py-3 text-sm text-[#00B894]">
+                <div className="rounded-lg px-4 py-3 text-sm" style={{ border: '1px solid color-mix(in srgb, var(--emerald) 30%, transparent)', background: 'color-mix(in srgb, var(--emerald) 10%, transparent)', color: 'var(--emerald)' }}>
                   Profile updated successfully.
                 </div>
               )}
@@ -200,8 +207,8 @@ export default function Settings() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="rounded-lg bg-[#6C5CE7] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#5B4BD6] disabled:cursor-not-allowed disabled:opacity-50"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  className="rounded-lg px-6 py-2.5 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+                  style={{ background: 'var(--gray-900)' }}
                 >
                   {saving ? 'Saving...' : 'Save Changes'}
                 </button>
@@ -210,42 +217,42 @@ export default function Settings() {
           </div>
 
           {/* Account info (read-only) */}
-          <div className="rounded-2xl border border-[#2A2A3E] bg-[#12121E] p-6">
+          <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border)', background: 'var(--bg-card)' }}>
             <h2
-              className="mb-4 text-base font-semibold text-[#E0E0F0]"
-              style={{ fontFamily: 'Outfit, sans-serif' }}
+              className="mb-4 text-base font-semibold"
+              style={{ color: 'var(--gray-950)' }}
             >
               Account Details
             </h2>
             <div className="flex flex-col gap-3">
               {profile?.email && (
-                <div className="flex items-center justify-between py-2 border-b border-[#2A2A3E]">
-                  <span className="text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                <div className="flex items-center justify-between py-2" style={{ borderBottom: '1px solid var(--border-light)' }}>
+                  <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
                     Email
                   </span>
-                  <span className="text-sm text-[#E0E0F0]" style={{ fontFamily: 'DM Mono, monospace' }}>
+                  <span className="text-sm" style={{ color: 'var(--text-primary)' }}>
                     {profile.email}
                   </span>
                 </div>
               )}
-              <div className="flex items-center justify-between py-2 border-b border-[#2A2A3E]">
-                <span className="text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+              <div className="flex items-center justify-between py-2" style={{ borderBottom: '1px solid var(--border-light)' }}>
+                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
                   Member since
                 </span>
-                <span className="text-sm text-[#E0E0F0]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                <span className="text-sm" style={{ color: 'var(--text-primary)' }}>
                   {formatDate(profile?.createdAt)}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
                   My Agents
                 </span>
                 <Link
                   href="/my-agents"
-                  className="text-sm font-medium text-[#A29BFE] transition hover:text-[#6C5CE7]"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  className="text-sm font-medium transition"
+                  style={{ color: 'var(--indigo)' }}
                 >
-                  Manage agents →
+                  Manage agents
                 </Link>
               </div>
             </div>

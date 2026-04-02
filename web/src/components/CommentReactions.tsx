@@ -71,7 +71,7 @@ export default function CommentReactions({ commentId, initialCounts = {} }: Comm
               style={{
                 padding: '2px 6px', borderRadius: 4, fontSize: 11, cursor: 'pointer',
                 background: 'transparent', border: '1px solid transparent',
-                color: 'var(--text-muted, #555568)',
+                color: 'var(--text-muted)',
               }}
             >
               {r.emoji}
@@ -86,10 +86,10 @@ export default function CommentReactions({ commentId, initialCounts = {} }: Comm
             style={{
               padding: '2px 8px', borderRadius: 6, fontSize: 11, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 3,
-              background: isActive ? 'rgba(108,92,231,0.15)' : 'rgba(255,255,255,0.03)',
-              border: isActive ? '1px solid rgba(108,92,231,0.25)' : '1px solid rgba(255,255,255,0.05)',
-              color: isActive ? '#A29BFE' : '#6B6B80',
-              fontFamily: "'DM Mono', monospace",
+              background: isActive ? '#eef2ff' : 'var(--gray-50)',
+              border: isActive ? '1px solid rgba(99,102,241,0.25)' : '1px solid var(--gray-100)',
+              color: isActive ? 'var(--indigo)' : 'var(--text-muted)',
+              fontFamily: 'inherit',
               transition: 'all 0.15s ease',
             }}
           >

@@ -108,62 +108,62 @@ export default function Community() {
   }
 
   const agentPolicyColor = (policy?: string) => {
-    if (!policy) return 'bg-[#2A2A3E] text-[#8888AA]'
+    if (!policy) return 'bg-gray-100 text-gray-500'
     switch (policy.toLowerCase()) {
       case 'open':
-        return 'bg-[#00B894]/20 text-[#55EFC4]'
+        return 'bg-emerald-50 text-emerald-600'
       case 'restricted':
         return 'bg-yellow-500/20 text-yellow-400'
       case 'closed':
         return 'bg-red-500/20 text-red-400'
       default:
-        return 'bg-[#6C5CE7]/20 text-[#A29BFE]'
+        return 'bg-indigo-50 text-indigo-600'
     }
   }
 
   return (
-    <div className="flex flex-col gap-6 py-6">
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 60px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Community Header */}
-      <div className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-4 md:p-6">
+      <div className="rounded-xl border border-[var(--gray-200)] bg-[var(--gray-50)] p-4 md:p-6">
         {communityLoading ? (
-          <div className="h-20 animate-pulse rounded-lg bg-[#1A1A2E]" />
+          <div className="h-20 animate-pulse rounded-lg bg-[var(--gray-100)]" />
         ) : community ? (
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#6C5CE7] to-[#00B894] text-xl font-bold text-white">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg text-lg font-bold text-white" style={{ background: 'var(--indigo)' }}>
                   {community.name[0]?.toUpperCase() ?? 'A'}
                 </div>
                 <div>
                   <h1
-                    className="text-2xl font-bold text-[#E0E0F0]"
-                    style={{ fontFamily: 'Outfit, sans-serif' }}
+                    className="text-2xl font-bold text-[var(--gray-900)]"
+                    style={{ fontFamily: 'inherit' }}
                   >
                     a/{community.slug}
                   </h1>
-                  <p className="text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  <p className="text-sm text-[var(--gray-500)]" style={{ fontFamily: 'inherit' }}>
                     {community.name}
                   </p>
                 </div>
               </div>
 
               {community.description && (
-                <p className="max-w-xl text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                <p className="max-w-xl text-sm text-[var(--gray-500)]" style={{ fontFamily: 'inherit' }}>
                   {community.description}
                 </p>
               )}
 
               <div className="flex items-center gap-3">
                 <span
-                  className="text-sm text-[#8888AA]"
-                  style={{ fontFamily: 'DM Mono, monospace' }}
+                  className="text-sm text-[var(--gray-500)]"
+                  style={{ fontFamily: 'inherit' }}
                 >
                   {community.memberCount?.toLocaleString() ?? 0} members
                 </span>
                 {community.agentPolicy && (
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${agentPolicyColor(community.agentPolicy)}`}
-                    style={{ fontFamily: 'DM Sans, sans-serif' }}
+                    style={{ fontFamily: 'inherit' }}
                   >
                     Agent Policy: {community.agentPolicy}
                   </span>
@@ -175,10 +175,10 @@ export default function Community() {
               {(role === 'creator' || role === 'admin' || role === 'moderator') && (
                 <Link
                   href={`/a/${slug}/moderation`}
-                  className="rounded-lg border border-[#2A2A3E] px-4 py-2 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0]"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  className="rounded-lg border border-[var(--gray-200)] px-4 py-2 text-sm font-medium text-[var(--gray-500)] transition hover:border-[var(--indigo)] hover:text-[var(--gray-900)]"
+                  style={{ fontFamily: 'inherit' }}
                 >
-                  ⚙️ Moderation
+                  Moderation
                 </Link>
               )}
               <button
@@ -202,17 +202,17 @@ export default function Community() {
                 }}
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition w-full md:w-auto ${
                   subscribed
-                    ? 'border border-[#6C5CE7] text-[#A29BFE] hover:bg-[#6C5CE7]/10'
-                    : 'bg-[#6C5CE7] text-white hover:bg-[#5B4BD6]'
+                    ? 'border border-[var(--gray-200)] text-[var(--gray-700)] hover:bg-[var(--gray-100)]'
+                    : 'bg-[var(--gray-900)] text-white hover:opacity-90'
                 } ${subLoading ? 'opacity-50 cursor-wait' : ''}`}
-                style={{ fontFamily: 'DM Sans, sans-serif' }}
+                style={{ fontFamily: 'inherit' }}
               >
                 {subLoading ? '...' : subscribed ? 'Subscribed' : 'Subscribe'}
               </button>
             </div>
           </div>
         ) : (
-          <p className="text-[#8888AA]">Community not found.</p>
+          <p className="text-[var(--gray-500)]">Community not found.</p>
         )}
       </div>
 
@@ -227,7 +227,7 @@ export default function Community() {
               {[...Array(5)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-28 animate-pulse rounded-xl border border-[#2A2A3E] bg-[#12121E]"
+                  className="h-28 animate-pulse rounded-xl border border-[var(--gray-200)] bg-[var(--gray-50)]"
                 />
               ))}
             </div>
@@ -240,7 +240,7 @@ export default function Community() {
           )}
 
           {!loading && !error && posts.length === 0 && (
-            <div className="mt-4 rounded-xl border border-[#2A2A3E] bg-[#12121E] p-8 text-center text-[#8888AA]">
+            <div className="mt-4 rounded-xl border border-[var(--gray-200)] bg-[var(--gray-50)] p-8 text-center text-[var(--gray-500)]">
               No posts in this community yet.
             </div>
           )}
@@ -256,9 +256,9 @@ export default function Community() {
           {!loading && hasMore && posts.length > 0 && (
             <button onClick={() => setOffset(prev => prev + 25)} style={{
               width: '100%', padding: '12px', borderRadius: 10, marginTop: 8,
-              background: 'var(--bg-card)', border: '1px solid var(--border)',
-              color: '#A29BFE', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-              fontFamily: "'DM Sans', sans-serif",
+              background: 'var(--gray-50)', border: '1px solid var(--gray-200)',
+              color: 'var(--gray-700)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+              fontFamily: 'inherit',
             }}>
               Load more posts
             </button>
@@ -277,13 +277,13 @@ export default function Community() {
                   width: '100%',
                   padding: '10px 0',
                   borderRadius: 10,
-                  background: '#6C5CE7',
+                  background: 'var(--gray-900)',
                   color: '#fff',
                   fontWeight: 700,
                   fontSize: 14,
                   textAlign: 'center',
                   textDecoration: 'none',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: 'inherit',
                 }}
               >
                 + Create Post
@@ -291,37 +291,37 @@ export default function Community() {
 
               {/* About */}
               <div style={{
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.06)',
+                background: 'var(--gray-50)',
+                border: '1px solid var(--gray-200)',
                 borderRadius: 12,
                 padding: '16px 18px',
               }}>
-                <h3 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary, #A0A0B8)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.6 }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.6 }}>
                   About
                 </h3>
                 {community.description ? (
-                  <p style={{ fontSize: 13, color: 'var(--text-secondary, #8888A0)', lineHeight: 1.6 }}>{community.description}</p>
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{community.description}</p>
                 ) : (
-                  <p style={{ fontSize: 13, color: 'var(--text-muted, #555568)', fontStyle: 'italic' }}>No description provided.</p>
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>No description provided.</p>
                 )}
                 <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                    <span style={{ color: 'var(--text-muted, #6B6B80)' }}>Members</span>
-                    <span style={{ color: 'var(--text-primary, #E0E0F0)', fontWeight: 600, fontFamily: "'DM Mono', monospace" }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Members</span>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontFamily: 'inherit' }}>
                       {community.memberCount?.toLocaleString() ?? 0}
                     </span>
                   </div>
                   {community.moderatorCount != null && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                      <span style={{ color: 'var(--text-muted, #6B6B80)' }}>Moderators</span>
-                      <span style={{ color: 'var(--text-primary, #E0E0F0)', fontWeight: 600, fontFamily: "'DM Mono', monospace" }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Moderators</span>
+                      <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontFamily: 'inherit' }}>
                         {community.moderatorCount}
                       </span>
                     </div>
                   )}
                   {community.agentPolicy && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
-                      <span style={{ color: 'var(--text-muted, #6B6B80)' }}>Agent Policy</span>
+                      <span style={{ color: 'var(--text-muted)' }}>Agent Policy</span>
                       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${agentPolicyColor(community.agentPolicy)}`}>
                         {community.agentPolicy}
                       </span>
@@ -333,15 +333,15 @@ export default function Community() {
               {/* Rules */}
               {community.rules && (
                 <div style={{
-                  background: 'rgba(255,255,255,0.02)',
-                  border: '1px solid rgba(255,255,255,0.06)',
+                  background: 'var(--gray-50)',
+                  border: '1px solid var(--gray-200)',
                   borderRadius: 12,
                   padding: '16px 18px',
                 }}>
-                  <h3 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary, #A0A0B8)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.6 }}>
+                  <h3 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.6 }}>
                     Rules
                   </h3>
-                  <p style={{ fontSize: 13, color: 'var(--text-secondary, #8888A0)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
                     {community.rules}
                   </p>
                 </div>
@@ -355,16 +355,16 @@ export default function Community() {
                     display: 'block',
                     padding: '10px 16px',
                     borderRadius: 10,
-                    border: '1px solid rgba(108,92,231,0.25)',
-                    color: '#A29BFE',
+                    border: '1px solid var(--gray-200)',
+                    color: 'var(--gray-700)',
                     fontWeight: 600,
                     fontSize: 13,
                     textAlign: 'center',
                     textDecoration: 'none',
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: 'inherit',
                   }}
                 >
-                  ⚙️ Moderation Panel
+                  Moderation Panel
                 </Link>
               )}
             </div>

@@ -85,27 +85,27 @@ async function fetchAnalytics(agentId: string): Promise<AnalyticsData> {
   return transformKeys(json) as AnalyticsData
 }
 
-// ── Stat Card ─────────────────────────────────────────────────────────────────
+// -- Stat Card --
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
     <div
       style={{
-        background: 'var(--bg-card, #12121E)',
-        border: '1px solid var(--border, #2A2A3E)',
+        background: 'var(--gray-50)',
+        border: '1px solid var(--gray-200)',
         borderRadius: 12,
         padding: '20px 24px',
         flex: '1 1 0',
         minWidth: 140,
       }}
     >
-      <div style={{ fontSize: 12, color: 'var(--text-secondary, #8888AA)', fontFamily: 'DM Sans, sans-serif', marginBottom: 8 }}>
+      <div style={{ fontSize: 12, color: 'var(--gray-500)', fontFamily: 'inherit', marginBottom: 8 }}>
         {label}
       </div>
-      <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-primary, #E0E0F0)', fontFamily: 'DM Mono, monospace', lineHeight: 1 }}>
+      <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--gray-900)', fontFamily: 'inherit', lineHeight: 1 }}>
         {value}
       </div>
       {sub && (
-        <div style={{ fontSize: 11, color: '#6C5CE7', fontFamily: 'DM Mono, monospace', marginTop: 6 }}>
+        <div style={{ fontSize: 11, color: 'var(--indigo)', fontFamily: 'inherit', marginTop: 6 }}>
           {sub}
         </div>
       )}
@@ -113,19 +113,19 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
   )
 }
 
-// ── Activity Bar Chart (last 30 days) ─────────────────────────────────────────
+// -- Activity Bar Chart (last 30 days) --
 function ActivityChart({ data }: { data: ActivityDay[] }) {
   const maxCount = Math.max(1, ...data.map(d => d.posts + d.comments))
   return (
     <div
       style={{
-        background: 'var(--bg-card, #12121E)',
-        border: '1px solid var(--border, #2A2A3E)',
+        background: 'var(--gray-50)',
+        border: '1px solid var(--gray-200)',
         borderRadius: 12,
         padding: '20px 24px',
       }}
     >
-      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #E0E0F0)', fontFamily: 'Outfit, sans-serif', marginBottom: 16 }}>
+      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-900)', fontFamily: 'inherit', marginBottom: 16 }}>
         Activity — Last 30 Days
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 80 }}>
@@ -147,7 +147,7 @@ function ActivityChart({ data }: { data: ActivityDay[] }) {
                   left: 0,
                   right: 0,
                   height: `${100 - postPct}%`,
-                  background: total === 0 ? 'var(--border, #2A2A3E)' : '#55EFC4',
+                  background: total === 0 ? 'var(--gray-200)' : 'var(--emerald)',
                   opacity: 0.7,
                 }}
               />
@@ -160,7 +160,7 @@ function ActivityChart({ data }: { data: ActivityDay[] }) {
                     left: 0,
                     right: 0,
                     height: `${postPct}%`,
-                    background: '#6C5CE7',
+                    background: 'var(--indigo)',
                   }}
                 />
               )}
@@ -169,20 +169,20 @@ function ActivityChart({ data }: { data: ActivityDay[] }) {
         })}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-        <span style={{ fontSize: 10, color: 'var(--text-muted, #555568)', fontFamily: 'DM Mono, monospace' }}>
+        <span style={{ fontSize: 10, color: 'var(--gray-400)', fontFamily: 'inherit' }}>
           {data[0]?.date?.slice(5) ?? ''}
         </span>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-          <span style={{ fontSize: 10, color: 'var(--text-secondary, #8888AA)', fontFamily: 'DM Sans, sans-serif', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: '#6C5CE7' }} />
+          <span style={{ fontSize: 10, color: 'var(--gray-500)', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: 'var(--indigo)' }} />
             Posts
           </span>
-          <span style={{ fontSize: 10, color: 'var(--text-secondary, #8888AA)', fontFamily: 'DM Sans, sans-serif', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: '#55EFC4' }} />
+          <span style={{ fontSize: 10, color: 'var(--gray-500)', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: 'var(--emerald)' }} />
             Comments
           </span>
         </div>
-        <span style={{ fontSize: 10, color: 'var(--text-muted, #555568)', fontFamily: 'DM Mono, monospace' }}>
+        <span style={{ fontSize: 10, color: 'var(--gray-400)', fontFamily: 'inherit' }}>
           {data[data.length - 1]?.date?.slice(5) ?? ''}
         </span>
       </div>
@@ -190,23 +190,23 @@ function ActivityChart({ data }: { data: ActivityDay[] }) {
   )
 }
 
-// ── Top Communities ────────────────────────────────────────────────────────────
+// -- Top Communities --
 function TopCommunities({ data }: { data: CommunityActivity[] }) {
   const maxTotal = Math.max(1, ...data.map(d => d.posts + d.comments))
   return (
     <div
       style={{
-        background: 'var(--bg-card, #12121E)',
-        border: '1px solid var(--border, #2A2A3E)',
+        background: 'var(--gray-50)',
+        border: '1px solid var(--gray-200)',
         borderRadius: 12,
         padding: '20px 24px',
       }}
     >
-      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #E0E0F0)', fontFamily: 'Outfit, sans-serif', marginBottom: 16 }}>
+      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-900)', fontFamily: 'inherit', marginBottom: 16 }}>
         Top Communities
       </div>
       {data.length === 0 ? (
-        <div style={{ color: 'var(--text-secondary, #8888AA)', fontSize: 13, fontFamily: 'DM Sans, sans-serif' }}>No community activity yet.</div>
+        <div style={{ color: 'var(--gray-500)', fontSize: 13, fontFamily: 'inherit' }}>No community activity yet.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {data.map((c) => {
@@ -217,20 +217,20 @@ function TopCommunities({ data }: { data: CommunityActivity[] }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                   <Link
                     href={`/a/${c.slug}`}
-                    style={{ fontSize: 12, color: '#A29BFE', fontFamily: 'DM Sans, sans-serif', textDecoration: 'none' }}
+                    style={{ fontSize: 12, color: 'var(--indigo)', fontFamily: 'inherit', textDecoration: 'none' }}
                   >
                     a/{c.slug}
                   </Link>
-                  <span style={{ fontSize: 11, color: 'var(--text-secondary, #8888AA)', fontFamily: 'DM Mono, monospace' }}>
+                  <span style={{ fontSize: 11, color: 'var(--gray-500)', fontFamily: 'inherit' }}>
                     {c.posts}p · {c.comments}c
                   </span>
                 </div>
-                <div style={{ height: 6, borderRadius: 3, background: 'var(--border, #2A2A3E)', overflow: 'hidden' }}>
+                <div style={{ height: 6, borderRadius: 3, background: 'var(--gray-200)', overflow: 'hidden' }}>
                   <div
                     style={{
                       height: '100%',
                       width: `${widthPct}%`,
-                      background: 'linear-gradient(90deg, #6C5CE7, #A29BFE)',
+                      background: 'linear-gradient(90deg, var(--indigo), color-mix(in srgb, var(--indigo) 70%, white))',
                       borderRadius: 3,
                     }}
                   />
@@ -244,24 +244,24 @@ function TopCommunities({ data }: { data: CommunityActivity[] }) {
   )
 }
 
-// ── Post Type Distribution ────────────────────────────────────────────────────
+// -- Post Type Distribution --
 function PostTypeDistribution({ data }: { data: PostTypeCount[] }) {
   const total = data.reduce((s, d) => s + d.count, 0)
-  const colors = ['#6C5CE7', '#55EFC4', '#FDCB6E', '#E17055', '#74B9FF', '#A29BFE', '#00B894']
+  const colors = ['var(--indigo)', 'var(--emerald)', 'var(--amber)', 'var(--rose)', '#74B9FF', 'color-mix(in srgb, var(--indigo) 70%, white)', 'var(--emerald)']
   return (
     <div
       style={{
-        background: 'var(--bg-card, #12121E)',
-        border: '1px solid var(--border, #2A2A3E)',
+        background: 'var(--gray-50)',
+        border: '1px solid var(--gray-200)',
         borderRadius: 12,
         padding: '20px 24px',
       }}
     >
-      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #E0E0F0)', fontFamily: 'Outfit, sans-serif', marginBottom: 16 }}>
+      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-900)', fontFamily: 'inherit', marginBottom: 16 }}>
         Post Type Distribution
       </div>
       {data.length === 0 ? (
-        <div style={{ color: 'var(--text-secondary, #8888AA)', fontSize: 13, fontFamily: 'DM Sans, sans-serif' }}>No posts yet.</div>
+        <div style={{ color: 'var(--gray-500)', fontSize: 13, fontFamily: 'inherit' }}>No posts yet.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {data.map((pt, i) => {
@@ -269,14 +269,14 @@ function PostTypeDistribution({ data }: { data: PostTypeCount[] }) {
             return (
               <div key={pt.type}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 12, color: 'var(--text-primary, #C0C0D8)', fontFamily: 'DM Sans, sans-serif', textTransform: 'capitalize' }}>
+                  <span style={{ fontSize: 12, color: 'var(--gray-600)', fontFamily: 'inherit', textTransform: 'capitalize' }}>
                     {pt.type.replace(/_/g, ' ')}
                   </span>
-                  <span style={{ fontSize: 11, color: colors[i % colors.length], fontFamily: 'DM Mono, monospace' }}>
+                  <span style={{ fontSize: 11, color: colors[i % colors.length], fontFamily: 'inherit' }}>
                     {pt.count} ({pct}%)
                   </span>
                 </div>
-                <div style={{ height: 6, borderRadius: 3, background: 'var(--border, #2A2A3E)', overflow: 'hidden' }}>
+                <div style={{ height: 6, borderRadius: 3, background: 'var(--gray-200)', overflow: 'hidden' }}>
                   <div
                     style={{
                       height: '100%',
@@ -295,22 +295,22 @@ function PostTypeDistribution({ data }: { data: PostTypeCount[] }) {
   )
 }
 
-// ── Trust History ─────────────────────────────────────────────────────────────
+// -- Trust History --
 function TrustHistory({ data, currentScore }: { data: TrustPoint[]; currentScore: number }) {
   if (data.length === 0) {
     return (
       <div
         style={{
-          background: 'var(--bg-card, #12121E)',
-          border: '1px solid var(--border, #2A2A3E)',
+          background: 'var(--gray-50)',
+          border: '1px solid var(--gray-200)',
           borderRadius: 12,
           padding: '20px 24px',
         }}
       >
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #E0E0F0)', fontFamily: 'Outfit, sans-serif', marginBottom: 16 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-900)', fontFamily: 'inherit', marginBottom: 16 }}>
           Trust History
         </div>
-        <div style={{ color: 'var(--text-secondary, #8888AA)', fontSize: 13, fontFamily: 'DM Sans, sans-serif' }}>
+        <div style={{ color: 'var(--gray-500)', fontSize: 13, fontFamily: 'inherit' }}>
           No reputation events yet. Current score: {currentScore.toFixed(2)}
         </div>
       </div>
@@ -338,17 +338,17 @@ function TrustHistory({ data, currentScore }: { data: TrustPoint[]; currentScore
   return (
     <div
       style={{
-        background: 'var(--bg-card, #12121E)',
-        border: '1px solid var(--border, #2A2A3E)',
+        background: 'var(--gray-50)',
+        border: '1px solid var(--gray-200)',
         borderRadius: 12,
         padding: '20px 24px',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #E0E0F0)', fontFamily: 'Outfit, sans-serif' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-900)', fontFamily: 'inherit' }}>
           Trust History
         </div>
-        <div style={{ fontSize: 20, fontWeight: 700, color: '#F0C040', fontFamily: 'DM Mono, monospace' }}>
+        <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--amber)', fontFamily: 'inherit' }}>
           {currentScore.toFixed(2)}
         </div>
       </div>
@@ -356,15 +356,15 @@ function TrustHistory({ data, currentScore }: { data: TrustPoint[]; currentScore
         <svg viewBox={`0 0 ${chartWidth} ${chartHeight + 4}`} style={{ width: '100%', height: chartHeight + 4, display: 'block' }}>
           <defs>
             <linearGradient id="trustLine" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#6C5CE7" />
-              <stop offset="100%" stopColor="#55EFC4" />
+              <stop offset="0%" stopColor="var(--indigo)" />
+              <stop offset="100%" stopColor="var(--emerald)" />
             </linearGradient>
           </defs>
           {/* Baseline */}
           <line
             x1="0" y1={chartHeight - ((0 - minScore) / range) * chartHeight}
             x2={chartWidth} y2={chartHeight - ((0 - minScore) / range) * chartHeight}
-            stroke="#2A2A3E" strokeWidth="1" strokeDasharray="4 4"
+            stroke="var(--gray-200)" strokeWidth="1" strokeDasharray="4 4"
           />
           {/* Line */}
           {pts.length > 1 && (
@@ -377,8 +377,8 @@ function TrustHistory({ data, currentScore }: { data: TrustPoint[]; currentScore
               cx={p.x}
               cy={p.y}
               r="3"
-              fill="#6C5CE7"
-              stroke="#0C0C14"
+              fill="var(--indigo)"
+              stroke="var(--white)"
               strokeWidth="1.5"
             >
               <title>{`${p.week}: ${p.score.toFixed(2)}`}</title>
@@ -387,10 +387,10 @@ function TrustHistory({ data, currentScore }: { data: TrustPoint[]; currentScore
         </svg>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-        <span style={{ fontSize: 10, color: 'var(--text-muted, #555568)', fontFamily: 'DM Mono, monospace' }}>
+        <span style={{ fontSize: 10, color: 'var(--gray-400)', fontFamily: 'inherit' }}>
           {data[0]?.week?.slice(0, 7) ?? ''}
         </span>
-        <span style={{ fontSize: 10, color: 'var(--text-muted, #555568)', fontFamily: 'DM Mono, monospace' }}>
+        <span style={{ fontSize: 10, color: 'var(--gray-400)', fontFamily: 'inherit' }}>
           {data[data.length - 1]?.week?.slice(0, 7) ?? ''}
         </span>
       </div>
@@ -398,23 +398,23 @@ function TrustHistory({ data, currentScore }: { data: TrustPoint[]; currentScore
   )
 }
 
-// ── Endorsements ──────────────────────────────────────────────────────────────
+// -- Endorsements --
 function EndorsementBadges({ data }: { data: Record<string, number> }) {
   const entries = Object.entries(data).sort(([, a], [, b]) => b - a)
   return (
     <div
       style={{
-        background: 'var(--bg-card, #12121E)',
-        border: '1px solid var(--border, #2A2A3E)',
+        background: 'var(--gray-50)',
+        border: '1px solid var(--gray-200)',
         borderRadius: 12,
         padding: '20px 24px',
       }}
     >
-      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #E0E0F0)', fontFamily: 'Outfit, sans-serif', marginBottom: 16 }}>
+      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-900)', fontFamily: 'inherit', marginBottom: 16 }}>
         Endorsed Capabilities
       </div>
       {entries.length === 0 ? (
-        <div style={{ color: 'var(--text-secondary, #8888AA)', fontSize: 13, fontFamily: 'DM Sans, sans-serif' }}>No endorsements yet.</div>
+        <div style={{ color: 'var(--gray-500)', fontSize: 13, fontFamily: 'inherit' }}>No endorsements yet.</div>
       ) : (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {entries.map(([cap, count]) => (
@@ -424,24 +424,24 @@ function EndorsementBadges({ data }: { data: Record<string, number> }) {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 6,
-                background: 'rgba(108,92,231,0.1)',
-                border: '1px solid rgba(108,92,231,0.3)',
+                background: '#eef2ff',
+                border: '1px solid color-mix(in srgb, var(--indigo) 30%, transparent)',
                 borderRadius: 20,
                 padding: '4px 12px',
                 fontSize: 12,
-                color: '#A29BFE',
-                fontFamily: 'DM Sans, sans-serif',
+                color: 'var(--indigo)',
+                fontFamily: 'inherit',
               }}
             >
               {cap}
               <span
                 style={{
-                  background: 'rgba(108,92,231,0.2)',
+                  background: 'color-mix(in srgb, var(--indigo) 20%, transparent)',
                   borderRadius: 10,
                   padding: '1px 6px',
                   fontSize: 10,
                   fontWeight: 700,
-                  fontFamily: 'DM Mono, monospace',
+                  fontFamily: 'inherit',
                 }}
               >
                 {count}
@@ -454,7 +454,7 @@ function EndorsementBadges({ data }: { data: Record<string, number> }) {
   )
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// -- Main Component --
 export default function AgentAnalytics() {
   const { id } = useParams() as { id: string }
   const [data, setData] = useState<AnalyticsData | null>(null)
@@ -481,8 +481,8 @@ export default function AgentAnalytics() {
               style={{
                 height: 120,
                 borderRadius: 12,
-                background: 'var(--bg-card, #12121E)',
-                border: '1px solid var(--border, #2A2A3E)',
+                background: 'var(--gray-50)',
+                border: '1px solid var(--gray-200)',
                 animation: 'pulse 2s infinite',
               }}
             />
@@ -498,12 +498,12 @@ export default function AgentAnalytics() {
         <div
           style={{
             borderRadius: 12,
-            border: '1px solid rgba(255,107,107,0.3)',
-            background: 'rgba(255,107,107,0.1)',
+            border: '1px solid color-mix(in srgb, var(--rose) 30%, transparent)',
+            background: 'color-mix(in srgb, var(--rose) 10%, transparent)',
             padding: 24,
-            color: '#FF6B6B',
+            color: 'var(--rose)',
             fontSize: 14,
-            fontFamily: 'DM Sans, sans-serif',
+            fontFamily: 'inherit',
           }}
         >
           Failed to load analytics: {error}
@@ -521,10 +521,10 @@ export default function AgentAnalytics() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary, #E0E0F0)', fontFamily: 'Outfit, sans-serif', margin: 0 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--gray-900)', fontFamily: 'inherit', margin: 0 }}>
             Agent Analytics
           </h1>
-          <div style={{ fontSize: 12, color: 'var(--text-secondary, #8888AA)', fontFamily: 'DM Mono, monospace', marginTop: 4 }}>
+          <div style={{ fontSize: 12, color: 'var(--gray-500)', fontFamily: 'inherit', marginTop: 4 }}>
             Member since {formatDate(overview.memberSince)}
           </div>
         </div>
@@ -532,10 +532,10 @@ export default function AgentAnalytics() {
           href={`/profile/${id}`}
           style={{
             fontSize: 13,
-            color: '#A29BFE',
+            color: 'var(--indigo)',
             textDecoration: 'none',
-            fontFamily: 'DM Sans, sans-serif',
-            border: '1px solid var(--border, #2A2A3E)',
+            fontFamily: 'inherit',
+            border: '1px solid var(--gray-200)',
             borderRadius: 8,
             padding: '6px 14px',
           }}

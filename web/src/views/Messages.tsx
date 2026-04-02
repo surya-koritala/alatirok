@@ -197,19 +197,19 @@ export default function Messages() {
   return (
     <div className="mx-auto max-w-5xl py-6">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-[#E0E0F0]" style={{ fontFamily: 'Outfit, sans-serif' }}>Messages</h1>
+        <h1 className="text-2xl font-bold text-[var(--gray-900)]" style={{ fontFamily: 'inherit' }}>Messages</h1>
         <button
           onClick={() => setShowNewConv(prev => !prev)}
-          className="rounded-lg bg-[#6C5CE7] px-4 py-2 text-sm font-medium text-white hover:bg-[#5B4BD6]"
+          className="rounded-lg bg-[var(--gray-900)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
         >
           New Message
         </button>
       </div>
 
       {showNewConv && (
-        <form onSubmit={handleNewConversation} className="mb-4 rounded-2xl border border-[#6C5CE7]/30 bg-[#12121E] p-4">
-          <h3 className="mb-3 font-semibold text-[#E0E0F0]" style={{ fontFamily: 'Outfit, sans-serif' }}>New Conversation</h3>
-          {newConvError && <div className="mb-2 rounded bg-[#E17055]/10 px-3 py-2 text-sm text-[#E17055]">{newConvError}</div>}
+        <form onSubmit={handleNewConversation} className="mb-4 rounded-2xl border border-[var(--indigo)] bg-[var(--gray-50)] p-4">
+          <h3 className="mb-3 font-semibold text-[var(--gray-900)]" style={{ fontFamily: 'inherit' }}>New Conversation</h3>
+          {newConvError && <div className="mb-2 rounded bg-red-50 px-3 py-2 text-sm text-[var(--rose)]">{newConvError}</div>}
           <div ref={recipientDropdownRef} style={{ position: 'relative', marginBottom: 8 }}>
             <input
               type="text"
@@ -217,20 +217,20 @@ export default function Messages() {
               onChange={e => handleRecipientSearch(e.target.value)}
               onFocus={() => { if (recipientResults.length > 0) setShowRecipientDropdown(true) }}
               placeholder="Search for a user or agent..."
-              className="w-full rounded-lg px-3 py-2 text-sm outline-none focus:border-[#6C5CE7]"
-              style={{ border: '1px solid var(--border)', background: 'var(--bg-page)', color: 'var(--text-primary)' }}
+              className="w-full rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--indigo)]"
+              style={{ border: '1px solid var(--gray-200)', background: 'var(--white)', color: 'var(--text-primary)' }}
             />
             {recipientId && (
-              <div style={{ fontSize: 11, color: '#55EFC4', marginTop: 4, fontFamily: "'DM Mono', monospace" }}>
+              <div style={{ fontSize: 11, color: 'var(--emerald)', marginTop: 4, fontFamily: 'inherit' }}>
                 Selected: {recipientName}
               </div>
             )}
             {showRecipientDropdown && (
               <div style={{
                 position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
-                background: 'var(--bg-card)', border: '1px solid var(--border)',
+                background: 'var(--white)', border: '1px solid var(--gray-200)',
                 borderRadius: 8, marginTop: 4, maxHeight: 200, overflowY: 'auto',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
               }}>
                 {recipientResults.map((r: any) => (
                   <button
@@ -241,14 +241,14 @@ export default function Messages() {
                       width: '100%', padding: '8px 12px', border: 'none',
                       background: 'transparent', cursor: 'pointer', textAlign: 'left',
                       fontSize: 13, color: 'var(--text-primary)',
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: 'inherit',
                     }}
-                    onMouseEnter={e => { (e.currentTarget).style.background = 'var(--bg-hover)' }}
+                    onMouseEnter={e => { (e.currentTarget).style.background = 'var(--gray-100)' }}
                     onMouseLeave={e => { (e.currentTarget).style.background = 'transparent' }}
                   >
                     <span style={{
                       width: 24, height: 24, borderRadius: r.type === 'agent' ? 6 : 12,
-                      background: r.type === 'agent' ? 'linear-gradient(135deg,#6C5CE7,#5B4BD6)' : 'linear-gradient(135deg,#00B894,#009B7D)',
+                      background: r.type === 'agent' ? 'var(--indigo)' : 'var(--emerald)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 10, fontWeight: 700, color: '#fff', flexShrink: 0,
                     }}>
@@ -273,32 +273,32 @@ export default function Messages() {
             onChange={e => setNewConvBody(e.target.value)}
             placeholder="Message..."
             rows={3}
-            className="mb-3 w-full resize-none rounded-lg border border-[#2A2A3E] bg-[#0C0C14] px-3 py-2 text-sm text-[#E0E0F0] outline-none focus:border-[#6C5CE7]"
+            className="mb-3 w-full resize-none rounded-lg border border-[var(--gray-200)] bg-[var(--white)] px-3 py-2 text-sm text-[var(--gray-900)] outline-none focus:border-[var(--indigo)]"
           />
           <div className="flex gap-2">
-            <button type="submit" disabled={sending} className="rounded-lg bg-[#6C5CE7] px-4 py-2 text-sm text-white hover:bg-[#5B4BD6] disabled:opacity-50">
+            <button type="submit" disabled={sending} className="rounded-lg bg-[var(--gray-900)] px-4 py-2 text-sm text-white hover:opacity-90 disabled:opacity-50">
               {sending ? 'Sending...' : 'Send'}
             </button>
-            <button type="button" onClick={() => setShowNewConv(false)} className="rounded-lg border border-[#2A2A3E] px-4 py-2 text-sm text-[#8888AA] hover:border-[#6C5CE7]">
+            <button type="button" onClick={() => setShowNewConv(false)} className="rounded-lg border border-[var(--gray-200)] px-4 py-2 text-sm text-[var(--gray-700)] hover:border-[var(--indigo)]">
               Cancel
             </button>
           </div>
         </form>
       )}
 
-      <div className="flex gap-4 h-[600px] rounded-2xl border border-[#2A2A3E] bg-[#12121E] overflow-hidden">
+      <div className="flex gap-4 h-[600px] rounded-2xl border border-[var(--gray-200)] bg-[var(--gray-50)] overflow-hidden">
         {/* Conversation list */}
-        <div className="w-72 shrink-0 border-r border-[#2A2A3E] flex flex-col">
-          <div className="px-4 py-3 border-b border-[#2A2A3E]">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#8888AA]">Conversations</span>
+        <div className="w-72 shrink-0 border-r border-[var(--gray-200)] flex flex-col">
+          <div className="px-4 py-3 border-b border-[var(--gray-200)]">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[var(--gray-500)]">Conversations</span>
           </div>
           {loading ? (
             <div className="flex items-center justify-center flex-1">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#2A2A3E]" style={{ borderTopColor: '#6C5CE7' }} />
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--gray-200)]" style={{ borderTopColor: 'var(--indigo)' }} />
             </div>
           ) : conversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center flex-1 px-4 text-center">
-              <p className="text-sm text-[#8888AA]">No conversations yet</p>
+              <p className="text-sm text-[var(--gray-500)]">No conversations yet</p>
             </div>
           ) : (
             <div className="overflow-y-auto flex-1">
@@ -310,22 +310,22 @@ export default function Messages() {
                   <button
                     key={conv.id}
                     onClick={() => openConversation(conv.id)}
-                    className={`w-full flex items-start gap-3 px-4 py-3 text-left transition hover:bg-[#1E1E2E] ${isActive ? 'bg-[#1E1E2E] border-l-2 border-[#6C5CE7]' : ''}`}
+                    className={`w-full flex items-start gap-3 px-4 py-3 text-left transition hover:bg-[var(--gray-100)] ${isActive ? 'bg-[var(--gray-100)] border-l-2 border-[var(--indigo)]' : ''}`}
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#6C5CE7] to-[#A29BFE] text-xs font-bold text-white">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--indigo)] to-[var(--indigo)] text-xs font-bold text-white">
                       {other?.avatarUrl ? <img src={other.avatarUrl} alt={other.displayName} className="h-full w-full rounded-full object-cover" /> : initials}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-[#E0E0F0] truncate">{other?.displayName ?? 'Unknown'}</span>
+                        <span className="text-sm font-medium text-[var(--gray-900)] truncate">{other?.displayName ?? 'Unknown'}</span>
                         {conv.unreadCount > 0 && (
-                          <span className="ml-1 shrink-0 rounded-full bg-[#6C5CE7] px-1.5 py-0.5 text-[10px] text-white font-bold">
+                          <span className="ml-1 shrink-0 rounded-full bg-[var(--indigo)] px-1.5 py-0.5 text-[10px] text-white font-bold">
                             {conv.unreadCount}
                           </span>
                         )}
                       </div>
                       {conv.lastMessageBody && (
-                        <p className="text-xs text-[#8888AA] truncate">{conv.lastMessageBody}</p>
+                        <p className="text-xs text-[var(--gray-500)] truncate">{conv.lastMessageBody}</p>
                       )}
                     </div>
                   </button>
@@ -339,18 +339,17 @@ export default function Messages() {
         <div className="flex-1 flex flex-col min-w-0">
           {!activeConvId ? (
             <div className="flex flex-col items-center justify-center flex-1 text-center">
-              <div className="mb-2 text-3xl">💬</div>
-              <p className="text-sm text-[#8888AA]">Select a conversation or start a new one</p>
+              <p className="text-sm text-[var(--gray-500)]">Select a conversation or start a new one</p>
             </div>
           ) : (
             <>
               {/* Header */}
-              <div className="px-4 py-3 border-b border-[#2A2A3E] flex items-center gap-3">
-                <span className="font-medium text-[#E0E0F0]" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              <div className="px-4 py-3 border-b border-[var(--gray-200)] flex items-center gap-3">
+                <span className="font-medium text-[var(--gray-900)]" style={{ fontFamily: 'inherit' }}>
                   {activeConv?.otherParticipant?.displayName ?? 'Conversation'}
                 </span>
                 {activeConv?.otherParticipant?.type === 'agent' && (
-                  <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold text-[#6C5CE7] border border-[#6C5CE7]/30">Agent</span>
+                  <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold text-[var(--indigo)] border border-[var(--indigo)]">Agent</span>
                 )}
               </div>
 
@@ -358,19 +357,19 @@ export default function Messages() {
               <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
                 {loadingMsgs ? (
                   <div className="flex justify-center py-8">
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#2A2A3E]" style={{ borderTopColor: '#6C5CE7' }} />
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--gray-200)]" style={{ borderTopColor: 'var(--indigo)' }} />
                   </div>
                 ) : messages.length === 0 ? (
-                  <p className="text-center text-sm text-[#8888AA]">No messages yet. Say hello!</p>
+                  <p className="text-center text-sm text-[var(--gray-500)]">No messages yet. Say hello!</p>
                 ) : (
                   messages.map(msg => {
                     const isMe = msg.senderId === myId
                     return (
                       <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-xs rounded-2xl px-4 py-2.5 text-sm ${isMe ? 'bg-[#6C5CE7] text-white' : 'bg-[#1E1E2E] text-[#E0E0F0]'}`}>
-                          {!isMe && <p className="mb-1 text-xs font-medium text-[#A29BFE]">{msg.senderName}</p>}
+                        <div className={`max-w-xs rounded-2xl px-4 py-2.5 text-sm ${isMe ? 'bg-[var(--gray-900)] text-white' : 'bg-[var(--gray-100)] text-[var(--gray-900)]'}`}>
+                          {!isMe && <p className="mb-1 text-xs font-medium text-[var(--indigo)]">{msg.senderName}</p>}
                           <p style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{msg.body}</p>
-                          <p className={`mt-1 text-right text-[10px] ${isMe ? 'text-white/60' : 'text-[#8888AA]'}`}>
+                          <p className={`mt-1 text-right text-[10px] ${isMe ? 'text-white/60' : 'text-[var(--gray-500)]'}`}>
                             {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
@@ -382,18 +381,18 @@ export default function Messages() {
               </div>
 
               {/* Input */}
-              <form onSubmit={handleSend} className="border-t border-[#2A2A3E] px-4 py-3 flex gap-2">
+              <form onSubmit={handleSend} className="border-t border-[var(--gray-200)] px-4 py-3 flex gap-2">
                 <input
                   type="text"
                   value={newMessage}
                   onChange={e => setNewMessage(e.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 rounded-xl border border-[#2A2A3E] bg-[#0C0C14] px-4 py-2 text-sm text-[#E0E0F0] outline-none focus:border-[#6C5CE7]"
+                  className="flex-1 rounded-xl border border-[var(--gray-200)] bg-[var(--white)] px-4 py-2 text-sm text-[var(--gray-900)] outline-none focus:border-[var(--indigo)]"
                 />
                 <button
                   type="submit"
                   disabled={sending || !newMessage.trim()}
-                  className="rounded-xl bg-[#6C5CE7] px-4 py-2 text-sm font-medium text-white hover:bg-[#5B4BD6] disabled:opacity-50 transition"
+                  className="rounded-xl bg-[var(--gray-900)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50 transition"
                 >
                   Send
                 </button>

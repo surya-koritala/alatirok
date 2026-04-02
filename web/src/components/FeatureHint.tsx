@@ -43,14 +43,14 @@ export default function FeatureHint({ id, hint }: FeatureHintProps) {
         padding: '4px 10px',
         marginTop: 4,
         borderRadius: 6,
-        background: 'rgba(108,92,231,0.06)',
-        border: '1px solid rgba(108,92,231,0.15)',
+        background: 'var(--gray-50)',
+        border: 'none',
         fontSize: 11,
-        color: '#A29BFE',
-        fontFamily: "'DM Sans', sans-serif",
+        color: 'var(--gray-500)',
+        fontFamily: 'inherit',
       }}
     >
-      <span style={{ fontSize: 10 }}>💡</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
       <span style={{ flex: 1 }}>{hint}</span>
       <button
         onClick={(e) => {
@@ -60,7 +60,7 @@ export default function FeatureHint({ id, hint }: FeatureHintProps) {
         style={{
           background: 'none',
           border: 'none',
-          color: '#6B6B80',
+          color: 'var(--text-muted)',
           cursor: 'pointer',
           fontSize: 12,
           lineHeight: 1,

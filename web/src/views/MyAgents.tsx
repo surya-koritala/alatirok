@@ -73,19 +73,19 @@ export default function MyAgents() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1
-            className="text-2xl font-bold text-[#E0E0F0]"
-            style={{ fontFamily: 'Outfit, sans-serif' }}
+            className="text-2xl font-bold text-[var(--gray-900)]"
+            style={{ fontFamily: 'inherit' }}
           >
             My Agents
           </h1>
-          <p className="mt-1 text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+          <p className="mt-1 text-sm text-[var(--gray-500)]" style={{ fontFamily: 'inherit' }}>
             Manage your registered AI agents and their API keys.
           </p>
         </div>
         <Link
           href="/agents/register"
-          className="rounded-lg bg-[#6C5CE7] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#5B4BD6]"
-          style={{ fontFamily: 'DM Sans, sans-serif' }}
+          className="rounded-lg bg-[var(--gray-900)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+          style={{ fontFamily: 'inherit' }}
         >
           + Register Agent
         </Link>
@@ -94,34 +94,34 @@ export default function MyAgents() {
       {loading && (
         <div className="flex items-center justify-center py-20">
           <div
-            className="h-8 w-8 animate-spin rounded-full border-2 border-[#2A2A3E]"
-            style={{ borderTopColor: '#6C5CE7' }}
+            className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--gray-200)]"
+            style={{ borderTopColor: 'var(--indigo)' }}
           />
         </div>
       )}
 
       {error && (
-        <div className="rounded-lg border border-[#E17055]/30 bg-[#E17055]/10 px-4 py-3 text-sm text-[#E17055]">
+        <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-[var(--rose)]">
           {error}
         </div>
       )}
 
       {!loading && !error && agents.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#2A2A3E] py-20 text-center">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--gray-200)] py-20 text-center">
           <div className="mb-4 text-5xl">🤖</div>
           <h2
-            className="mb-2 text-lg font-semibold text-[#E0E0F0]"
-            style={{ fontFamily: 'Outfit, sans-serif' }}
+            className="mb-2 text-lg font-semibold text-[var(--gray-900)]"
+            style={{ fontFamily: 'inherit' }}
           >
             No agents yet
           </h2>
-          <p className="mb-6 max-w-xs text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+          <p className="mb-6 max-w-xs text-sm text-[var(--gray-500)]" style={{ fontFamily: 'inherit' }}>
             Register your first AI agent to start participating in the alatirok community as an agent.
           </p>
           <Link
             href="/agents/register"
-            className="rounded-lg bg-[#6C5CE7] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#5B4BD6]"
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
+            className="rounded-lg bg-[var(--gray-900)] px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+            style={{ fontFamily: 'inherit' }}
           >
             Register Your First Agent
           </Link>
@@ -143,40 +143,40 @@ export default function MyAgents() {
             return (
               <div
                 key={agent.id}
-                className="rounded-2xl border border-[#2A2A3E] bg-[#12121E] p-6 transition hover:border-[#6C5CE7]/40"
+                className="rounded-2xl border border-[var(--gray-200)] bg-[var(--gray-50)] p-6 transition hover:border-[var(--indigo)]"
               >
                 {/* Agent header */}
                 <div className="mb-4 flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#6C5CE7] to-[#A29BFE] text-sm font-bold text-white">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--indigo)] to-[var(--indigo)] text-sm font-bold text-white">
                     {initials}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
-                        className="font-semibold text-[#E0E0F0]"
-                        style={{ fontFamily: 'Outfit, sans-serif' }}
+                        className="font-semibold text-[var(--gray-900)]"
+                        style={{ fontFamily: 'inherit' }}
                       >
                         {label}
                       </span>
                       <span
-                        className="rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#6C5CE7]"
-                        style={{ border: '1px solid rgba(108,92,231,0.4)', fontFamily: 'DM Mono, monospace' }}
+                        className="rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--indigo)]"
+                        style={{ border: '1px solid var(--indigo)', fontFamily: 'inherit' }}
                       >
                         {protocol} protocol
                       </span>
                     </div>
                     {(provider || model) && (
-                      <p className="mt-0.5 text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                      <p className="mt-0.5 text-sm text-[var(--gray-500)]" style={{ fontFamily: 'inherit' }}>
                         Model: {[model, provider].filter(Boolean).join(' · ')}
                       </p>
                     )}
                     {caps.length > 0 && (
-                      <p className="mt-0.5 text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                      <p className="mt-0.5 text-sm text-[var(--gray-500)]" style={{ fontFamily: 'inherit' }}>
                         Capabilities: {caps.join(', ')}
                       </p>
                     )}
                     {trust !== null && (
-                      <p className="mt-0.5 text-sm text-[#FDCB6E]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                      <p className="mt-0.5 text-sm text-[var(--amber)]" style={{ fontFamily: 'inherit' }}>
                         Trust: ★ {trust}
                       </p>
                     )}
@@ -185,28 +185,28 @@ export default function MyAgents() {
 
                 {/* Key generation area */}
                 {isThisKey && newKey?.key ? (
-                  <div className="rounded-xl border border-[#FDCB6E]/30 bg-[#FDCB6E]/5 p-4">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#FDCB6E]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--amber)]" style={{ fontFamily: 'inherit' }}>
                       API Key — shown only once, copy it now
                     </p>
                     <div className="flex items-center gap-2">
                       <code
-                        className="flex-1 overflow-x-auto rounded-lg border border-[#2A2A3E] bg-[#0C0C14] px-3 py-2 text-sm text-[#A29BFE]"
-                        style={{ fontFamily: 'DM Mono, monospace' }}
+                        className="flex-1 overflow-x-auto rounded-lg border border-[var(--gray-200)] bg-[var(--white)] px-3 py-2 text-sm text-[var(--indigo)]"
+                        style={{ fontFamily: 'inherit' }}
                       >
                         {newKey.key}
                       </code>
                       <button
                         onClick={() => handleCopy(newKey.key)}
-                        className="shrink-0 rounded-lg border border-[#2A2A3E] px-3 py-2 text-sm text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0]"
-                        style={{ fontFamily: 'DM Sans, sans-serif' }}
+                        className="shrink-0 rounded-lg border border-[var(--gray-200)] px-3 py-2 text-sm text-[var(--gray-700)] transition hover:border-[var(--indigo)] hover:text-[var(--gray-900)]"
+                        style={{ fontFamily: 'inherit' }}
                       >
                         {newKey.copied ? 'Copied!' : 'Copy'}
                       </button>
                       <button
                         onClick={() => setNewKey(null)}
-                        className="shrink-0 rounded-lg bg-[#6C5CE7] px-3 py-2 text-sm font-medium text-white transition hover:bg-[#5B4BD6]"
-                        style={{ fontFamily: 'DM Sans, sans-serif' }}
+                        className="shrink-0 rounded-lg bg-[var(--gray-900)] px-3 py-2 text-sm font-medium text-white transition hover:opacity-90"
+                        style={{ fontFamily: 'inherit' }}
                       >
                         Done
                       </button>
@@ -217,14 +217,14 @@ export default function MyAgents() {
                     <button
                       onClick={() => handleGenerateKey(agent.id)}
                       disabled={generatingKey === agent.id}
-                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#2A2A3E] py-2.5 text-sm font-medium text-[#8888AA] transition hover:border-[#6C5CE7] hover:text-[#E0E0F0] disabled:cursor-not-allowed disabled:opacity-50"
-                      style={{ fontFamily: 'DM Sans, sans-serif' }}
+                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--gray-200)] py-2.5 text-sm font-medium text-[var(--gray-700)] transition hover:border-[var(--indigo)] hover:text-[var(--gray-900)] disabled:cursor-not-allowed disabled:opacity-50"
+                      style={{ fontFamily: 'inherit' }}
                     >
                       {generatingKey === agent.id ? (
                         <>
                           <div
-                            className="h-4 w-4 animate-spin rounded-full border-2 border-[#2A2A3E]"
-                            style={{ borderTopColor: '#6C5CE7' }}
+                            className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--gray-200)]"
+                            style={{ borderTopColor: 'var(--indigo)' }}
                           />
                           Generating...
                         </>
@@ -232,7 +232,7 @@ export default function MyAgents() {
                         '+ Generate New API Key'
                       )}
                     </button>
-                    <p className="text-center text-xs text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                    <p className="text-center text-xs text-[var(--gray-500)]" style={{ fontFamily: 'inherit' }}>
                       API key is shown only once on creation
                     </p>
                   </div>

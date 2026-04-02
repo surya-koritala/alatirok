@@ -107,16 +107,16 @@ export default function Top() {
         }
       `}</style>
 
-      <div className="flex gap-6 py-4 md:py-6 px-0">
-        <div className="min-w-0 flex-1 w-full lg:max-w-[680px]">
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 60px', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: 48 }}>
+        <div className="min-w-0">
           {/* Header */}
           <div style={{ marginBottom: 20 }}>
             <h1
               style={{
                 fontSize: 24,
                 fontWeight: 700,
-                color: 'var(--text-primary, #E0E0F0)',
-                fontFamily: "'Outfit', sans-serif",
+                color: 'var(--text-primary)',
+                fontFamily: 'inherit',
                 margin: '0 0 6px',
               }}
             >
@@ -125,8 +125,8 @@ export default function Top() {
             <p
               style={{
                 fontSize: 14,
-                color: 'var(--text-secondary, #8888A0)',
-                fontFamily: "'DM Sans', sans-serif",
+                color: 'var(--text-secondary)',
+                fontFamily: 'inherit',
                 margin: 0,
               }}
             >
@@ -138,8 +138,8 @@ export default function Top() {
           <div
             className="mb-5 flex w-fit max-w-full gap-1 rounded-[10px] p-1"
             style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border)',
+              background: 'var(--gray-50)',
+              border: '1px solid var(--gray-200)',
               overflowX: 'auto',
               WebkitOverflowScrolling: 'touch',
               scrollbarWidth: 'none',
@@ -156,15 +156,15 @@ export default function Top() {
                     padding: '7px 18px',
                     borderRadius: 7,
                     background: isActive
-                      ? 'rgba(108,92,231,0.15)'
+                      ? '#eef2ff'
                       : 'transparent',
                     border: isActive
-                      ? '1px solid rgba(108,92,231,0.2)'
+                      ? '1px solid var(--indigo)'
                       : '1px solid transparent',
-                    color: isActive ? '#A29BFE' : '#6B6B80',
+                    color: isActive ? 'var(--indigo)' : 'var(--gray-400)',
                     fontSize: 13,
                     fontWeight: 600,
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: 'inherit',
                     transition: 'all 0.2s ease',
                     flexShrink: 0,
                     whiteSpace: 'nowrap',
@@ -184,8 +184,8 @@ export default function Top() {
                   key={i}
                   className="h-28 animate-pulse rounded-xl"
                   style={{
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border)',
+                    background: 'var(--gray-50)',
+                    border: '1px solid var(--gray-200)',
                   }}
                 />
               ))}
@@ -204,9 +204,9 @@ export default function Top() {
             <div
               className="rounded-xl p-8 text-center"
               style={{
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border)',
-                color: 'var(--text-secondary, #8888AA)',
+                background: 'var(--gray-50)',
+                border: '1px solid var(--gray-200)',
+                color: 'var(--text-secondary)',
               }}
             >
               No top posts for this time period.
@@ -232,9 +232,8 @@ export default function Top() {
           {!isLoggedIn && !loading && posts.length > 0 && (
             <div
               style={{
-                background:
-                  'linear-gradient(135deg, rgba(108,92,231,0.1) 0%, rgba(0,184,148,0.1) 100%)',
-                border: '1px solid rgba(108,92,231,0.2)',
+                background: '#eef2ff',
+                border: '1px solid var(--indigo)',
                 borderRadius: 14,
                 padding: '24px 28px',
                 marginTop: 20,
@@ -245,8 +244,8 @@ export default function Top() {
                 style={{
                   fontSize: 18,
                   fontWeight: 700,
-                  color: 'var(--text-primary, #E0E0F0)',
-                  fontFamily: "'Outfit', sans-serif",
+                  color: 'var(--text-primary)',
+                  fontFamily: 'inherit',
                   margin: '0 0 8px',
                 }}
               >
@@ -255,8 +254,8 @@ export default function Top() {
               <p
                 style={{
                   fontSize: 14,
-                  color: 'var(--text-secondary, #8888A0)',
-                  fontFamily: "'DM Sans', sans-serif",
+                  color: 'var(--text-secondary)',
+                  fontFamily: 'inherit',
                   margin: '0 0 16px',
                 }}
               >
@@ -267,13 +266,13 @@ export default function Top() {
                 style={{
                   padding: '10px 28px',
                   borderRadius: 8,
-                  background: '#6C5CE7',
+                  background: 'var(--gray-900)',
                   color: '#fff',
                   fontWeight: 700,
                   fontSize: 14,
                   border: 'none',
                   cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: 'inherit',
                 }}
               >
                 Sign up free
@@ -282,17 +281,9 @@ export default function Top() {
           )}
         </div>
 
-        {/* Sidebar */}
-        <div
-          className="hidden lg:block"
-          style={{
-            width: 300,
-            flexShrink: 0,
-            animation: loaded ? 'slideIn 0.6s ease 0.3s both' : 'none',
-          }}
-        >
+        <aside className="hidden lg:block" style={{ position: 'sticky', top: 80, alignSelf: 'flex-start' }}>
           <Sidebar />
-        </div>
+        </aside>
       </div>
     </>
   )

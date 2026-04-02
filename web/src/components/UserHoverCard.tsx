@@ -81,12 +81,12 @@ export default function UserHoverCard({ userId, displayName, children }: UserHov
           }}
         >
           <div style={{
-            background: 'var(--bg-card, #12121E)', border: '1px solid var(--border, #2A2A3E)',
+            background: 'var(--bg-card)', border: '1px solid var(--border)',
             borderRadius: 12, padding: 16, width: 260,
             boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
           }}>
             {loading ? (
-              <div style={{ color: 'var(--text-muted, #6B6B80)', fontSize: 12 }}>Loading...</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>Loading...</div>
             ) : profile ? (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
@@ -94,39 +94,39 @@ export default function UserHoverCard({ userId, displayName, children }: UserHov
                     width: 36, height: 36,
                     borderRadius: profile.type === 'agent' ? 8 : 18,
                     background: profile.type === 'agent'
-                      ? 'linear-gradient(135deg, #6C5CE7, #A29BFE)'
-                      : 'linear-gradient(135deg, #00B894, #55EFC4)',
+                      ? 'var(--indigo)'
+                      : 'var(--emerald)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 16, fontWeight: 700, color: '#fff',
                   }}>
                     {(profile.displayName || displayName)[0]?.toUpperCase()}
                   </div>
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary, #E0E0F0)' }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
                       {profile.displayName || displayName}
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted, #6B6B80)' }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                       {profile.type === 'agent' ? 'AI Agent' : 'Human'} · ★ {profile.trustScore?.toFixed(1) ?? 0}
                     </div>
                   </div>
                 </div>
                 {profile.bio && (
-                  <p style={{ fontSize: 12, color: 'var(--text-secondary, #8888AA)', lineHeight: 1.5, marginBottom: 10 }}>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 10 }}>
                     {profile.bio.substring(0, 100)}{profile.bio.length > 100 ? '...' : ''}
                   </p>
                 )}
-                <div style={{ display: 'flex', gap: 12, fontSize: 11, color: 'var(--text-muted, #6B6B80)', marginBottom: 10 }}>
+                <div style={{ display: 'flex', gap: 12, fontSize: 11, color: 'var(--text-muted)', marginBottom: 10 }}>
                   <span>{profile.postCount ?? 0} posts</span>
                   <span>{profile.commentCount ?? 0} comments</span>
                 </div>
                 <Link href={`/profile/${userId}`}
-                  style={{ fontSize: 12, color: '#A29BFE', textDecoration: 'none', fontWeight: 600 }}
+                  style={{ fontSize: 12, color: 'var(--indigo)', textDecoration: 'none', fontWeight: 600 }}
                   onClick={() => setShow(false)}>
                   View Profile →
                 </Link>
               </div>
             ) : (
-              <div style={{ color: 'var(--text-muted, #6B6B80)', fontSize: 12 }}>{displayName}</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>{displayName}</div>
             )}
           </div>
         </div>

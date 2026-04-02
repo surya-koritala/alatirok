@@ -100,8 +100,8 @@ export default function PollCard({ postId }: { postId: string }) {
     <div
       className="mt-4 rounded-xl p-5"
       style={{
-        border: '1px solid var(--border, #2A2A3E)',
-        background: 'var(--bg-card, #16162A)',
+        border: '1px solid var(--border)',
+        background: 'var(--bg-card)',
       }}
     >
       <div className="flex items-center justify-between mb-3">
@@ -109,10 +109,10 @@ export default function PollCard({ postId }: { postId: string }) {
           style={{
             fontSize: 13,
             fontWeight: 700,
-            color: '#A29BFE',
+            color: 'var(--indigo)',
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: 'inherit',
           }}
         >
           Poll
@@ -121,8 +121,8 @@ export default function PollCard({ postId }: { postId: string }) {
           <span
             style={{
               fontSize: 11,
-              color: ended ? '#FF7675' : '#FDCB6E',
-              fontFamily: "'DM Mono', monospace",
+              color: ended ? 'var(--rose)' : 'var(--amber)',
+              fontFamily: 'inherit',
             }}
           >
             {timeRemaining(poll.deadline)}
@@ -147,8 +147,8 @@ export default function PollCard({ postId }: { postId: string }) {
                     bottom: 0,
                     width: `${pct}%`,
                     background: isSelected
-                      ? 'rgba(108,92,231,0.2)'
-                      : 'rgba(136,136,170,0.08)',
+                      ? '#eef2ff'
+                      : 'var(--gray-50)',
                     borderRadius: 8,
                     transition: 'width 0.4s ease',
                   }}
@@ -160,21 +160,21 @@ export default function PollCard({ postId }: { postId: string }) {
                     padding: '10px 14px',
                     borderRadius: 8,
                     border: isSelected
-                      ? '1px solid rgba(108,92,231,0.4)'
+                      ? '1px solid rgba(99,102,241,0.4)'
                       : '1px solid transparent',
                   }}
                 >
                   <span
                     style={{
                       fontSize: 14,
-                      color: isSelected ? '#E0E0F0' : '#C0C0D8',
-                      fontFamily: "'DM Sans', sans-serif",
+                      color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
+                      fontFamily: 'inherit',
                       fontWeight: isSelected ? 600 : 400,
                     }}
                   >
                     {opt.text}
                     {isSelected && (
-                      <span style={{ marginLeft: 6, fontSize: 11, color: '#A29BFE' }}>
+                      <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--indigo)' }}>
                         (your vote)
                       </span>
                     )}
@@ -183,8 +183,8 @@ export default function PollCard({ postId }: { postId: string }) {
                     style={{
                       fontSize: 13,
                       fontWeight: 600,
-                      color: isSelected ? '#A29BFE' : '#8888AA',
-                      fontFamily: "'DM Mono', monospace",
+                      color: isSelected ? 'var(--indigo)' : 'var(--text-secondary)',
+                      fontFamily: 'inherit',
                     }}
                   >
                     {pct}%
@@ -207,10 +207,10 @@ export default function PollCard({ postId }: { postId: string }) {
                 padding: '10px 14px',
                 borderRadius: 8,
                 border: isSelected
-                  ? '1px solid rgba(108,92,231,0.5)'
-                  : '1px solid var(--border, #2A2A3E)',
+                  ? '1px solid rgba(99,102,241,0.5)'
+                  : '1px solid var(--border)',
                 background: isSelected
-                  ? 'rgba(108,92,231,0.08)'
+                  ? '#eef2ff'
                   : 'transparent',
                 cursor: ended ? 'not-allowed' : 'pointer',
                 width: '100%',
@@ -224,8 +224,8 @@ export default function PollCard({ postId }: { postId: string }) {
                   height: 16,
                   borderRadius: '50%',
                   border: isSelected
-                    ? '5px solid #6C5CE7'
-                    : '2px solid #8888AA',
+                    ? '5px solid var(--indigo)'
+                    : '2px solid var(--gray-500)',
                   flexShrink: 0,
                   transition: 'all 0.15s ease',
                 }}
@@ -233,8 +233,8 @@ export default function PollCard({ postId }: { postId: string }) {
               <span
                 style={{
                   fontSize: 14,
-                  color: isSelected ? '#E0E0F0' : '#C0C0D8',
-                  fontFamily: "'DM Sans', sans-serif",
+                  color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  fontFamily: 'inherit',
                 }}
               >
                 {opt.text}
@@ -250,8 +250,8 @@ export default function PollCard({ postId }: { postId: string }) {
           <span
             style={{
               fontSize: 12,
-              color: '#8888AA',
-              fontFamily: "'DM Mono', monospace",
+              color: 'var(--text-secondary)',
+              fontFamily: 'inherit',
             }}
           >
             {poll.totalVotes} vote{poll.totalVotes !== 1 ? 's' : ''}
@@ -261,14 +261,14 @@ export default function PollCard({ postId }: { postId: string }) {
               onClick={handleVote}
               disabled={!selected || voting}
               style={{
-                background: selected && !voting ? '#6C5CE7' : '#4A3BB1',
+                background: selected && !voting ? 'var(--indigo)' : '#4A3BB1',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 8,
                 padding: '8px 20px',
                 fontSize: 13,
                 fontWeight: 600,
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: 'inherit',
                 cursor: !selected || voting ? 'not-allowed' : 'pointer',
                 opacity: !selected || voting ? 0.5 : 1,
                 transition: 'all 0.15s ease',
@@ -280,14 +280,14 @@ export default function PollCard({ postId }: { postId: string }) {
             <a
               href="/login"
               style={{
-                background: '#6C5CE7',
+                background: 'var(--indigo)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 8,
                 padding: '8px 20px',
                 fontSize: 13,
                 fontWeight: 600,
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: 'inherit',
                 textDecoration: 'none',
               }}
             >
@@ -303,8 +303,8 @@ export default function PollCard({ postId }: { postId: string }) {
           <span
             style={{
               fontSize: 12,
-              color: '#8888AA',
-              fontFamily: "'DM Mono', monospace",
+              color: 'var(--text-secondary)',
+              fontFamily: 'inherit',
             }}
           >
             {poll.totalVotes} vote{poll.totalVotes !== 1 ? 's' : ''}
@@ -316,9 +316,9 @@ export default function PollCard({ postId }: { postId: string }) {
         <p
           className="mt-2"
           style={{
-            color: '#FF7675',
+            color: 'var(--rose)',
             fontSize: 12,
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: 'inherit',
           }}
         >
           {error}

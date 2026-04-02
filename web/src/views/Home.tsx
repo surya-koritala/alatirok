@@ -145,9 +145,10 @@ export default function Home() {
         }
       `}</style>
 
-      <div className="flex gap-6 py-4 md:py-6 px-0">
+      <div className="home-layout" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 60px', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: 48 }}>
+        <style>{`.home-layout { grid-template-columns: minmax(0, 1fr) 300px; } @media (max-width: 1024px) { .home-layout { grid-template-columns: 1fr !important; } }`}</style>
         {/* Feed */}
-        <div className="min-w-0 flex-1 w-full lg:max-w-[680px]">
+        <div className="min-w-0 flex-1 w-full">
           <Hero />
 
           {localStorage.getItem('token') && (
@@ -155,12 +156,13 @@ export default function Home() {
               {(['home', 'all'] as const).map(mode => (
                 <button key={mode} onClick={() => setFeedMode(mode)}
                   style={{
-                    fontSize: 15, fontWeight: feedMode === mode ? 700 : 400,
-                    color: feedMode === mode ? '#E0E0F0' : '#6B6B80',
+                    fontSize: 14, fontWeight: feedMode === mode ? 600 : 500,
+                    color: feedMode === mode ? 'var(--gray-900)' : 'var(--gray-500)',
                     background: 'none', border: 'none', cursor: 'pointer',
-                    fontFamily: "'Outfit', sans-serif", textTransform: 'capitalize',
-                    borderBottom: feedMode === mode ? '2px solid #6C5CE7' : '2px solid transparent',
+                    fontFamily: 'inherit', textTransform: 'capitalize',
+                    borderBottom: feedMode === mode ? '2px solid var(--gray-900)' : '2px solid transparent',
                     paddingBottom: 4,
+                    letterSpacing: '-0.01em',
                     minHeight: 44,
                   }}
                 >{mode === 'home' ? 'Home' : 'All'}</button>
@@ -194,12 +196,12 @@ export default function Home() {
                   {[0, 1].map(copy => (
                     <span key={copy} style={{ display: 'inline-flex', alignItems: 'center', paddingRight: 40 }}>
                       {tickerEvents.map((evt: any, i: number) => (
-                        <span key={`${copy}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', fontSize: 11, fontFamily: "'DM Sans', sans-serif" }}>
-                          {i > 0 && <span style={{ margin: '0 10px', color: 'var(--border)' }}>|</span>}
-                          <span style={{ color: evt.actorType === 'agent' ? '#A29BFE' : '#55EFC4', fontWeight: 600 }}>{evt.actor}</span>
-                          <span style={{ color: 'var(--text-muted)', margin: '0 4px' }}>{evt.action}</span>
-                          <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{evt.target}</span>
-                          <span style={{ color: 'var(--text-muted)', fontFamily: "'DM Mono', monospace", fontSize: 10, marginLeft: 4 }}>{evt.timeAgo}</span>
+                        <span key={`${copy}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', fontSize: 11 }}>
+                          {i > 0 && <span style={{ margin: '0 10px', color: 'var(--gray-200)' }}>|</span>}
+                          <span style={{ color: evt.actorType === 'agent' ? 'var(--indigo)' : 'var(--emerald)', fontWeight: 600 }}>{evt.actor}</span>
+                          <span style={{ color: 'var(--gray-400)', margin: '0 4px' }}>{evt.action}</span>
+                          <span style={{ color: 'var(--gray-600)', fontWeight: 500 }}>{evt.target}</span>
+                          <span style={{ color: 'var(--gray-400)', fontFamily: 'ui-monospace, monospace', fontSize: 10, marginLeft: 4 }}>{evt.timeAgo}</span>
                         </span>
                       ))}
                     </span>
@@ -214,7 +216,13 @@ export default function Home() {
               `}</style>
             </div>
           )}
-          <FeedTabs activeTab={sort} onChange={setSort} />
+          {/* Feed header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, paddingTop: 8 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--gray-950)', letterSpacing: '-0.02em', margin: 0 }}>
+              Your Feed
+            </h2>
+            <FeedTabs activeTab={sort} onChange={setSort} />
+          </div>
           <TypeFilterBar activeType={typeFilter} onChange={setTypeFilter} />
 
           {/* Loading skeleton */}
@@ -272,10 +280,10 @@ export default function Home() {
           {/* Load More */}
           {!loading && hasMore && posts.length > 0 && (
             <button onClick={() => setOffset(prev => prev + 25)} style={{
-              width: '100%', padding: '12px', borderRadius: 10, marginTop: 8,
-              background: 'var(--bg-card)', border: '1px solid var(--border)',
-              color: '#A29BFE', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-              fontFamily: "'DM Sans', sans-serif",
+              width: '100%', padding: '10px', borderRadius: 8, marginTop: 8,
+              background: 'transparent', border: '1px solid var(--gray-200)',
+              color: 'var(--gray-500)', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+              fontFamily: 'inherit', transition: 'all 0.12s',
             }}>
               Load more posts
             </button>
@@ -283,16 +291,9 @@ export default function Home() {
         </div>
 
         {/* Sidebar */}
-        <div
-          className="hidden lg:block"
-          style={{
-            width: 300,
-            flexShrink: 0,
-            animation: loaded ? 'slideIn 0.6s ease 0.3s both' : 'none',
-          }}
-        >
+        <aside className="hidden lg:block" style={{ position: 'sticky', top: 80, alignSelf: 'flex-start' }}>
           <Sidebar />
-        </div>
+        </aside>
       </div>
 
       {/* Keyboard shortcut hint */}
@@ -327,7 +328,7 @@ export default function Home() {
             onClick={e => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary, #E0E0F0)', fontFamily: "'Outfit', sans-serif", margin: 0 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>
                 Keyboard Shortcuts
               </h3>
               <button onClick={() => setShowShortcutHelp(false)} style={{
@@ -344,11 +345,11 @@ export default function Home() {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 padding: '8px 0', borderBottom: '1px solid var(--border)',
               }}>
-                <span style={{ fontSize: 13, color: 'var(--text-secondary, #A0A0B8)' }}>{desc}</span>
+                <span style={{ fontSize: 13, color: 'var(--gray-500)' }}>{desc}</span>
                 <kbd style={{
                   fontSize: 12, padding: '2px 10px', borderRadius: 5,
-                  background: 'var(--bg-hover)', border: '1px solid var(--border)', color: '#A29BFE',
-                  fontFamily: "'DM Mono', monospace",
+                  background: 'var(--gray-50)', border: '1px solid var(--gray-200)', color: 'var(--gray-700)',
+                  fontFamily: 'ui-monospace, monospace',
                 }}>{key}</kbd>
               </div>
             ))}

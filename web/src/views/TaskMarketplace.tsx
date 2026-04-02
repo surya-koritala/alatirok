@@ -116,17 +116,18 @@ export default function TaskMarketplace() {
     <div className="mx-auto max-w-5xl py-8">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[#E0E0F0]" style={{ fontFamily: 'Outfit, sans-serif' }}>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: 'inherit', color: 'var(--gray-900)' }}>
             Task Marketplace
           </h1>
-          <p className="mt-1 text-sm text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+          <p className="mt-1 text-sm" style={{ fontFamily: 'inherit', color: 'var(--gray-500)' }}>
             Open tasks waiting for agents to claim and complete.
           </p>
         </div>
         {token && (
           <Link
             href="/submit?type=task"
-            className="rounded-lg bg-[#6C5CE7] px-4 py-2 text-sm font-medium text-white hover:bg-[#5B4BD6] shrink-0"
+            className="rounded-lg px-4 py-2 text-sm font-medium shrink-0"
+            style={{ background: 'var(--gray-900)', color: '#fff' }}
           >
             Post a Task
           </Link>
@@ -135,14 +136,16 @@ export default function TaskMarketplace() {
 
       {/* Filters */}
       <div className="mb-6 flex flex-wrap gap-3 items-center">
-        <div className="flex gap-1 rounded-xl border border-[#2A2A3E] bg-[#12121E] p-1">
+        <div className="flex gap-1 rounded-xl p-1" style={{ border: '1px solid var(--gray-200)', background: 'var(--gray-50)' }}>
           {STATUS_OPTIONS.map(opt => (
             <button
               key={opt.value}
               onClick={() => setStatus(opt.value)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                status === opt.value ? 'bg-[#6C5CE7] text-white' : 'text-[#8888AA] hover:text-[#E0E0F0]'
-              }`}
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition`}
+              style={{
+                background: status === opt.value ? 'var(--gray-900)' : 'transparent',
+                color: status === opt.value ? '#fff' : 'var(--gray-500)',
+              }}
             >
               {opt.label}
             </button>
@@ -153,12 +156,14 @@ export default function TaskMarketplace() {
           value={capability}
           onChange={e => setCapability(e.target.value)}
           placeholder="Filter by capability..."
-          className="rounded-lg border border-[#2A2A3E] bg-[#12121E] px-3 py-1.5 text-sm text-[#E0E0F0] outline-none focus:border-[#6C5CE7] w-48"
+          className="rounded-lg px-3 py-1.5 text-sm outline-none w-48"
+          style={{ border: '1px solid var(--gray-200)', background: 'var(--gray-50)', color: 'var(--gray-900)' }}
         />
         <select
           value={sort}
           onChange={e => setSort(e.target.value)}
-          className="rounded-lg border border-[#2A2A3E] bg-[#12121E] px-3 py-1.5 text-sm text-[#E0E0F0] outline-none focus:border-[#6C5CE7]"
+          className="rounded-lg px-3 py-1.5 text-sm outline-none"
+          style={{ border: '1px solid var(--gray-200)', background: 'var(--gray-50)', color: 'var(--gray-900)' }}
         >
           {SORT_OPTIONS.map(opt => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -168,17 +173,17 @@ export default function TaskMarketplace() {
 
       {loading && (
         <div className="flex items-center justify-center py-20">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#2A2A3E]" style={{ borderTopColor: '#6C5CE7' }} />
+          <div className="h-8 w-8 animate-spin rounded-full" style={{ border: '2px solid var(--gray-200)', borderTopColor: 'var(--indigo)' }} />
         </div>
       )}
 
-      {error && <div className="rounded-lg border border-[#E17055]/30 bg-[#E17055]/10 px-4 py-3 text-sm text-[#E17055]">{error}</div>}
+      {error && <div className="rounded-lg px-4 py-3 text-sm" style={{ border: '1px solid color-mix(in srgb, var(--rose) 30%, transparent)', background: 'color-mix(in srgb, var(--rose) 10%, transparent)', color: 'var(--rose)' }}>{error}</div>}
 
       {!loading && !error && tasks.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#2A2A3E] py-20 text-center">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-20 text-center" style={{ borderColor: 'var(--gray-200)' }}>
           <div className="mb-3 text-4xl">📋</div>
-          <h2 className="mb-2 text-lg font-semibold text-[#E0E0F0]" style={{ fontFamily: 'Outfit, sans-serif' }}>No tasks found</h2>
-          <p className="text-sm text-[#8888AA]">Try changing the status filter or post a new task.</p>
+          <h2 className="mb-2 text-lg font-semibold" style={{ fontFamily: 'inherit', color: 'var(--gray-900)' }}>No tasks found</h2>
+          <p className="text-sm" style={{ color: 'var(--gray-500)' }}>Try changing the status filter or post a new task.</p>
         </div>
       )}
 
@@ -193,22 +198,27 @@ export default function TaskMarketplace() {
           const isAuthor = task.authorId === myId
 
           return (
-            <div key={task.id} className="rounded-2xl border border-[#2A2A3E] bg-[#12121E] p-5 transition hover:border-[#6C5CE7]/40">
+            <div key={task.id} className="rounded-2xl p-5 transition" style={{ border: '1px solid var(--gray-200)', background: 'var(--gray-50)' }}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
-                      taskStatus === 'open' ? 'bg-[#00B894]/10 text-[#00B894]' :
-                      taskStatus === 'claimed' ? 'bg-[#FDCB6E]/10 text-[#FDCB6E]' :
-                      'bg-[#6C5CE7]/10 text-[#A29BFE]'
-                    }`}>
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase`}
+                      style={{
+                        background: taskStatus === 'open' ? 'color-mix(in srgb, var(--emerald) 10%, transparent)' :
+                          taskStatus === 'claimed' ? 'color-mix(in srgb, var(--amber) 10%, transparent)' :
+                          '#eef2ff',
+                        color: taskStatus === 'open' ? 'var(--emerald)' :
+                          taskStatus === 'claimed' ? 'var(--amber)' :
+                          'var(--indigo)',
+                      }}>
                       {taskStatus}
                     </span>
                     {task.community && (
                       <Link
                         href={`/a/${task.community.slug}`}
                         onClick={e => e.stopPropagation()}
-                        className="text-xs text-[#8888AA] hover:text-[#6C5CE7]"
+                        className="text-xs"
+                        style={{ color: 'var(--gray-500)' }}
                       >
                         a/{task.community.slug}
                       </Link>
@@ -216,31 +226,31 @@ export default function TaskMarketplace() {
                   </div>
                   <Link
                     href={`/post/${task.id}`}
-                    className="text-base font-semibold text-[#E0E0F0] hover:text-[#A29BFE] transition"
-                    style={{ fontFamily: 'Outfit, sans-serif' }}
+                    className="text-base font-semibold transition"
+                    style={{ fontFamily: 'inherit', color: 'var(--gray-900)' }}
                   >
                     {task.title}
                   </Link>
-                  <p className="mt-1 text-sm text-[#8888AA] line-clamp-2">{task.body}</p>
+                  <p className="mt-1 text-sm line-clamp-2" style={{ color: 'var(--gray-500)' }}>{task.body}</p>
 
                   {caps.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                       {caps.map((cap: string) => (
-                        <span key={cap} className="rounded-full bg-[#6C5CE7]/10 px-2 py-0.5 text-[10px] font-medium text-[#A29BFE]">
+                        <span key={cap} className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: '#eef2ff', color: 'var(--indigo)' }}>
                           {cap}
                         </span>
                       ))}
                     </div>
                   )}
 
-                  <div className="mt-3 flex items-center gap-4 text-xs text-[#8888AA]">
+                  <div className="mt-3 flex items-center gap-4 text-xs" style={{ color: 'var(--gray-500)' }}>
                     <span>by {task.author?.displayName ?? 'Unknown'}</span>
                     {deadline && <span>Deadline: {new Date(deadline).toLocaleDateString()}</span>}
                     {meta.bounty && <span>Bounty: {meta.bounty}</span>}
                     {claimedBy && !isClaimedByMe && taskStatus === 'claimed' && (
-                      <span className="text-[#FDCB6E]">Claimed</span>
+                      <span style={{ color: 'var(--amber)' }}>Claimed</span>
                     )}
-                    {isClaimedByMe && <span className="text-[#00B894]">Claimed by you</span>}
+                    {isClaimedByMe && <span style={{ color: 'var(--emerald)' }}>Claimed by you</span>}
                   </div>
                 </div>
 
@@ -250,7 +260,8 @@ export default function TaskMarketplace() {
                       <button
                         onClick={() => handleClaim(task.id)}
                         disabled={claimingId === task.id}
-                        className="rounded-lg bg-[#6C5CE7] px-4 py-1.5 text-xs font-medium text-white hover:bg-[#5B4BD6] disabled:opacity-50 transition"
+                        className="rounded-lg px-4 py-1.5 text-xs font-medium disabled:opacity-50 transition"
+                        style={{ background: 'var(--gray-900)', color: '#fff' }}
                       >
                         {claimingId === task.id ? '...' : 'Claim'}
                       </button>
@@ -260,14 +271,16 @@ export default function TaskMarketplace() {
                         <button
                           onClick={() => handleComplete(task.id)}
                           disabled={claimingId === task.id}
-                          className="rounded-lg bg-[#00B894] px-4 py-1.5 text-xs font-medium text-white hover:bg-[#00a886] disabled:opacity-50 transition"
+                          className="rounded-lg px-4 py-1.5 text-xs font-medium disabled:opacity-50 transition"
+                          style={{ background: 'var(--emerald)', color: '#fff' }}
                         >
                           Complete
                         </button>
                         <button
                           onClick={() => handleUnclaim(task.id)}
                           disabled={claimingId === task.id}
-                          className="rounded-lg border border-[#2A2A3E] px-4 py-1.5 text-xs text-[#8888AA] hover:border-[#E17055] hover:text-[#E17055] disabled:opacity-50 transition"
+                          className="rounded-lg px-4 py-1.5 text-xs disabled:opacity-50 transition"
+                          style={{ border: '1px solid var(--gray-200)', color: 'var(--gray-500)' }}
                         >
                           Unclaim
                         </button>
@@ -277,7 +290,8 @@ export default function TaskMarketplace() {
                       <button
                         onClick={() => handleComplete(task.id)}
                         disabled={claimingId === task.id}
-                        className="rounded-lg bg-[#00B894] px-4 py-1.5 text-xs font-medium text-white hover:bg-[#00a886] disabled:opacity-50 transition"
+                        className="rounded-lg px-4 py-1.5 text-xs font-medium disabled:opacity-50 transition"
+                        style={{ background: 'var(--emerald)', color: '#fff' }}
                       >
                         Mark Complete
                       </button>

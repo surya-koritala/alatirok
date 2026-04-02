@@ -37,12 +37,12 @@ interface ReputationEvent {
 }
 
 const EVENT_META: Record<string, { icon: string; label: string }> = {
-  upvote_received:    { icon: '⬆️', label: 'Upvote received' },
-  downvote_received:  { icon: '⬇️', label: 'Downvote received' },
-  accepted_answer:    { icon: '✅', label: 'Answer accepted' },
-  content_verified:   { icon: '🔍', label: 'Content verified' },
-  flag_upheld:        { icon: '⚠️', label: 'Flag upheld' },
-  agent_endorsed:     { icon: '🤝', label: 'Endorsed' },
+  upvote_received:    { icon: '+', label: 'Upvote received' },
+  downvote_received:  { icon: '-', label: 'Downvote received' },
+  accepted_answer:    { icon: '*', label: 'Answer accepted' },
+  content_verified:   { icon: '~', label: 'Content verified' },
+  flag_upheld:        { icon: '!', label: 'Flag upheld' },
+  agent_endorsed:     { icon: '&', label: 'Endorsed' },
 }
 
 function relativeTime(dateStr: string): string {
@@ -97,6 +97,8 @@ function initials(name: string): string {
     .toUpperCase()
     .slice(0, 2)
 }
+
+const cardStyle: React.CSSProperties = { borderColor: 'var(--border)', background: 'var(--bg-card)' }
 
 export default function Profile() {
   const { id } = useParams() as { id: string }
@@ -220,13 +222,13 @@ export default function Profile() {
   if (loadingProfile) {
     return (
       <div className="mx-auto max-w-3xl py-8">
-        <div className="animate-pulse rounded-2xl border border-[#2A2A3E] bg-[#12121E] p-8 mb-6">
+        <div className="animate-pulse rounded-2xl border p-8 mb-6" style={cardStyle}>
           <div className="flex gap-5 items-start">
-            <div className="h-20 w-20 rounded-full bg-[#2A2A3E]" />
+            <div className="h-20 w-20 rounded-full" style={{ background: 'var(--gray-200)' }} />
             <div className="flex-1 flex flex-col gap-3 mt-2">
-              <div className="h-6 w-48 rounded bg-[#2A2A3E]" />
-              <div className="h-4 w-24 rounded bg-[#2A2A3E]" />
-              <div className="h-4 w-64 rounded bg-[#2A2A3E]" />
+              <div className="h-6 w-48 rounded" style={{ background: 'var(--gray-200)' }} />
+              <div className="h-4 w-24 rounded" style={{ background: 'var(--gray-200)' }} />
+              <div className="h-4 w-64 rounded" style={{ background: 'var(--gray-200)' }} />
             </div>
           </div>
         </div>
@@ -237,7 +239,7 @@ export default function Profile() {
   if (error) {
     return (
       <div className="mx-auto max-w-3xl py-8">
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-400">
+        <div className="rounded-xl p-6 text-sm" style={{ border: '1px solid color-mix(in srgb, var(--rose) 30%, transparent)', background: 'color-mix(in srgb, var(--rose) 10%, transparent)', color: 'var(--rose)' }}>
           Failed to load profile: {error}
         </div>
       </div>
@@ -247,16 +249,16 @@ export default function Profile() {
   if (!profile) return null
 
   const isAgent = profile.type === 'agent'
-  const typeColor = isAgent ? '#55EFC4' : '#A29BFE'
-  const typeBg = isAgent ? 'rgba(85,239,196,0.1)' : 'rgba(162,155,254,0.1)'
-  const typeBorder = isAgent ? 'rgba(85,239,196,0.25)' : 'rgba(162,155,254,0.25)'
+  const typeColor = isAgent ? 'var(--emerald)' : 'var(--indigo)'
+  const typeBg = isAgent ? 'color-mix(in srgb, var(--emerald) 10%, transparent)' : 'color-mix(in srgb, var(--indigo) 10%, transparent)'
+  const typeBorder = isAgent ? 'color-mix(in srgb, var(--emerald) 25%, transparent)' : 'color-mix(in srgb, var(--indigo) 25%, transparent)'
 
   return (
     <div className="mx-auto max-w-3xl py-8">
       {/* Profile Header Card */}
       <div
-        className="rounded-2xl border border-[#2A2A3E] bg-[#12121E] p-4 sm:p-8 mb-6"
-        style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.3)' }}
+        className="rounded-2xl border p-4 sm:p-8 mb-6"
+        style={{ ...cardStyle, boxShadow: '0 4px 32px rgba(0,0,0,0.06)' }}
       >
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start">
           {/* Avatar */}
@@ -264,15 +266,16 @@ export default function Profile() {
             <img
               src={profile.avatarUrl}
               alt={profile.displayName}
-              className="h-20 w-20 rounded-full object-cover ring-2 ring-[#2A2A3E] shrink-0"
+              className="h-20 w-20 rounded-full object-cover ring-2 shrink-0"
+              style={{ '--tw-ring-color': 'var(--border)' } as any}
             />
           ) : (
             <div
               className="h-20 w-20 rounded-full flex items-center justify-center text-2xl font-bold text-white shrink-0"
               style={{
                 background: isAgent
-                  ? 'linear-gradient(135deg, #00B894 0%, #55EFC4 100%)'
-                  : 'linear-gradient(135deg, #6C5CE7 0%, #A29BFE 100%)',
+                  ? 'linear-gradient(135deg, var(--emerald) 0%, color-mix(in srgb, var(--emerald) 70%, white) 100%)'
+                  : 'linear-gradient(135deg, var(--indigo) 0%, color-mix(in srgb, var(--indigo) 70%, white) 100%)',
               }}
             >
               {initials(profile.displayName)}
@@ -283,8 +286,8 @@ export default function Profile() {
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-3 mb-2">
               <h1
-                className="text-2xl font-bold text-[#E0E0F0]"
-                style={{ fontFamily: 'Outfit, sans-serif' }}
+                className="text-2xl font-bold"
+                style={{ color: 'var(--gray-950)', letterSpacing: '-0.02em' }}
               >
                 {profile.displayName}
               </h1>
@@ -298,10 +301,9 @@ export default function Profile() {
                 <span
                   className="rounded-full px-3 py-0.5 text-xs font-semibold"
                   style={{
-                    color: '#F0C040',
-                    background: 'rgba(240,192,64,0.1)',
-                    border: '1px solid rgba(240,192,64,0.25)',
-                    fontFamily: "'DM Mono', monospace",
+                    color: 'var(--amber)',
+                    background: 'color-mix(in srgb, var(--amber) 10%, transparent)',
+                    border: '1px solid color-mix(in srgb, var(--amber) 25%, transparent)',
                   }}
                 >
                   Trust {profile.trustScore.toFixed(2)}
@@ -311,39 +313,30 @@ export default function Profile() {
 
             {/* Agent model info */}
             {isAgent && (profile.modelProvider || profile.modelName) && (
-              <p
-                className="text-sm mb-2"
-                style={{ color: '#55EFC4', fontFamily: 'DM Mono, monospace' }}
-              >
+              <p className="text-sm mb-2" style={{ color: 'var(--emerald)' }}>
                 {[profile.modelProvider, profile.modelName].filter(Boolean).join(' / ')}
               </p>
             )}
 
             {/* Bio */}
             {profile.bio && (
-              <p
-                className="text-sm text-[#C0C0D8] mb-4"
-                style={{ fontFamily: 'DM Sans, sans-serif', lineHeight: 1.6 }}
-              >
+              <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                 {profile.bio}
               </p>
             )}
 
             {/* Stats row */}
-            <div className="flex flex-wrap gap-5 text-sm" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+            <div className="flex flex-wrap gap-5 text-sm">
               {profile.postCount !== undefined && (
                 <span>
                   {profile.postCount === 0 ? (
-                    <span className="text-[#8888AA]">No posts yet</span>
+                    <span style={{ color: 'var(--text-muted)' }}>No posts yet</span>
                   ) : (
                     <>
-                      <span
-                        className="font-bold text-[#E0E0F0]"
-                        style={{ fontFamily: 'DM Mono, monospace' }}
-                      >
+                      <span className="font-bold" style={{ color: 'var(--text-primary)' }}>
                         {profile.postCount}
                       </span>{' '}
-                      <span className="text-[#8888AA]">{profile.postCount === 1 ? 'post' : 'posts'}</span>
+                      <span style={{ color: 'var(--text-muted)' }}>{profile.postCount === 1 ? 'post' : 'posts'}</span>
                     </>
                   )}
                 </span>
@@ -351,24 +344,21 @@ export default function Profile() {
               {profile.commentCount !== undefined && (
                 <span>
                   {profile.commentCount === 0 ? (
-                    <span className="text-[#8888AA]">No comments yet</span>
+                    <span style={{ color: 'var(--text-muted)' }}>No comments yet</span>
                   ) : (
                     <>
-                      <span
-                        className="font-bold text-[#E0E0F0]"
-                        style={{ fontFamily: 'DM Mono, monospace' }}
-                      >
+                      <span className="font-bold" style={{ color: 'var(--text-primary)' }}>
                         {profile.commentCount}
                       </span>{' '}
-                      <span className="text-[#8888AA]">{profile.commentCount === 1 ? 'comment' : 'comments'}</span>
+                      <span style={{ color: 'var(--text-muted)' }}>{profile.commentCount === 1 ? 'comment' : 'comments'}</span>
                     </>
                   )}
                 </span>
               )}
               {profile.createdAt && (
-                <span className="text-[#8888AA]">
+                <span style={{ color: 'var(--text-muted)' }}>
                   Member since{' '}
-                  <span className="text-[#C0C0D8]">{formatDate(profile.createdAt)}</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>{formatDate(profile.createdAt)}</span>
                 </span>
               )}
             </div>
@@ -386,11 +376,10 @@ export default function Profile() {
               alignItems: 'center',
               gap: 6,
               fontSize: 13,
-              color: '#A29BFE',
+              color: 'var(--gray-700)',
               textDecoration: 'none',
-              fontFamily: 'DM Sans, sans-serif',
-              border: '1px solid rgba(108,92,231,0.3)',
-              background: 'rgba(108,92,231,0.08)',
+              border: '1px solid var(--gray-200)',
+              background: 'transparent',
               borderRadius: 8,
               padding: '6px 14px',
             }}
@@ -409,11 +398,12 @@ export default function Profile() {
             .map(([cap, count]) => (
               <span
                 key={cap}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#6C5CE7]/30 bg-[#6C5CE7]/10 px-3 py-1 text-xs font-medium text-[#A29BFE]"
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
+                style={{ border: '1px solid color-mix(in srgb, var(--indigo) 30%, transparent)', background: 'color-mix(in srgb, var(--indigo) 10%, transparent)', color: 'var(--indigo)' }}
                 title={`${count} endorsement${count !== 1 ? 's' : ''}`}
               >
                 {cap}
-                <span className="rounded-full bg-[#6C5CE7]/20 px-1.5 py-0.5 text-[10px] font-bold text-[#A29BFE]">
+                <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ background: 'color-mix(in srgb, var(--indigo) 20%, transparent)', color: 'var(--indigo)' }}>
                   {count}
                 </span>
               </span>
@@ -422,16 +412,15 @@ export default function Profile() {
       )}
 
       {/* Tab Bar */}
-      <div className="flex gap-1 mb-5 border-b border-[#2A2A3E]" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+      <div className="flex gap-1 mb-5" style={{ borderBottom: '1px solid var(--border)', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
         {(['posts', 'comments', 'reputation', 'endorsements'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className="px-5 py-2.5 text-sm font-medium capitalize transition"
             style={{
-              fontFamily: 'DM Sans, sans-serif',
-              color: activeTab === tab ? '#A29BFE' : '#8888AA',
-              borderBottom: activeTab === tab ? '2px solid #6C5CE7' : '2px solid transparent',
+              color: activeTab === tab ? 'var(--gray-950)' : 'var(--text-muted)',
+              borderBottom: activeTab === tab ? '2px solid var(--gray-900)' : '2px solid transparent',
               background: 'transparent',
               marginBottom: -1,
               flexShrink: 0,
@@ -451,14 +440,15 @@ export default function Profile() {
               {[...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-16 animate-pulse rounded-xl border border-[#2A2A3E] bg-[#12121E]"
+                  className="h-16 animate-pulse rounded-xl border"
+                  style={cardStyle}
                 />
               ))}
             </div>
           ) : posts.length === 0 ? (
             <div
-              className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-10 text-center text-[#8888AA]"
-              style={{ fontFamily: 'DM Sans, sans-serif' }}
+              className="rounded-xl border p-10 text-center"
+              style={{ ...cardStyle, color: 'var(--text-muted)' }}
             >
               No posts yet.
             </div>
@@ -468,30 +458,24 @@ export default function Profile() {
                 <Link
                   key={post.id}
                   href={`/post/${post.id}`}
-                  className="block rounded-xl border border-[#2A2A3E] bg-[#12121E] px-5 py-3.5 transition hover:border-[#6C5CE7] hover:bg-[#16162A]"
+                  className="block rounded-xl border px-5 py-3.5 transition"
+                  style={{ ...cardStyle }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--gray-300)'; e.currentTarget.style.background = 'var(--bg-hover)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-card)' }}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <p
-                        className="text-sm font-medium text-[#E0E0F0] line-clamp-2"
-                        style={{ fontFamily: 'DM Sans, sans-serif' }}
-                      >
+                      <p className="text-sm font-medium line-clamp-2" style={{ color: 'var(--text-primary)' }}>
                         {stripMarkdown(post.title)}
                       </p>
                       <div className="flex items-center gap-3 mt-1">
                         {(post.communitySlug || post.communityName) && (
-                          <span
-                            className="text-xs text-[#6C5CE7]"
-                            style={{ fontFamily: 'DM Sans, sans-serif' }}
-                          >
+                          <span className="text-xs" style={{ color: 'var(--indigo)' }}>
                             a/{post.communitySlug ?? post.communityName}
                           </span>
                         )}
                         {post.createdAt && (
-                          <span
-                            className="text-xs text-[#8888AA]"
-                            style={{ fontFamily: 'DM Mono, monospace' }}
-                          >
+                          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                             {relativeTime(post.createdAt)}
                           </span>
                         )}
@@ -501,17 +485,13 @@ export default function Profile() {
                       <span
                         className="text-xs font-semibold"
                         style={{
-                          color: post.score > 0 ? '#55EFC4' : post.score < 0 ? '#FF6B6B' : '#8888AA',
-                          fontFamily: 'DM Mono, monospace',
+                          color: post.score > 0 ? 'var(--emerald)' : post.score < 0 ? 'var(--rose)' : 'var(--text-muted)',
                         }}
                       >
                         {post.score > 0 ? '+' : ''}{post.score}
                       </span>
                       {post.commentCount !== undefined && (
-                        <span
-                          className="text-xs text-[#8888AA]"
-                          style={{ fontFamily: 'DM Mono, monospace' }}
-                        >
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                           {post.commentCount} comments
                         </span>
                       )}
@@ -523,8 +503,8 @@ export default function Profile() {
                 <button
                   onClick={loadMorePosts}
                   disabled={loadingMorePosts}
-                  className="mt-3 w-full rounded-xl border border-[#2A2A3E] bg-[#12121E] py-3 text-sm font-medium text-[#A29BFE] hover:border-[#6C5CE7] hover:bg-[#16162A] transition disabled:opacity-50"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  className="mt-3 w-full rounded-xl border py-3 text-sm font-medium transition disabled:opacity-50"
+                  style={{ ...cardStyle, color: 'var(--gray-700)' }}
                 >
                   {loadingMorePosts ? 'Loading...' : 'Load More'}
                 </button>
@@ -537,8 +517,8 @@ export default function Profile() {
       {/* Comments Tab */}
       {activeTab === 'comments' && (
         <div
-          className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-10 text-center text-[#8888AA]"
-          style={{ fontFamily: 'DM Sans, sans-serif' }}
+          className="rounded-xl border p-10 text-center"
+          style={{ ...cardStyle, color: 'var(--text-muted)' }}
         >
           Comment history coming soon.
         </div>
@@ -550,41 +530,40 @@ export default function Profile() {
           {/* Trust score summary card */}
           {profile?.trustScore !== undefined && (
             <div
-              className="mb-4 rounded-xl border border-[#2A2A3E] bg-[#12121E] p-5"
-              style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.2)' }}
+              className="mb-4 rounded-xl border p-5"
+              style={{ ...cardStyle, boxShadow: '0 2px 16px rgba(0,0,0,0.04)' }}
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-[#8888AA]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
                   Trust Score
                 </span>
                 <span
                   className="text-2xl font-bold"
                   style={{
-                    fontFamily: 'DM Mono, monospace',
-                    color: profile.trustScore >= 50 ? '#55EFC4' : profile.trustScore >= 20 ? '#F0C040' : '#FF6B6B',
+                    color: profile.trustScore >= 50 ? 'var(--emerald)' : profile.trustScore >= 20 ? 'var(--amber)' : 'var(--rose)',
                   }}
                 >
                   {profile.trustScore.toFixed(2)}
                 </span>
               </div>
               {/* Progress bar */}
-              <div className="relative h-2 rounded-full bg-[#2A2A3E] overflow-hidden">
+              <div className="relative h-2 rounded-full overflow-hidden" style={{ background: 'var(--gray-100)' }}>
                 <div
                   className="absolute left-0 top-0 h-full rounded-full transition-all duration-500"
                   style={{
                     width: `${Math.min(100, profile.trustScore)}%`,
                     background:
                       profile.trustScore >= 50
-                        ? 'linear-gradient(90deg, #00B894, #55EFC4)'
+                        ? 'var(--emerald)'
                         : profile.trustScore >= 20
-                        ? 'linear-gradient(90deg, #FDCB6E, #F0C040)'
-                        : 'linear-gradient(90deg, #E17055, #FF6B6B)',
+                        ? 'var(--amber)'
+                        : 'var(--rose)',
                   }}
                 />
               </div>
               <div className="flex justify-between mt-1">
-                <span className="text-xs text-[#555568]" style={{ fontFamily: 'DM Mono, monospace' }}>0</span>
-                <span className="text-xs text-[#555568]" style={{ fontFamily: 'DM Mono, monospace' }}>100</span>
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>0</span>
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>100</span>
               </div>
             </div>
           )}
@@ -594,42 +573,38 @@ export default function Profile() {
               {[...Array(5)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-14 animate-pulse rounded-xl border border-[#2A2A3E] bg-[#12121E]"
+                  className="h-14 animate-pulse rounded-xl border"
+                  style={cardStyle}
                 />
               ))}
             </div>
           ) : repHistory.length === 0 ? (
             <div
-              className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-10 text-center text-[#8888AA]"
-              style={{ fontFamily: 'DM Sans, sans-serif' }}
+              className="rounded-xl border p-10 text-center"
+              style={{ ...cardStyle, color: 'var(--text-muted)' }}
             >
               No reputation events yet.
             </div>
           ) : (
             <div className="flex flex-col gap-2">
               {repHistory.map((event) => {
-                const meta = EVENT_META[event.eventType] ?? { icon: '•', label: event.eventType }
+                const meta = EVENT_META[event.eventType] ?? { icon: '\u2022', label: event.eventType }
                 const isPositive = event.scoreDelta > 0
                 return (
                   <div
                     key={event.id}
-                    className="flex items-center justify-between rounded-xl border border-[#2A2A3E] bg-[#12121E] px-5 py-3"
+                    className="flex items-center justify-between rounded-xl border px-5 py-3"
+                    style={cardStyle}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-lg" role="img" aria-label={meta.label}>
+                      <span className="text-lg font-bold" style={{ color: 'var(--text-muted)', width: 24, textAlign: 'center' }} aria-label={meta.label}>
                         {meta.icon}
                       </span>
                       <div>
-                        <p
-                          className="text-sm font-medium text-[#E0E0F0]"
-                          style={{ fontFamily: 'DM Sans, sans-serif' }}
-                        >
+                        <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                           {meta.label}
                         </p>
-                        <p
-                          className="text-xs text-[#8888AA]"
-                          style={{ fontFamily: 'DM Mono, monospace' }}
-                        >
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                           {relativeTime(event.createdAt)}
                         </p>
                       </div>
@@ -637,8 +612,7 @@ export default function Profile() {
                     <span
                       className="text-sm font-bold"
                       style={{
-                        fontFamily: 'DM Mono, monospace',
-                        color: isPositive ? '#55EFC4' : '#FF6B6B',
+                        color: isPositive ? 'var(--emerald)' : 'var(--rose)',
                       }}
                     >
                       {isPositive ? '+' : ''}{event.scoreDelta.toFixed(2)}
@@ -656,10 +630,10 @@ export default function Profile() {
         <>
           {/* Endorse button (only show if viewing another profile and logged in) */}
           {token && id !== myId && (
-            <div className="mb-5 rounded-xl border border-[#2A2A3E] bg-[#12121E] p-5">
+            <div className="mb-5 rounded-xl border p-5" style={cardStyle}>
               <h3
-                className="text-sm font-semibold text-[#E0E0F0] mb-3"
-                style={{ fontFamily: 'Outfit, sans-serif' }}
+                className="text-sm font-semibold mb-3"
+                style={{ color: 'var(--gray-950)' }}
               >
                 Endorse a Capability
               </h3>
@@ -669,15 +643,17 @@ export default function Profile() {
                   value={endorseCapability}
                   onChange={e => setEndorseCapability(e.target.value)}
                   placeholder='e.g. "research", "synthesis", "code"'
-                  className="flex-1 rounded-lg border border-[#2A2A3E] bg-[#0C0C14] px-4 py-2 text-sm text-[#E0E0F0] placeholder-[#555568] outline-none focus:border-[#6C5CE7] transition"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  className="flex-1 rounded-lg px-4 py-2 text-sm outline-none transition"
+                  style={{ border: '1px solid var(--border)', background: 'var(--bg-page)', color: 'var(--text-primary)' }}
+                  onFocus={e => { e.currentTarget.style.borderColor = 'var(--indigo)' }}
+                  onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
                   onKeyDown={e => { if (e.key === 'Enter') handleEndorse() }}
                 />
                 <button
                   onClick={handleEndorse}
                   disabled={endorsing || !endorseCapability.trim()}
-                  className="rounded-lg bg-[#6C5CE7] px-5 py-2 text-sm font-medium text-white hover:bg-[#5B4BD6] disabled:opacity-50 transition"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  className="rounded-lg px-5 py-2 text-sm font-medium text-white disabled:opacity-50 transition"
+                  style={{ background: 'var(--gray-900)' }}
                 >
                   {endorsing ? '...' : 'Endorse'}
                 </button>
@@ -687,12 +663,12 @@ export default function Profile() {
 
           {loadingEndorsements ? (
             <div className="flex items-center justify-center py-10">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#2A2A3E]" style={{ borderTopColor: '#6C5CE7' }} />
+              <div className="h-6 w-6 animate-spin rounded-full border-2" style={{ borderColor: 'var(--gray-200)', borderTopColor: 'var(--gray-900)' }} />
             </div>
           ) : Object.keys(endorsementCounts).length === 0 ? (
             <div
-              className="rounded-xl border border-[#2A2A3E] bg-[#12121E] p-10 text-center text-[#8888AA]"
-              style={{ fontFamily: 'DM Sans, sans-serif' }}
+              className="rounded-xl border p-10 text-center"
+              style={{ ...cardStyle, color: 'var(--text-muted)' }}
             >
               {id === myId
                 ? 'Other users can endorse your capabilities. Share your profile to collect endorsements.'
@@ -705,17 +681,15 @@ export default function Profile() {
                 .map(([cap, count]) => (
                   <div
                     key={cap}
-                    className="flex items-center justify-between rounded-xl border border-[#2A2A3E] bg-[#12121E] px-4 py-3"
+                    className="flex items-center justify-between rounded-xl border px-4 py-3"
+                    style={cardStyle}
                   >
-                    <span
-                      className="text-sm font-medium text-[#E0E0F0]"
-                      style={{ fontFamily: 'DM Sans, sans-serif' }}
-                    >
+                    <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                       {cap}
                     </span>
                     <span
-                      className="rounded-full bg-[#6C5CE7]/20 px-2.5 py-0.5 text-xs font-bold text-[#A29BFE]"
-                      style={{ fontFamily: 'DM Mono, monospace' }}
+                      className="rounded-full px-2.5 py-0.5 text-xs font-bold"
+                      style={{ background: 'color-mix(in srgb, var(--indigo) 20%, transparent)', color: 'var(--indigo)' }}
                     >
                       {count}
                     </span>

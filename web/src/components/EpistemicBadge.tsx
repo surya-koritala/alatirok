@@ -13,15 +13,39 @@ interface EpistemicData {
   userVote?: string
 }
 
-const STATUS_CONFIG: Record<EpistemicStatus, { color: string; label: string }> = {
-  hypothesis: { color: '#8888AA', label: 'Hypothesis' },
-  supported:  { color: '#55EFC4', label: 'Supported' },
-  contested:  { color: '#FDCB6E', label: 'Contested' },
-  refuted:    { color: '#FF7675', label: 'Refuted' },
-  consensus:  { color: '#A29BFE', label: 'Consensus' },
+const STATUS_CONFIG: Record<EpistemicStatus, { bg: string; color: string; label: string }> = {
+  hypothesis: { bg: 'var(--gray-100)', color: 'var(--gray-500)', label: 'Hypothesis' },
+  supported:  { bg: '#ecfdf5',         color: '#059669',         label: 'Supported' },
+  contested:  { bg: '#fef3c7',         color: '#b45309',         label: 'Contested' },
+  refuted:    { bg: '#fee2e2',         color: '#dc2626',         label: 'Refuted' },
+  consensus:  { bg: '#ecfdf5',         color: '#059669',         label: 'Consensus' },
 }
 
 const ALL_STATUSES: EpistemicStatus[] = ['hypothesis', 'supported', 'contested', 'refuted', 'consensus']
+
+function CheckIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function AlertIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M8 2L14 13H2L8 2Z" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      <path d="M8 7V9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="8" cy="11.5" r="0.75" fill="currentColor" />
+    </svg>
+  )
+}
+
+function statusIcon(status: EpistemicStatus) {
+  if (status === 'supported' || status === 'consensus') return <CheckIcon />
+  if (status === 'contested') return <AlertIcon />
+  return null
+}
 
 interface EpistemicBadgeProps {
   postId: string
@@ -60,6 +84,7 @@ export default function EpistemicBadge({ postId, compact = false }: EpistemicBad
   if (loading || !data) return null
 
   const config = STATUS_CONFIG[data.status] || STATUS_CONFIG.hypothesis
+  const icon = statusIcon(data.status)
 
   const handleVote = async (status: EpistemicStatus) => {
     const token = localStorage.getItem('token')
@@ -83,7 +108,7 @@ export default function EpistemicBadge({ postId, compact = false }: EpistemicBad
     }
   }
 
-  // Compact version: just the colored dot + label
+  // Compact version: pill badge
   if (compact) {
     const showHypothesisHint = data.status === 'hypothesis' && data.totalVotes === 0
     return (
@@ -94,23 +119,23 @@ export default function EpistemicBadge({ postId, compact = false }: EpistemicBad
             : `Epistemic status: ${config.label} (${data.totalVotes} vote${data.totalVotes !== 1 ? 's' : ''})`
         }
         style={{
-          fontSize: 10,
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 3,
+          fontSize: 11,
           fontWeight: 600,
           color: config.color,
-          background: `${config.color}15`,
-          border: `1px solid ${config.color}30`,
-          borderRadius: 4,
-          padding: '1px 6px',
-          letterSpacing: '0.02em',
-          fontFamily: "'DM Sans', sans-serif",
+          background: config.bg,
+          borderRadius: 20,
+          padding: '2px 8px',
           cursor: showHypothesisHint ? 'help' : 'default',
           whiteSpace: 'nowrap',
-          animation: showHypothesisHint ? 'subtlePulse 3s ease-in-out infinite' : undefined,
         }}
       >
+        {icon}
         {config.label}
         {showHypothesisHint && (
-          <span style={{ marginLeft: 3, fontSize: 9, opacity: 0.7 }}>?</span>
+          <span style={{ fontSize: 9, opacity: 0.7 }}>?</span>
         )}
       </span>
     )
@@ -126,31 +151,22 @@ export default function EpistemicBadge({ postId, compact = false }: EpistemicBad
         style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: 6,
-          fontSize: 12,
+          gap: 5,
+          fontSize: 11,
           fontWeight: 600,
           color: config.color,
-          background: `${config.color}12`,
-          border: `1px solid ${config.color}30`,
-          borderRadius: 8,
-          padding: '4px 10px',
+          background: config.bg,
+          border: 'none',
+          borderRadius: 20,
+          padding: '3px 10px',
           cursor: 'pointer',
-          fontFamily: "'DM Sans', sans-serif",
           transition: 'all 0.15s ease',
         }}
       >
-        <span
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: config.color,
-            flexShrink: 0,
-          }}
-        />
+        {icon}
         {config.label}
         {data.totalVotes > 0 && (
-          <span style={{ fontSize: 10, opacity: 0.7, fontFamily: "'DM Mono', monospace" }}>
+          <span style={{ fontSize: 10, opacity: 0.7, fontVariantNumeric: 'tabular-nums' }}>
             ({data.totalVotes})
           </span>
         )}
@@ -164,30 +180,29 @@ export default function EpistemicBadge({ postId, compact = false }: EpistemicBad
             top: '100%',
             left: 0,
             marginTop: 6,
-            background: 'var(--bg-card, #16162A)',
-            border: '1px solid var(--border, #2A2A3E)',
+            background: '#fff',
+            border: '1px solid var(--gray-200)',
             borderRadius: 12,
             padding: 16,
             minWidth: 260,
             zIndex: 100,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
           }}
         >
           <h4
             style={{
               fontSize: 11,
               fontWeight: 700,
-              color: '#8888AA',
+              color: 'var(--gray-400)',
               textTransform: 'uppercase',
               letterSpacing: '0.06em',
               marginBottom: 12,
-              fontFamily: "'DM Sans', sans-serif",
             }}
           >
             Epistemic Status
           </h4>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {ALL_STATUSES.map((status) => {
               const sc = STATUS_CONFIG[status]
               const count = data.counts[status] || 0
@@ -208,8 +223,8 @@ export default function EpistemicBadge({ postId, compact = false }: EpistemicBad
                     padding: '8px 12px',
                     borderRadius: 8,
                     border: isUserVote
-                      ? `1px solid ${sc.color}60`
-                      : '1px solid transparent',
+                      ? `1.5px solid ${sc.color}`
+                      : '1.5px solid transparent',
                     background: 'transparent',
                     cursor: voting ? 'not-allowed' : 'pointer',
                     width: '100%',
@@ -227,7 +242,7 @@ export default function EpistemicBadge({ postId, compact = false }: EpistemicBad
                       left: 0,
                       bottom: 0,
                       width: `${barWidth}%`,
-                      background: `${sc.color}15`,
+                      background: sc.bg,
                       borderRadius: 8,
                       transition: 'width 0.3s ease',
                     }}
@@ -254,8 +269,7 @@ export default function EpistemicBadge({ postId, compact = false }: EpistemicBad
                       style={{
                         fontSize: 13,
                         fontWeight: isUserVote ? 600 : 400,
-                        color: isUserVote ? sc.color : '#C0C0D8',
-                        fontFamily: "'DM Sans', sans-serif",
+                        color: isUserVote ? sc.color : 'var(--gray-600)',
                       }}
                     >
                       {sc.label}
@@ -272,8 +286,8 @@ export default function EpistemicBadge({ postId, compact = false }: EpistemicBad
                       position: 'relative',
                       fontSize: 12,
                       fontWeight: 600,
-                      color: count > 0 ? sc.color : '#555568',
-                      fontFamily: "'DM Mono', monospace",
+                      fontVariantNumeric: 'tabular-nums',
+                      color: count > 0 ? sc.color : 'var(--gray-400)',
                     }}
                   >
                     {count}
@@ -287,10 +301,10 @@ export default function EpistemicBadge({ postId, compact = false }: EpistemicBad
             style={{
               marginTop: 10,
               paddingTop: 10,
-              borderTop: '1px solid var(--border, #2A2A3E)',
+              borderTop: '1px solid var(--gray-200)',
               fontSize: 11,
-              color: '#6B6B80',
-              fontFamily: "'DM Mono', monospace",
+              color: 'var(--gray-400)',
+              fontVariantNumeric: 'tabular-nums',
               textAlign: 'center',
             }}
           >
