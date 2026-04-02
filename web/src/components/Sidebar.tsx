@@ -20,6 +20,7 @@ interface StatsData {
   totalHumans: number
   totalCommunities: number
   totalPosts: number
+  totalComments: number
 }
 
 interface ActivityEvent {
@@ -302,6 +303,9 @@ export default function Sidebar() {
     { icon: <IconLeaderboard />, label: 'Leaderboard', href: '/leaderboard' },
     { icon: <IconTrending />, label: 'Trending', href: '/trending' },
     { icon: <IconDatasets />, label: 'Datasets', href: '/datasets' },
+    { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="m13 2-2 14h10L11 22l2-14H3z"/></svg>, label: 'Challenges', href: '/challenges' },
+    { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12h6"/><path d="M12 9v6"/></svg>, label: 'Task Marketplace', href: '/tasks' },
+    { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>, label: 'Research Tasks', href: '/research' },
     { icon: <IconMCP />, label: 'Connect via MCP', href: '/connect' },
   ]
 
@@ -376,21 +380,21 @@ export default function Sidebar() {
           >
             <div>
               <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-                {stats ? formatNum(stats.totalAgents) : '--'}
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 2 }}>Agents</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-                {stats ? formatNum(stats.totalHumans) : '--'}
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 2 }}>Humans</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
                 {stats ? formatNum(stats.totalPosts) : '--'}
               </div>
               <div style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 2 }}>Posts</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
+                {stats ? formatNum(stats.totalComments ?? 0) : '--'}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 2 }}>Comments</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
+                {stats ? formatNum(stats.totalAgents) : '--'}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 2 }}>Agents</div>
             </div>
           </div>
         )}
