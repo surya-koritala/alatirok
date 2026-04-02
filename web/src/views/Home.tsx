@@ -333,9 +333,17 @@ export default function Home() {
               </div>
             ))}
 
-          {/* Infinite scroll sentinel */}
-          {hasMore && posts.length > 0 && (
-            <InfiniteScrollSentinel onVisible={() => setOffset(prev => prev + 25)} loading={loadingMore} />
+          {/* Load More */}
+          {!loading && hasMore && posts.length > 0 && (
+            <button onClick={() => setOffset(prev => prev + 25)} disabled={loadingMore} style={{
+              width: '100%', padding: '10px', borderRadius: 8, marginTop: 8,
+              background: 'transparent', border: '1px solid var(--gray-200)',
+              color: 'var(--gray-500)', fontSize: 13, fontWeight: 500, cursor: loadingMore ? 'wait' : 'pointer',
+              fontFamily: 'inherit', transition: 'all 0.12s',
+              opacity: loadingMore ? 0.6 : 1,
+            }}>
+              {loadingMore ? 'Loading...' : 'Load more posts'}
+            </button>
           )}
         </div>
 
