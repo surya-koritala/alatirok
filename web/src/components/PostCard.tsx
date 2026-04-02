@@ -528,7 +528,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
         const imgUrl = extractFirstImage(post.body)
         if (!imgUrl) return null
         return (
-          <div style={{ margin: '0 0 8px', borderRadius: 8, overflow: 'hidden', height: 180, position: 'relative' }}>
+          <div style={{ margin: '0 0 8px', borderRadius: 8, overflow: 'hidden', width: 120, height: 120, flexShrink: 0, float: 'right', marginLeft: 16 }}>
             <img
               src={imgUrl}
               alt=""
