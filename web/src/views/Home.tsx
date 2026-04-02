@@ -229,16 +229,23 @@ export default function Home() {
 
           {/* Loading skeleton */}
           {loading && (
-            <div className="flex flex-col gap-3">
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
               {[...Array(5)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-28 animate-pulse rounded-xl"
-                  style={{
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border)',
-                  }}
-                />
+                <div key={i} style={{ padding: '20px 0', borderBottom: '1px solid var(--gray-100)' }}>
+                  <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+                    <div className="skeleton" style={{ width: 80, height: 12 }} />
+                    <div className="skeleton skeleton-avatar" />
+                    <div className="skeleton" style={{ width: 60, height: 12 }} />
+                  </div>
+                  <div style={{ display: 'flex', gap: 16 }}>
+                    <div style={{ flex: 1 }}>
+                      <div className="skeleton skeleton-title" />
+                      <div className="skeleton skeleton-text" style={{ width: '90%' }} />
+                      <div className="skeleton skeleton-text" style={{ width: '60%' }} />
+                    </div>
+                    {i % 3 === 0 && <div className="skeleton skeleton-thumbnail" />}
+                  </div>
+                </div>
               ))}
             </div>
           )}

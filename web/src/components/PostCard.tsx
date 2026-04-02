@@ -467,78 +467,85 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
         </span>
       </div>
 
-      {/* Title */}
-      <h3
-        className="postcard-title"
-        style={{
-          fontSize: 19,
-          fontWeight: 700,
-          color: 'var(--gray-950)',
-          letterSpacing: '-0.025em',
-          margin: '0 0 4px',
-          lineHeight: 1.4,
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: 6,
-          flexWrap: 'wrap',
-          textDecoration: 'none',
-        }}
-      >
-        {post.isPinned && (
-          <span
-            title="Pinned post"
+      {/* Title + Excerpt + Thumbnail row */}
+      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Title */}
+          <h3
+            className="postcard-title"
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 3,
-              fontSize: 11,
+              fontSize: 19,
               fontWeight: 700,
-              color: '#d97706',
-              background: '#fffbeb',
-              border: '1px solid #fef3c7',
-              borderRadius: 4,
-              padding: '1px 6px',
-              flexShrink: 0,
-              lineHeight: 1.5,
+              color: 'var(--gray-950)',
+              letterSpacing: '-0.025em',
+              margin: '0 0 4px',
+              lineHeight: 1.4,
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 6,
+              flexWrap: 'wrap',
+              textDecoration: 'none',
             }}
           >
-            <IconPin size={11} color="#d97706" />
-            Pinned
-          </span>
-        )}
-        {stripMarkdown(post.title)}
-      </h3>
+            {post.isPinned && (
+              <span
+                title="Pinned post"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 3,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: '#d97706',
+                  background: '#fffbeb',
+                  border: '1px solid #fef3c7',
+                  borderRadius: 4,
+                  padding: '1px 6px',
+                  flexShrink: 0,
+                  lineHeight: 1.5,
+                }}
+              >
+                <IconPin size={11} color="#d97706" />
+                Pinned
+              </span>
+            )}
+            {stripMarkdown(post.title)}
+          </h3>
 
-      {/* Body excerpt */}
-      {post.body && (
-        <p
-          className="line-clamp-2"
-          style={{
-            fontSize: 14,
-            color: 'var(--gray-500)',
-            lineHeight: 1.55,
-            margin: '0 0 8px',
-          }}
-        >
-          {stripMarkdown(post.body).substring(0, 200)}
-        </p>
-      )}
+          {/* Body excerpt */}
+          {post.body && (
+            <p
+              className="line-clamp-2"
+              style={{
+                fontSize: 14,
+                color: 'var(--gray-500)',
+                lineHeight: 1.55,
+                margin: '0 0 8px',
+              }}
+            >
+              {stripMarkdown(post.body).substring(0, 200)}
+            </p>
+          )}
+        </div>
 
-      {/* Image thumbnail */}
-      {post.body && (() => {
-        const imgUrl = extractFirstImage(post.body)
-        if (!imgUrl) return null
-        return (
-          <div className="postcard-thumbnail" style={{ margin: '0 0 8px', borderRadius: 8, overflow: 'hidden' }}>
-            <img
-              src={imgUrl}
-              alt=""
-              style={{ width: '100%', maxHeight: 400, objectFit: 'contain', borderRadius: 8, background: 'var(--gray-50)' }}
-              loading="lazy"
-            />
-          </div>
-        )
-      })()}
+        {/* Square thumbnail on the right */}
+        {post.body && (() => {
+          const imgUrl = extractFirstImage(post.body)
+          if (!imgUrl) return null
+          return (
+            <div className="postcard-thumbnail" style={{
+              width: 120, height: 120, flexShrink: 0, borderRadius: 8, overflow: 'hidden',
+            }}>
+              <img
+                src={imgUrl}
+                alt=""
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                loading="lazy"
+              />
+            </div>
+          )
+        })()}
+      </div>
 
       {/* Link preview */}
       {post.postType === 'link' && post.metadata?.url ? (
