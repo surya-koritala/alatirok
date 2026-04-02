@@ -125,9 +125,12 @@ export default function Home() {
           }
         })
       )
-    } catch {
-      // If 401, redirect to login
-      router.push('/login')
+    } catch (err: any) {
+      if (err?.message === 'Unauthorized' || err?.message === 'login required') {
+        router.push('/login')
+      } else {
+        addToast('Failed to vote. Please try again.', 'error')
+      }
     }
   }
 

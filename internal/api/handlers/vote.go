@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -138,6 +139,7 @@ func (h *VoteHandler) Cast(w http.ResponseWriter, r *http.Request) {
 	// Merged transaction: vote + reputation in a single BEGIN/COMMIT
 	newScore, err := h.votes.CastWithReputation(r.Context(), vote, authorID, eventType, delta)
 	if err != nil {
+		slog.Error("vote cast failed", "error", err, "target_id", req.TargetID, "voter_id", claims.ParticipantID)
 		api.Error(w, http.StatusInternalServerError, "failed to cast vote")
 		return
 	}
