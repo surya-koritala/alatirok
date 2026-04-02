@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { api } from '../api/client'
 
 interface NavProps {
@@ -270,6 +270,11 @@ export default function Nav({
   )
   const [showDropdown, setShowDropdown] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false)
+  const [searchLoading, setSearchLoading] = useState(false)
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const searchDropdownRef = useRef<HTMLDivElement>(null)
 
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
@@ -327,8 +332,53 @@ export default function Nav({
     return () => document.removeEventListener('keydown', handler)
   }, [])
 
+  // Debounced search-as-you-type
+  const handleSearchInputChange = useCallback((value: string) => {
+    setSearchValue(value)
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+    if (!value.trim()) {
+      setSearchResults([])
+      setShowSearchDropdown(false)
+      return
+    }
+    setSearchLoading(true)
+    searchDebounceRef.current = setTimeout(() => {
+      api.search(value.trim(), 5, 0, 'text')
+        .then((resp: any) => {
+          const items = resp?.results ?? resp?.data ?? resp ?? []
+          setSearchResults(Array.isArray(items) ? items.slice(0, 5) : [])
+          setShowSearchDropdown(true)
+        })
+        .catch(() => {
+          setSearchResults([])
+        })
+        .finally(() => setSearchLoading(false))
+    }, 300)
+  }, [])
+
+  // Close search dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchDropdownRef.current && !searchDropdownRef.current.contains(e.target as Node)) {
+        setShowSearchDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  // Close search dropdown on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowSearchDropdown(false)
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [])
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowSearchDropdown(false)
     if (searchValue.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchValue.trim())}`)
     }
@@ -443,7 +493,7 @@ export default function Nav({
 
         {/* Search */}
         <form onSubmit={handleSearch} className="nav-search-form" style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ position: 'relative', maxWidth: 480 }}>
+          <div ref={searchDropdownRef} style={{ position: 'relative', maxWidth: 480 }}>
             <div
               style={{
                 position: 'absolute',
@@ -461,7 +511,7 @@ export default function Nav({
               ref={searchInputRef}
               type="text"
               value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
+              onChange={(e) => handleSearchInputChange(e.target.value)}
               placeholder="Search discussions..."
               style={{
                 width: '100%',
@@ -478,6 +528,7 @@ export default function Nav({
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = 'var(--gray-300)'
                 e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,0,0,0.04)'
+                if (searchResults.length > 0) setShowSearchDropdown(true)
               }}
               onBlur={(e) => {
                 e.currentTarget.style.borderColor = 'var(--gray-200)'
@@ -507,6 +558,80 @@ export default function Nav({
             >
               /
             </div>
+
+            {/* Search results dropdown */}
+            {showSearchDropdown && searchValue.trim() && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 4px)',
+                  left: 0,
+                  right: 0,
+                  background: 'var(--bg-page)',
+                  border: '1px solid var(--gray-200)',
+                  borderRadius: 10,
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+                  zIndex: 200,
+                  overflow: 'hidden',
+                }}
+              >
+                {searchLoading && searchResults.length === 0 && (
+                  <div style={{ padding: '12px 14px', fontSize: 12, color: 'var(--gray-400)' }}>
+                    Searching...
+                  </div>
+                )}
+                {!searchLoading && searchResults.length === 0 && (
+                  <div style={{ padding: '12px 14px', fontSize: 12, color: 'var(--gray-400)' }}>
+                    No results found
+                  </div>
+                )}
+                {searchResults.map((result: any) => (
+                  <button
+                    key={result.id}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      setShowSearchDropdown(false)
+                      setSearchValue('')
+                      setSearchResults([])
+                      router.push(`/post/${result.id}`)
+                    }}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      padding: '10px 14px',
+                      fontSize: 13,
+                      color: 'var(--gray-900)',
+                      background: 'transparent',
+                      border: 'none',
+                      borderBottom: '1px solid var(--gray-100)',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'background 0.1s',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--gray-50)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                  >
+                    <div style={{
+                      fontWeight: 500,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {result.title || 'Untitled'}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 2, fontSize: 11, color: 'var(--gray-400)' }}>
+                      {(result.community_slug || result.communitySlug) && (
+                        <span>a/{result.community_slug || result.communitySlug}</span>
+                      )}
+                      {(result.author?.display_name || result.author?.displayName) && (
+                        <span>by {result.author?.display_name || result.author?.displayName}</span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </form>
 

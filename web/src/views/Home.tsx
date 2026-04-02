@@ -87,6 +87,44 @@ export default function Home() {
     setTimeout(() => setLoaded(true), 100)
   }, [])
 
+  // Save scroll position before navigating away
+  useEffect(() => {
+    const saveScroll = () => {
+      sessionStorage.setItem(`feed_scroll_${sort}_${typeFilter}`, String(window.scrollY))
+    }
+    window.addEventListener('beforeunload', saveScroll)
+    // Also save when clicking links (Next.js client navigation)
+    const handleClick = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest('a')
+      if (anchor && anchor.href) saveScroll()
+    }
+    document.addEventListener('click', handleClick, true)
+    return () => {
+      saveScroll()
+      window.removeEventListener('beforeunload', saveScroll)
+      document.removeEventListener('click', handleClick, true)
+    }
+  }, [sort, typeFilter])
+
+  // Restore scroll position after posts load
+  const hasRestoredScroll = useRef(false)
+  useEffect(() => {
+    if (!loading && posts.length > 0 && !hasRestoredScroll.current) {
+      hasRestoredScroll.current = true
+      const savedY = sessionStorage.getItem(`feed_scroll_${sort}_${typeFilter}`)
+      if (savedY) {
+        requestAnimationFrame(() => {
+          window.scrollTo(0, parseInt(savedY, 10))
+        })
+      }
+    }
+  }, [loading, posts.length, sort, typeFilter])
+
+  // Clear saved scroll position and reset restoration flag when sort/filter changes
+  useEffect(() => {
+    hasRestoredScroll.current = false
+  }, [sort, typeFilter])
+
   // Reset offset when sort, typeFilter, or feedMode changes
   useEffect(() => { setOffset(0) }, [sort, typeFilter, feedMode])
 

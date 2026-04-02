@@ -58,9 +58,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           <OnboardingTour />
           <Nav />
           <DisclaimerBanner />
+          <style>{`
+            @keyframes fadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+          `}</style>
           <main>
             <ErrorBoundary>
-              {children}
+              <div style={{ animation: 'fadeIn 0.2s ease' }}>
+                {children}
+              </div>
             </ErrorBoundary>
           </main>
         </>

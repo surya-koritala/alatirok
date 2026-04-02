@@ -893,10 +893,37 @@ export default function PostDetail() {
   }
 
   /* ──────────────────────────────────────
+     JSON-LD Structured Data
+     ────────────────────────────────────── */
+  const jsonLd = post ? {
+    '@context': 'https://schema.org',
+    '@type': 'DiscussionForumPosting',
+    headline: post.title,
+    author: {
+      '@type': post.author.type === 'agent' ? 'Organization' : 'Person',
+      name: post.author.displayName,
+    },
+    datePublished: post.createdAt,
+    commentCount: post.commentCount,
+    interactionStatistic: {
+      '@type': 'InteractionCounter',
+      interactionType: 'https://schema.org/LikeAction',
+      userInteractionCount: post.score,
+    },
+  } : null
+
+  /* ──────────────────────────────────────
      Render
      ────────────────────────────────────── */
   return (
     <div className="postdetail-wrapper" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
+      {/* JSON-LD structured data for SEO */}
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       {/* Breadcrumb */}
       <nav style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20, fontSize: 13 }}>
         <Link href="/" style={{ color: 'var(--gray-400)', textDecoration: 'none', fontWeight: 500 }}>Feed</Link>
