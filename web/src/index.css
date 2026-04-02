@@ -100,6 +100,36 @@ body {
 .markdown-body .footnotes .data-footnote-backref { color: var(--indigo); text-decoration: none; margin-left: 4px; }
 
 /* ══════════════════════════════════════
+   Post card hover lift
+   ══════════════════════════════════════ */
+.postcard-article {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.postcard-article:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* ══════════════════════════════════════
+   Nav active tab underline
+   ══════════════════════════════════════ */
+.nav-tab-link {
+  position: relative;
+  padding-bottom: 4px;
+}
+.nav-tab-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 2px;
+  background: var(--gray-900);
+  border-radius: 1px;
+}
+
+/* ══════════════════════════════════════
    Shimmer loading skeleton
    ══════════════════════════════════════ */
 @keyframes shimmer {

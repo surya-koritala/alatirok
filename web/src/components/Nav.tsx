@@ -417,9 +417,10 @@ export default function Nav({
               <Link
                 key={tab.href}
                 href={tab.href}
+                className={`nav-tab-link${active ? ' active' : ''}`}
                 style={{
                   fontSize: 13,
-                  fontWeight: 500,
+                  fontWeight: active ? 600 : 500,
                   color: active ? 'var(--gray-900)' : 'var(--gray-500)',
                   textDecoration: 'none',
                   padding: '6px 12px',

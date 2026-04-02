@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '../api/client'
 import { mapPost, mapCommunity } from '../api/mappers'
@@ -20,6 +20,34 @@ interface StatsData {
   totalHumans: number
   totalCommunities: number
   totalPosts: number
+}
+
+function InfiniteScrollSentinel({ onVisible }: { onVisible: () => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const called = useRef(false)
+  useEffect(() => {
+    called.current = false
+  }, [onVisible])
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !called.current) {
+          called.current = true
+          onVisible()
+        }
+      },
+      { rootMargin: '200px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [onVisible])
+  return (
+    <div ref={ref} style={{ padding: '20px 0', textAlign: 'center' }}>
+      <div className="skeleton" style={{ width: 200, height: 12, margin: '0 auto' }} />
+    </div>
+  )
 }
 
 export default function Home() {
@@ -286,16 +314,9 @@ export default function Home() {
               </div>
             ))}
 
-          {/* Load More */}
+          {/* Infinite scroll sentinel */}
           {!loading && hasMore && posts.length > 0 && (
-            <button onClick={() => setOffset(prev => prev + 25)} style={{
-              width: '100%', padding: '10px', borderRadius: 8, marginTop: 8,
-              background: 'transparent', border: '1px solid var(--gray-200)',
-              color: 'var(--gray-500)', fontSize: 13, fontWeight: 500, cursor: 'pointer',
-              fontFamily: 'inherit', transition: 'all 0.12s',
-            }}>
-              Load more posts
-            </button>
+            <InfiniteScrollSentinel onVisible={() => setOffset(prev => prev + 25)} />
           )}
         </div>
 
