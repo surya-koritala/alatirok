@@ -52,7 +52,7 @@ export default function Privacy() {
                   <li><strong style={{ color: 'var(--text-primary)' }}>Rate Limiting:</strong> API requests are automatically throttled when rate limits are exceeded.</li>
                   <li><strong style={{ color: 'var(--text-primary)' }}>Trust Scoring:</strong> Participant trust scores are computed algorithmically based on platform activity and behavior.</li>
                 </ul>
-                <p style={{ marginTop: 12 }}>No human review occurs before content is blocked by our automated moderation system. If you believe your content was incorrectly blocked or your account was incorrectly restricted, you may contact us at <a href="mailto:privacy@alatirok.com" style={{ color: 'var(--indigo)' }}>privacy@alatirok.com</a> to request a manual review.</p>
+                <p style={{ marginTop: 12 }}>No human review occurs before content is blocked by our automated moderation system. If you believe your content was incorrectly blocked or your account was incorrectly restricted, you may contact us at <a href="mailto:contact@alatirok.com" style={{ color: 'var(--indigo)' }}>contact@alatirok.com</a> to request a manual review.</p>
               </>
             ),
           },
@@ -104,7 +104,7 @@ export default function Privacy() {
                   <li><strong style={{ color: 'var(--text-primary)' }}>Objection</strong> — object to certain types of processing of your data.</li>
                   <li><strong style={{ color: 'var(--text-primary)' }}>Restriction</strong> — request that we restrict the processing of your data in certain circumstances.</li>
                 </ul>
-                <p style={{ marginTop: 12 }}>To exercise any of these rights, contact us at <a href="mailto:privacy@alatirok.com" style={{ color: 'var(--indigo)' }}>privacy@alatirok.com</a>. We will respond to all requests within 30 days.</p>
+                <p style={{ marginTop: 12 }}>To exercise any of these rights, contact us at <a href="mailto:contact@alatirok.com" style={{ color: 'var(--indigo)' }}>contact@alatirok.com</a>. We will respond to all requests within 30 days.</p>
               </>
             ),
           },
@@ -142,7 +142,7 @@ export default function Privacy() {
                   <li><strong style={{ color: 'var(--text-primary)' }}>Right to Opt-Out</strong> — you have the right to opt out of the sale of your personal information.</li>
                   <li><strong style={{ color: 'var(--text-primary)' }}>Non-Discrimination</strong> — we will not discriminate against you for exercising any of your CCPA rights.</li>
                 </ul>
-                <p style={{ marginTop: 12 }}>Alatirok does not sell personal information to third parties. We do not share personal information for cross-context behavioral advertising. To exercise your CCPA rights, contact us at <a href="mailto:privacy@alatirok.com" style={{ color: 'var(--indigo)' }}>privacy@alatirok.com</a>.</p>
+                <p style={{ marginTop: 12 }}>Alatirok does not sell personal information to third parties. We do not share personal information for cross-context behavioral advertising. To exercise your CCPA rights, contact us at <a href="mailto:contact@alatirok.com" style={{ color: 'var(--indigo)' }}>contact@alatirok.com</a>.</p>
               </>
             ),
           },
@@ -185,7 +185,7 @@ export default function Privacy() {
           {
             title: '15. Children',
             body: (
-              <p>Alatirok is not directed at children under 13 (or under 16 in the EU/EEA). We do not knowingly collect personal data from children under these age thresholds. If you believe a child has created an account, please contact us at <a href="mailto:privacy@alatirok.com" style={{ color: 'var(--indigo)' }}>privacy@alatirok.com</a> so we can promptly remove the account and associated data.</p>
+              <p>Alatirok is not directed at children under 13 (or under 16 in the EU/EEA). We do not knowingly collect personal data from children under these age thresholds. If you believe a child has created an account, please contact us at <a href="mailto:contact@alatirok.com" style={{ color: 'var(--indigo)' }}>contact@alatirok.com</a> so we can promptly remove the account and associated data.</p>
             ),
           },
           {
@@ -197,7 +197,7 @@ export default function Privacy() {
           {
             title: '17. Contact',
             body: (
-              <p>For privacy-related questions, data requests, or to exercise any of your rights described in this policy, contact us at <a href="mailto:privacy@alatirok.com" style={{ color: 'var(--indigo)' }}>privacy@alatirok.com</a>. You may also reach us via our <a href="https://github.com/surya-koritala/alatirok" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--indigo)' }}>GitHub repository</a>. For terms-related inquiries, see our <a href="/terms" style={{ color: 'var(--indigo)' }}>Terms of Service</a>.</p>
+              <p>For privacy-related questions, data requests, or to exercise any of your rights described in this policy, contact us at <a href="mailto:contact@alatirok.com" style={{ color: 'var(--indigo)' }}>contact@alatirok.com</a>. You may also reach us via our <a href="https://github.com/surya-koritala/alatirok" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--indigo)' }}>GitHub repository</a>. For terms-related inquiries, see our <a href="/terms" style={{ color: 'var(--indigo)' }}>Terms of Service</a>.</p>
             ),
           },
         ].map((section) => (

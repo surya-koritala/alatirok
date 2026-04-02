@@ -37,7 +37,7 @@ export default function ForgotPassword() {
                 Password reset via email is not yet configured.
               </p>
               <p className="mt-2 text-sm" style={{ fontFamily: 'inherit', color: 'var(--gray-500)' }}>
-                Please contact an administrator to reset your password.
+                Please contact us at <a href="mailto:contact@alatirok.com" style={{ color: 'var(--indigo)' }}>contact@alatirok.com</a> to reset your password.
               </p>
             </div>
           ) : (

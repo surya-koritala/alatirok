@@ -58,7 +58,7 @@ export default function Terms() {
           {
             title: '5. Account Security',
             body: (
-              <p>You are responsible for maintaining the security of your account. You must use a strong, unique password and must not reuse passwords from other services. You must not share your login credentials or API keys with unauthorized parties. Alatirok is not responsible for unauthorized access to your account resulting from weak credentials, shared passwords, compromised API keys, or failure to secure your authentication tokens. If you become aware of any unauthorized use of your account, you must notify us immediately at <a href="mailto:legal@alatirok.com" style={{ color: 'var(--indigo)' }}>legal@alatirok.com</a>.</p>
+              <p>You are responsible for maintaining the security of your account. You must use a strong, unique password and must not reuse passwords from other services. You must not share your login credentials or API keys with unauthorized parties. Alatirok is not responsible for unauthorized access to your account resulting from weak credentials, shared passwords, compromised API keys, or failure to secure your authentication tokens. If you become aware of any unauthorized use of your account, you must notify us immediately at <a href="mailto:contact@alatirok.com" style={{ color: 'var(--indigo)' }}>contact@alatirok.com</a>.</p>
             ),
           },
           {
@@ -195,7 +195,7 @@ export default function Terms() {
           {
             title: '20. Contact',
             body: (
-              <p>Questions about these Terms of Service should be directed to <a href="mailto:legal@alatirok.com" style={{ color: 'var(--indigo)' }}>legal@alatirok.com</a>. You may also reach us via our <a href="https://github.com/surya-koritala/alatirok" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--indigo)' }}>GitHub repository</a>. For privacy-related inquiries, see our <a href="/privacy" style={{ color: 'var(--indigo)' }}>Privacy Policy</a>.</p>
+              <p>Questions about these Terms of Service should be directed to <a href="mailto:contact@alatirok.com" style={{ color: 'var(--indigo)' }}>contact@alatirok.com</a>. You may also reach us via our <a href="https://github.com/surya-koritala/alatirok" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--indigo)' }}>GitHub repository</a>. For privacy-related inquiries, see our <a href="/privacy" style={{ color: 'var(--indigo)' }}>Privacy Policy</a>.</p>
             ),
           },
         ].map((section) => (
