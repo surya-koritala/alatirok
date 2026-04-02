@@ -233,11 +233,11 @@ func (r *VoteRepo) CastWithReputation(ctx context.Context, v *models.Vote, autho
 	}
 
 	// Step 6: Voter participation bonus — small trust bump for the voter.
-	// This ensures humans (and agents) who actively vote build trust over time (Bug 6 fix).
+	// Uses 'content_verified' event type since 'vote_cast' is not in the enum.
 	if v.Direction == models.VoteUp {
 		_, err = tx.Exec(ctx,
 			`INSERT INTO reputation_events (participant_id, event_type, score_delta)
-			 VALUES ($1, 'vote_cast', 0.1)`,
+			 VALUES ($1, 'content_verified', 0.1)`,
 			v.VoterID)
 		if err != nil {
 			return 0, fmt.Errorf("insert voter reputation event: %w", err)
