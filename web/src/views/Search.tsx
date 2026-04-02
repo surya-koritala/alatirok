@@ -6,6 +6,7 @@ import { api } from '../api/client'
 import { mapPost } from '../api/mappers'
 import type { PostView } from '../api/types'
 import PostCard from '../components/PostCard'
+import Sidebar from '../components/Sidebar'
 
 function RelevanceBar({ score }: { score: number }) {
   const pct = Math.round(score * 100)
@@ -17,7 +18,7 @@ function RelevanceBar({ score }: { score: number }) {
         className="h-1.5 rounded-full"
         style={{
           width: '80px',
-          background: 'rgba(255,255,255,0.06)',
+          background: 'var(--gray-100)',
         }}
       >
         <div
@@ -87,9 +88,10 @@ export default function Search() {
   }
 
   return (
-    <div className="py-6">
+    <div className="page-grid">
+      <div>
       {/* Header */}
-      <div className="mb-6">
+      <div style={{ marginBottom: 20 }}>
         {query ? (
           <>
             <div className="flex items-center justify-between">
@@ -103,32 +105,23 @@ export default function Search() {
                 Search Results
               </h1>
               {/* Search mode toggle */}
-              <div
-                className="flex rounded-lg overflow-hidden text-xs"
-                style={{ border: '1px solid var(--border)' }}
-              >
-                <button
-                  onClick={() => setSearchMode('hybrid')}
-                  className="px-3 py-1 transition-colors"
-                  style={{
-                    background: searchMode === 'hybrid' ? 'var(--bg-surface)' : 'transparent',
-                    color: searchMode === 'hybrid' ? 'var(--gray-950)' : 'var(--text-secondary)',
-                    fontWeight: searchMode === 'hybrid' ? 600 : 400,
-                  }}
-                >
-                  Hybrid
-                </button>
-                <button
-                  onClick={() => setSearchMode('text')}
-                  className="px-3 py-1 transition-colors"
-                  style={{
-                    background: searchMode === 'text' ? 'var(--bg-surface)' : 'transparent',
-                    color: searchMode === 'text' ? 'var(--gray-950)' : 'var(--text-secondary)',
-                    fontWeight: searchMode === 'text' ? 600 : 400,
-                  }}
-                >
-                  Text
-                </button>
+              <div style={{ display: 'flex', gap: 2, background: 'var(--gray-100)', borderRadius: 8, padding: 2 }}>
+                {(['hybrid', 'text'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setSearchMode(mode)}
+                    style={{
+                      padding: '5px 12px', borderRadius: 6, border: 'none',
+                      background: searchMode === mode ? '#fff' : 'transparent',
+                      color: searchMode === mode ? 'var(--gray-900)' : 'var(--gray-500)',
+                      fontSize: 12, fontWeight: searchMode === mode ? 600 : 500,
+                      fontFamily: 'inherit', cursor: 'pointer',
+                      boxShadow: searchMode === mode ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                    }}
+                  >
+                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                  </button>
+                ))}
               </div>
             </div>
             <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -159,16 +152,17 @@ export default function Search() {
 
       {/* Loading skeleton */}
       {loading && (
-        <div className="flex flex-col gap-3">
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="h-28 animate-pulse rounded-xl"
-              style={{
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-light)',
-              }}
-            />
+            <div key={i} style={{ padding: '20px 0', borderBottom: '1px solid var(--gray-100)' }}>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+                <div className="skeleton" style={{ width: 80, height: 12 }} />
+                <div className="skeleton skeleton-avatar" />
+                <div className="skeleton" style={{ width: 60, height: 12 }} />
+              </div>
+              <div className="skeleton skeleton-title" />
+              <div className="skeleton skeleton-text" style={{ width: '85%' }} />
+            </div>
           ))}
         </div>
       )}
@@ -204,6 +198,12 @@ export default function Search() {
             <PostCard post={post} onVote={handleVote} />
           </div>
         ))}
+      </div>
+
+      {/* Sidebar */}
+      <aside className="hidden lg:block" style={{ position: 'sticky', top: 80, alignSelf: 'flex-start' }}>
+        <Sidebar />
+      </aside>
     </div>
   )
 }
