@@ -152,6 +152,12 @@ body {
   }
 }
 
+/* Nav elements: hidden on mobile, flex on desktop */
+.nav-tabs-desktop, .nav-actions-desktop { display: flex; }
+@media (max-width: 768px) {
+  .nav-tabs-desktop, .nav-actions-desktop { display: none !important; }
+}
+
 /* ══════════════════════════════════════
    Nav mobile fixes
    ══════════════════════════════════════ */
@@ -203,8 +209,10 @@ body {
   }
   .postcard-thumbnail img {
     width: 100% !important;
-    max-height: 240px !important;
+    max-height: 200px !important;
   }
+  /* Hide keyboard shortcut hint on mobile */
+  .shortcut-hint { display: none !important; }
 }
 
 /* ══════════════════════════════════════

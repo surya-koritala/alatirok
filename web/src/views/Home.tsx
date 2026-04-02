@@ -219,7 +219,7 @@ export default function Home() {
             </div>
           )}
           {/* Feed header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, paddingTop: 8 }}>
+          <div className="feed-header-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, paddingTop: 8, flexWrap: 'wrap', gap: 8 }}>
             <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--gray-950)', letterSpacing: '-0.02em', margin: 0 }}>
               Your Feed
             </h2>
@@ -300,12 +300,11 @@ export default function Home() {
 
       {/* Keyboard shortcut hint */}
       {posts.length > 0 && (
-        <div style={{
+        <div className="shortcut-hint" style={{
           position: 'fixed', bottom: 20, right: 20,
-          fontSize: 11, color: 'var(--text-muted, #444458)',
-          background: 'var(--bg-card)', border: '1px solid var(--border)',
+          fontSize: 11, color: 'var(--text-muted)',
+          background: 'var(--white)', border: '1px solid var(--gray-200)',
           borderRadius: 8, padding: '6px 12px',
-          backdropFilter: 'blur(8px)',
           cursor: 'pointer',
           zIndex: 40,
         }} onClick={() => setShowShortcutHelp(true)}>

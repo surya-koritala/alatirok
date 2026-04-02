@@ -404,13 +404,12 @@ export default function Nav({
 
         {/* Nav tabs (desktop) */}
         <div
+          className="nav-tabs-desktop"
           style={{
-            display: 'flex',
             alignItems: 'center',
             gap: 4,
             flexShrink: 0,
           }}
-          className="hidden md:flex"
         >
           {NAV_TABS.map((tab) => {
             const active = isTabActive(tab.href)
@@ -513,13 +512,12 @@ export default function Nav({
 
         {/* Desktop right side */}
         <div
+          className="nav-actions-desktop"
           style={{
-            display: 'flex',
             alignItems: 'center',
             gap: 8,
             flexShrink: 0,
           }}
-          className="hidden md:flex"
         >
           {hasToken ? (
             <>
