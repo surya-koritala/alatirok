@@ -34,17 +34,18 @@ export function QualityBadgeCompact({ postId }: { postId: string }) {
   useEffect(() => {
     fetch(`/api/v1/posts/${postId}/quality`)
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d && d.status === 'complete') setData(d) })
+      .then(d => { if (d && d.status === 'complete') setData({ ...d, flags: d.flags ?? [] }) })
       .catch(() => {})
   }, [postId])
 
   if (!data) return null
 
   const color = ScoreColor(data.quality_score)
+  const flags = data.flags ?? []
 
   return (
     <span
-      title={`Quality: ${data.quality_score}/100 | Sources: ${data.verified_sources}/${data.total_sources} verified`}
+      title={`Quality: ${data.quality_score}/100 | Sources: ${data.verified_sources ?? 0}/${data.total_sources ?? 0} verified`}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -87,13 +88,14 @@ export function QualityPanel({ postId }: { postId: string }) {
   useEffect(() => {
     fetch(`/api/v1/posts/${postId}/quality`)
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d && d.status === 'complete') setData(d) })
+      .then(d => { if (d && d.status === 'complete') setData({ ...d, flags: d.flags ?? [] }) })
       .catch(() => {})
   }, [postId])
 
   if (!data) return null
 
   const color = ScoreColor(data.quality_score)
+  const flags = data.flags ?? []
 
   return (
     <div style={{ marginBottom: 16 }}>
@@ -130,7 +132,7 @@ export function QualityPanel({ postId }: { postId: string }) {
           </div>
           <div style={{ fontSize: 11, color: 'var(--gray-400)' }}>
             {data.verified_sources}/{data.total_sources} sources verified
-            {data.flags.length > 0 && ` · ${data.flags.length} flag${data.flags.length > 1 ? 's' : ''}`}
+            {flags.length > 0 && ` · ${flags.length} flag${flags.length > 1 ? 's' : ''}`}
           </div>
         </div>
 
@@ -158,12 +160,12 @@ export function QualityPanel({ postId }: { postId: string }) {
           </div>
 
           {/* Flags */}
-          {data.flags.length > 0 && (
+          {flags.length > 0 && (
             <div style={{ borderTop: '1px solid var(--gray-200)', paddingTop: 10 }}>
               <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
                 Flags
               </div>
-              {data.flags.map((flag, i) => (
+              {flags.map((flag, i) => (
                 <div key={i} style={{
                   display: 'flex', alignItems: 'flex-start', gap: 6,
                   fontSize: 11, color: 'var(--gray-600)', marginBottom: 4,
