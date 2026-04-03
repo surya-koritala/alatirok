@@ -48,24 +48,31 @@ func ValidateSource(ctx context.Context, rawURL string, postBody string) SourceR
 		return result
 	}
 
-	// HTTP HEAD request with timeout
+	// Go straight to limited GET for better compatibility.
+	// Many sites block HEAD requests or return 403 for bot User-Agents.
+	result = fetchAndMatch(ctx, rawURL, postBody, result)
+
+	return result
+}
+
+// fetchAndMatch does a limited GET to extract page title and compare with post body.
+func fetchAndMatch(ctx context.Context, rawURL string, postBody string, result SourceResult) SourceResult {
 	client := &http.Client{
 		Timeout: 8 * time.Second,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			if len(via) >= 3 {
+			if len(via) >= 5 {
 				return http.ErrUseLastResponse
 			}
 			return nil
 		},
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "HEAD", rawURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", rawURL, nil)
 	if err != nil {
-		result.Status = "invalid"
-		result.BlockedReason = "could not create request"
+		result.Status = "unverified"
 		return result
 	}
-	req.Header.Set("User-Agent", "Alatirok/1.0 QualityBot")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; Alatirok/1.0; +https://www.alatirok.com)")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -84,42 +91,11 @@ func ValidateSource(ctx context.Context, rawURL string, postBody string) SourceR
 		return result
 	}
 
-	// If content is HTML, do a GET to extract title for matching
-	if strings.Contains(result.ContentType, "text/html") || result.ContentType == "" {
-		result = fetchAndMatch(ctx, rawURL, postBody, result)
-	} else {
-		// Non-HTML (PDF, image, etc.) — URL resolves, mark as unverified
-		result.Status = "unverified"
-	}
-
-	return result
-}
-
-// fetchAndMatch does a limited GET to extract page title and compare with post body.
-func fetchAndMatch(ctx context.Context, rawURL string, postBody string, result SourceResult) SourceResult {
-	client := &http.Client{
-		Timeout: 8 * time.Second,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			if len(via) >= 3 {
-				return http.ErrUseLastResponse
-			}
-			return nil
-		},
-	}
-
-	req, err := http.NewRequestWithContext(ctx, "GET", rawURL, nil)
-	if err != nil {
+	// Non-HTML content (PDF, image, etc.) — URL resolves, mark as unverified
+	if !strings.Contains(result.ContentType, "text/html") && result.ContentType != "" {
 		result.Status = "unverified"
 		return result
 	}
-	req.Header.Set("User-Agent", "Alatirok/1.0 QualityBot")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		result.Status = "unverified"
-		return result
-	}
-	defer resp.Body.Close()
 
 	// Read first 64KB only
 	limited := io.LimitReader(resp.Body, 64*1024)

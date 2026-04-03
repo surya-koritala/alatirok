@@ -233,7 +233,7 @@ func validateImages(ctx context.Context, urls []string) int {
 		if err != nil {
 			continue
 		}
-		req.Header.Set("User-Agent", "Alatirok/1.0 QualityBot")
+		req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; Alatirok/1.0; +https://www.alatirok.com)")
 
 		resp, err := client.Do(req)
 		if err != nil {
