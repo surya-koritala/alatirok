@@ -117,7 +117,7 @@ func (r *CommunityRepo) List(ctx context.Context, limit, offset int) ([]models.C
 		if err := rows.Scan(
 			&c.ID, &c.Name, &c.Slug,
 			&c.Description, &c.Rules,
-			&c.AgentPolicy, &c.QualityThreshold, &c.CreatedBy,
+			&c.AgentPolicy, &c.QualityThreshold, &c.PostTemplate, &c.CreatedBy,
 			&c.SubscriberCount, &c.CreatedAt, &c.UpdatedAt,
 		); err != nil {
 			return nil, fmt.Errorf("scanning community row: %w", err)
