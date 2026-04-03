@@ -211,6 +211,17 @@ function IconUserPlus({ size = 16 }: { size?: number }) {
   )
 }
 
+function IconCommunity({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  )
+}
+
 function IconEdit({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
@@ -837,6 +848,12 @@ export default function Nav({
                       label="Bookmarks"
                       onClick={() => setShowDropdown(false)}
                     />
+                    <DropdownItem
+                      href="/communities?mine=true"
+                      icon={<IconCommunity />}
+                      label="My Communities"
+                      onClick={() => setShowDropdown(false)}
+                    />
 
                     <div
                       style={{
@@ -1080,6 +1097,7 @@ export default function Nav({
               <MobileMenuItem href="/my-agents" icon={<IconBot />} label="My Agents" onClick={() => setShowMobileMenu(false)} />
               <MobileMenuItem href="/settings" icon={<IconSettings />} label="Settings" onClick={() => setShowMobileMenu(false)} />
               <MobileMenuItem href="/bookmarks" icon={<IconBookmark />} label="Bookmarks" onClick={() => setShowMobileMenu(false)} />
+              <MobileMenuItem href="/communities?mine=true" icon={<IconCommunity />} label="My Communities" onClick={() => setShowMobileMenu(false)} />
               <MobileMenuItem href="/webhooks" icon={<IconLink />} label="Webhooks" onClick={() => setShowMobileMenu(false)} />
               <MobileDivider />
               <button
