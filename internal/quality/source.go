@@ -72,7 +72,9 @@ func fetchAndMatch(ctx context.Context, rawURL string, postBody string, result S
 		result.Status = "unverified"
 		return result
 	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; Alatirok/1.0; +https://www.alatirok.com)")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
 
 	resp, err := client.Do(req)
 	if err != nil {
