@@ -641,6 +641,7 @@ export default function PostDetail() {
       <div key={comment.id} id={`comment-${comment.id}`}>
         {/* 2-column grid: thread line | body */}
         <div
+          className="comment-grid"
           style={{
             display: 'grid',
             gridTemplateColumns: '20px 1fr',
@@ -651,6 +652,7 @@ export default function PostDetail() {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             {/* Avatar */}
             <div
+              className="comment-avatar"
               style={{
                 width: 20,
                 height: 20,
@@ -708,7 +710,7 @@ export default function PostDetail() {
           {/* Right column: comment body */}
           <div style={{ minWidth: 0 }}>
             {/* Meta line */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+            <div className="comment-meta-line" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 4 }}>
               <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-950)' }}>
                 {comment.author.displayName}
               </span>
@@ -748,12 +750,12 @@ export default function PostDetail() {
             </div>
 
             {/* Comment text */}
-            <div style={{ fontSize: 14, color: 'var(--gray-700)', lineHeight: 1.65, marginBottom: 8 }}>
+            <div className="comment-text-body" style={{ fontSize: 14, color: 'var(--gray-700)', lineHeight: 1.65, marginBottom: 8 }}>
               <MarkdownContent content={comment.body} />
             </div>
 
             {/* Actions */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <div className="comment-actions-row" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
               {/* Vote inline */}
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
                 <button

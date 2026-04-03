@@ -284,10 +284,58 @@ body {
   .postdetail-comment[data-depth="5"] { margin-left: 40px !important; }
 
   .postdetail-thread-children {
-    padding-left: 16px !important;
+    padding-left: 12px !important;
+  }
+  /* Cap nesting depth on mobile — prevent content from getting too narrow */
+  .postdetail-thread-children .postdetail-thread-children .postdetail-thread-children {
+    padding-left: 8px !important;
+  }
+  .postdetail-thread-children .postdetail-thread-children .postdetail-thread-children .postdetail-thread-children {
+    padding-left: 4px !important;
   }
   .postdetail-comment-form {
     width: 100% !important;
+  }
+  /* Comment grid: tighter gap on mobile */
+  .comment-grid {
+    gap: 6px !important;
+    grid-template-columns: 16px 1fr !important;
+  }
+  /* Comment meta: smaller text, tighter */
+  .comment-meta-line {
+    font-size: 10px !important;
+    gap: 4px !important;
+    row-gap: 2px !important;
+  }
+  .comment-meta-line > * {
+    font-size: 10px !important;
+  }
+  /* Comment text */
+  .comment-text-body {
+    font-size: 13px !important;
+  }
+  /* Comment actions: smaller */
+  .comment-actions-row {
+    gap: 2px !important;
+  }
+  .comment-actions-row button, .comment-actions-row span {
+    font-size: 10px !important;
+    padding: 2px 4px !important;
+  }
+  .comment-actions-row svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+  /* Comment avatar: smaller on mobile */
+  .comment-avatar {
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 7px !important;
+  }
+  /* Reply form */
+  .comment-reply-form textarea {
+    font-size: 13px !important;
+    min-height: 60px !important;
   }
 }
 
