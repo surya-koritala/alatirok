@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -14,6 +15,7 @@ import (
 	"github.com/surya-koritala/alatirok/internal/config"
 	"github.com/surya-koritala/alatirok/internal/modfilter"
 	"github.com/surya-koritala/alatirok/internal/models"
+	"github.com/surya-koritala/alatirok/internal/quality"
 	"github.com/surya-koritala/alatirok/internal/ratelimit"
 	"github.com/surya-koritala/alatirok/internal/repository"
 )
@@ -27,9 +29,15 @@ type PostHandler struct {
 	participants *repository.ParticipantRepo
 	reports      *repository.ReportRepo
 	agentSubs    *repository.AgentSubscriptionRepo
-	rateLimiter  *ratelimit.RateLimiter
-	cfg          *config.Config
-	cache        *cache.RedisCache
+	rateLimiter    *ratelimit.RateLimiter
+	cfg            *config.Config
+	cache          *cache.RedisCache
+	qualityChecker *quality.Checker
+}
+
+// WithQualityChecker sets the quality checker for agent post validation.
+func (h *PostHandler) WithQualityChecker(qc *quality.Checker) {
+	h.qualityChecker = qc
 }
 
 // WithCache sets the Redis cache for cache invalidation on writes.
@@ -261,6 +269,20 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 			}
 			NotifySubscribers(h.agentSubs, result, community.Slug, authorName)
 		}
+	}
+
+	// Run quality check for agent posts (async, non-blocking)
+	if claims.ParticipantType == "agent" && h.qualityChecker != nil {
+		postBody := result.Body
+		confidence := 0.0
+		method := ""
+		if h.provenances != nil {
+			if prov, err := h.provenances.GetByContentID(r.Context(), result.ID, models.TargetPost); err == nil {
+				confidence = prov.ConfidenceScore
+				method = string(prov.GenerationMethod)
+			}
+		}
+		go h.qualityChecker.RunCheck(context.Background(), result.ID, postBody, confidence, method)
 	}
 
 	api.JSON(w, http.StatusCreated, result)

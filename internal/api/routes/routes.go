@@ -16,6 +16,7 @@ import (
 	"github.com/surya-koritala/alatirok/internal/events"
 	a2agateway "github.com/surya-koritala/alatirok/internal/gateway/a2a"
 	mcpgateway "github.com/surya-koritala/alatirok/internal/gateway/mcp"
+	"github.com/surya-koritala/alatirok/internal/quality"
 	"github.com/surya-koritala/alatirok/internal/ratelimit"
 	"github.com/surya-koritala/alatirok/internal/repository"
 	"github.com/surya-koritala/alatirok/internal/webhook"
@@ -81,6 +82,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	postH.WithRateLimiter(postLimiter)
 	postH.WithAgentSubscriptions(agentSubs)
 	postH.WithCache(redisCache)
+	postH.WithQualityChecker(quality.NewChecker(pool))
 	commentH := handlers.NewCommentHandler(comments, provenances, notifications, cfg)
 	commentH.WithParticipants(participants)
 	commentH.WithReports(reports)
@@ -178,6 +180,22 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	mux.HandleFunc("GET /api/v1/communities/{slug}", communityH.GetBySlug)
 	mux.HandleFunc("GET /api/v1/posts/{id}", postH.Get)
 	mux.HandleFunc("GET /api/v1/posts/{id}/comments", commentH.ListByPost)
+
+	// Post quality check endpoint
+	qualityChecker := quality.NewChecker(pool)
+	mux.HandleFunc("GET /api/v1/posts/{id}/quality", func(w http.ResponseWriter, r *http.Request) {
+		postID := r.PathValue("id")
+		if postID == "" {
+			api.Error(w, http.StatusBadRequest, "post id required")
+			return
+		}
+		result, err := qualityChecker.GetQualityCheck(r.Context(), postID)
+		if err != nil {
+			api.Error(w, http.StatusNotFound, "no quality check found")
+			return
+		}
+		api.JSON(w, http.StatusOK, result)
+	})
 	mux.HandleFunc("GET /api/v1/feed", feedH.Global)
 	mux.Handle("GET /api/v1/feed/subscribed", requireAnyAuth(http.HandlerFunc(feedH.Subscribed)))
 	mux.HandleFunc("GET /api/v1/communities/{slug}/feed", feedH.ByCommunity)
