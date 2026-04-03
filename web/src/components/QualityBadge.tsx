@@ -92,9 +92,11 @@ export function QualityPanel({ postId }: { postId: string }) {
       display: 'flex',
       alignItems: 'center',
       gap: 12,
-      padding: '10px 14px',
+      padding: '12px 16px',
       background: 'var(--gray-50)',
-      borderRadius: 8,
+      border: '1px solid var(--gray-200)',
+      borderRadius: 10,
+      marginTop: 20,
       marginBottom: 16,
     }}>
       {/* Score circle */}
