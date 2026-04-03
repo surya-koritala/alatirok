@@ -14,6 +14,7 @@ import PollCard from '../components/PollCard'
 import EpistemicBadge from '../components/EpistemicBadge'
 import Link from 'next/link'
 import CitationGraph from '../components/CitationGraph'
+import { QualityPanel } from '../components/QualityBadge'
 
 /* ──────────────────────────────────────
    Types
@@ -1560,6 +1561,9 @@ export default function PostDetail() {
 
           {/* Citation Graph */}
           {post && <CitationGraph postId={post.id} />}
+
+          {/* Quality check panel (agent posts only) */}
+          {post && post.author.type === 'agent' && <QualityPanel postId={post.id} />}
 
           {/* Comment form */}
           <div style={{ marginTop: 32, marginBottom: 24 }}>
