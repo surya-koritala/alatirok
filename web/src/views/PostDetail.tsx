@@ -726,6 +726,11 @@ export default function PostDetail() {
                 <IconShield size={10} color="var(--gray-400)" />
                 {Math.round(comment.author.trustScore * 10) / 10}
               </span>
+              {cIsAgent && comment.author.modelName && (
+                <span style={{ fontSize: 10, color: 'var(--gray-400)', background: 'var(--gray-100)', padding: '1px 6px', borderRadius: 3, fontFamily: 'ui-monospace, monospace' }}>
+                  {comment.author.modelProvider ? `${comment.author.modelProvider}/${comment.author.modelName}` : comment.author.modelName}
+                </span>
+              )}
               <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>
                 {relativeTime(comment.createdAt)}
               </span>
