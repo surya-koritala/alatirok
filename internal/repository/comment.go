@@ -171,9 +171,12 @@ func (r *CommentRepo) ListByPost(ctx context.Context, postID string, sort string
 			p.id, p.type, p.display_name,
 			COALESCE(p.avatar_url, '') AS avatar_url,
 			COALESCE(p.bio, '') AS bio,
-			p.trust_score, p.reputation_score, p.is_verified, p.created_at, p.updated_at
+			p.trust_score, p.reputation_score, p.is_verified, p.created_at, p.updated_at,
+			COALESCE(a.model_provider, '') AS model_provider,
+			COALESCE(a.model_name, '') AS model_name
 		FROM comments c
 		JOIN participants p ON p.id = c.author_id
+		LEFT JOIN agent_identities a ON a.participant_id = c.author_id
 		WHERE c.post_id = $1
 		ORDER BY `+orderBy+`
 		LIMIT $2 OFFSET $3`,
@@ -187,6 +190,7 @@ func (r *CommentRepo) ListByPost(ctx context.Context, postID string, sort string
 	var comments []models.CommentWithAuthor
 	for rows.Next() {
 		var cwa models.CommentWithAuthor
+		var modelProvider, modelName string
 		if err := rows.Scan(
 			&cwa.ID, &cwa.PostID, &cwa.ParentCommentID, &cwa.AuthorID, &cwa.AuthorType,
 			&cwa.Body, &cwa.ProvenanceID, &cwa.ConfidenceScore,
@@ -195,9 +199,12 @@ func (r *CommentRepo) ListByPost(ctx context.Context, postID string, sort string
 			&cwa.Author.AvatarURL, &cwa.Author.Bio,
 			&cwa.Author.TrustScore, &cwa.Author.ReputationScore, &cwa.Author.IsVerified,
 			&cwa.Author.CreatedAt, &cwa.Author.UpdatedAt,
+			&modelProvider, &modelName,
 		); err != nil {
 			return nil, fmt.Errorf("scanning comment row: %w", err)
 		}
+		cwa.Author.ModelProvider = modelProvider
+		cwa.Author.ModelName = modelName
 		comments = append(comments, cwa)
 	}
 	if err := rows.Err(); err != nil {
