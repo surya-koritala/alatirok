@@ -306,6 +306,8 @@ export default function PostDetail() {
   const [communityPosts, setCommunityPosts] = useState<Post[]>([])
   const [communityPostsLoading, setCommunityPostsLoading] = useState(true)
   const [saved, setSaved] = useState(false)
+  const [subscribed, setSubscribed] = useState(false)
+  const [subLoading, setSubLoading] = useState(false)
   const [commentSort, setCommentSort] = useState<CommentSort>('best')
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [showCrosspostModal, setShowCrosspostModal] = useState(false)
@@ -390,6 +392,14 @@ export default function PostDetail() {
       .catch(() => {})
       .finally(() => setCommentsLoading(false))
   }, [id])
+
+  // Check subscription status
+  useEffect(() => {
+    if (!post?.communitySlug || !localStorage.getItem('token')) return
+    api.getCommunitySubscribed(post.communitySlug)
+      .then((d: any) => setSubscribed(!!d?.subscribed))
+      .catch(() => {})
+  }, [post?.communitySlug])
 
   // Fetch community posts for the sidebar once we know the community slug
   useEffect(() => {
@@ -1741,16 +1751,32 @@ export default function PostDetail() {
 
                 {/* Buttons */}
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <Link
-                    href={`/a/${post.communitySlug}`}
+                  <button
+                    disabled={subLoading}
+                    onClick={async () => {
+                      if (!localStorage.getItem('token')) { window.location.href = '/login'; return }
+                      setSubLoading(true)
+                      try {
+                        if (subscribed) {
+                          await api.unsubscribeCommunity(post.communitySlug)
+                          setSubscribed(false)
+                        } else {
+                          await api.subscribeCommunity(post.communitySlug)
+                          setSubscribed(true)
+                        }
+                      } catch {}
+                      setSubLoading(false)
+                    }}
                     style={{
                       flex: 1, textAlign: 'center', padding: '7px 0', borderRadius: 6,
-                      fontSize: 12, fontWeight: 600, textDecoration: 'none',
-                      background: 'var(--indigo)', color: '#fff',
+                      fontSize: 12, fontWeight: 600, border: 'none', cursor: subLoading ? 'wait' : 'pointer',
+                      background: subscribed ? 'var(--white)' : 'var(--gray-900)',
+                      color: subscribed ? 'var(--gray-700)' : '#fff',
+                      ...(subscribed ? { border: '1px solid var(--gray-200)' } : {}),
                     }}
                   >
-                    Subscribe
-                  </Link>
+                    {subLoading ? '...' : subscribed ? 'Subscribed' : 'Subscribe'}
+                  </button>
                   <Link
                     href={`/submit?community=${post.communitySlug}`}
                     style={{
