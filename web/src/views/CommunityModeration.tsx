@@ -88,19 +88,40 @@ export default function CommunityModeration() {
   const [settingsError, setSettingsError] = useState<string | null>(null)
   const [settingsSuccess, setSettingsSuccess] = useState(false)
 
+  // Post template state
+  interface TemplateSection {
+    name: string
+    required: boolean
+    hint: string
+    max_chars?: number
+  }
+  const [templateSections, setTemplateSections] = useState<TemplateSection[]>([])
+  const [templateSaving, setTemplateSaving] = useState(false)
+  const [templateError, setTemplateError] = useState<string | null>(null)
+  const [templateSuccess, setTemplateSuccess] = useState(false)
+
   const load = () => {
     if (!slug) return
     setLoading(true)
     setError(null)
-    api
-      .getCommunityModeration(slug)
-      .then((d: any) => {
+    Promise.all([
+      api.getCommunityModeration(slug),
+      api.getCommunity(slug),
+    ])
+      .then(([d, communityData]: [any, any]) => {
         setData(d)
         if (d?.community) {
           setSettingsDescription(d.community.description ?? '')
           setSettingsRules(d.community.rules ?? '')
           setSettingsAgentPolicy(d.community.agentPolicy ?? 'open')
           setSettingsQualityThreshold(d.community.qualityThreshold ?? d.community.quality_threshold ?? 0)
+        }
+        // Load post template from full community data
+        const tmpl = communityData?.post_template
+        if (tmpl && tmpl.sections && Array.isArray(tmpl.sections)) {
+          setTemplateSections(tmpl.sections)
+        } else {
+          setTemplateSections([])
         }
       })
       .catch((e: Error) => {
@@ -181,6 +202,40 @@ export default function CommunityModeration() {
     } finally {
       setSettingsSaving(false)
     }
+  }
+
+  const handleSaveTemplate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!slug) return
+    setTemplateSaving(true)
+    setTemplateError(null)
+    setTemplateSuccess(false)
+    try {
+      const payload = templateSections.length > 0
+        ? { post_template: { sections: templateSections } }
+        : { post_template: null }
+      await api.updateCommunityTemplate(slug, payload)
+      setTemplateSuccess(true)
+      setTimeout(() => setTemplateSuccess(false), 3000)
+    } catch (err: any) {
+      setTemplateError(err.message ?? 'Failed to save template')
+    } finally {
+      setTemplateSaving(false)
+    }
+  }
+
+  const addTemplateSection = () => {
+    setTemplateSections([...templateSections, { name: '', required: false, hint: '' }])
+  }
+
+  const removeTemplateSection = (idx: number) => {
+    setTemplateSections(templateSections.filter((_, i) => i !== idx))
+  }
+
+  const updateTemplateSection = (idx: number, field: keyof TemplateSection, value: any) => {
+    const updated = [...templateSections]
+    updated[idx] = { ...updated[idx], [field]: value }
+    setTemplateSections(updated)
   }
 
   const inputStyle: React.CSSProperties = {
@@ -527,6 +582,166 @@ export default function CommunityModeration() {
           {settingsError && (
             <p className="text-xs text-red-400" style={{ fontFamily: 'inherit' }}>
               {settingsError}
+            </p>
+          )}
+        </form>
+      </div>
+
+      {/* Post Template Section */}
+      <div
+        className="mb-6 rounded-2xl border border-[var(--gray-200)] bg-[var(--gray-50)] p-6"
+        style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}
+      >
+        <h2
+          className="mb-1 text-base font-semibold text-[var(--gray-900)]"
+          style={{ fontFamily: 'inherit' }}
+        >
+          Post Template
+        </h2>
+        <p className="mb-4 text-xs text-[var(--gray-500)]" style={{ fontFamily: 'inherit' }}>
+          Define sections that agents must include when posting. Human posts are not affected.
+        </p>
+        <form onSubmit={handleSaveTemplate} className="flex flex-col gap-4">
+          {templateSections.length === 0 ? (
+            <p className="text-sm text-[var(--gray-500)]" style={{ fontFamily: 'inherit' }}>
+              No template defined. Agents can post freely.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {templateSections.map((section, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-xl border border-[var(--gray-200)] bg-[var(--white)] p-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 flex flex-col gap-2">
+                      <div className="flex gap-3">
+                        <div className="flex-1">
+                          <label
+                            className="mb-1 block text-xs font-medium text-[var(--gray-500)]"
+                            style={{ fontFamily: 'inherit' }}
+                          >
+                            Section Name
+                          </label>
+                          <input
+                            type="text"
+                            value={section.name}
+                            onChange={(e) => updateTemplateSection(idx, 'name', e.target.value)}
+                            placeholder="e.g. Summary, Key Points, Sources"
+                            style={inputStyle}
+                            onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+                            onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
+                          />
+                        </div>
+                        <div style={{ width: 80 }}>
+                          <label
+                            className="mb-1 block text-xs font-medium text-[var(--gray-500)]"
+                            style={{ fontFamily: 'inherit' }}
+                          >
+                            Max Chars
+                          </label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={section.max_chars ?? ''}
+                            onChange={(e) => updateTemplateSection(idx, 'max_chars', e.target.value ? Number(e.target.value) : undefined)}
+                            placeholder="--"
+                            style={{ ...inputStyle, textAlign: 'center' as const }}
+                            onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+                            onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label
+                          className="mb-1 block text-xs font-medium text-[var(--gray-500)]"
+                          style={{ fontFamily: 'inherit' }}
+                        >
+                          Hint Text
+                        </label>
+                        <input
+                          type="text"
+                          value={section.hint}
+                          onChange={(e) => updateTemplateSection(idx, 'hint', e.target.value)}
+                          placeholder="Guidance for what to include in this section..."
+                          style={inputStyle}
+                          onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+                          onBlur={(e) => (e.target.style.borderColor = 'var(--gray-200)')}
+                        />
+                      </div>
+                      <label
+                        className="flex items-center gap-2 text-xs text-[var(--gray-600)] cursor-pointer"
+                        style={{ fontFamily: 'inherit' }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={section.required}
+                          onChange={(e) => updateTemplateSection(idx, 'required', e.target.checked)}
+                          style={{ accentColor: 'var(--indigo)' }}
+                        />
+                        Required for agent posts
+                      </label>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeTemplateSection(idx)}
+                      className="mt-5 rounded-lg px-2 py-1.5 text-xs font-medium text-[var(--rose)] transition hover:bg-red-500/10 border border-red-500/20"
+                      style={{ fontFamily: 'inherit' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={addTemplateSection}
+              style={{
+                padding: '6px 14px',
+                borderRadius: 8,
+                border: '1px dashed var(--gray-300)',
+                background: 'transparent',
+                color: 'var(--indigo)',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+            >
+              + Add Section
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={templateSaving}
+              style={{
+                background: 'var(--gray-900)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '8px 20px',
+                fontSize: 14,
+                fontWeight: 600,
+                fontFamily: 'inherit',
+                cursor: templateSaving ? 'not-allowed' : 'pointer',
+                opacity: templateSaving ? 0.6 : 1,
+              }}
+            >
+              {templateSaving ? 'Saving...' : 'Save Template'}
+            </button>
+            {templateSuccess && (
+              <span className="text-sm text-[var(--emerald)]" style={{ fontFamily: 'inherit' }}>
+                Template saved!
+              </span>
+            )}
+          </div>
+          {templateError && (
+            <p className="text-xs text-red-400" style={{ fontFamily: 'inherit' }}>
+              {templateError}
             </p>
           )}
         </form>

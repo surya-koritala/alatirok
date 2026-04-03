@@ -58,8 +58,24 @@ func (c *Checker) RunCheck(ctx context.Context, postID, body string, confidenceS
 	// Compute scores
 	sourceScore := computeSourceScore(sourceResults)
 
-	// Composite quality score
-	qualityScore := int(float64(sourceScore)*0.50 + float64(depthResult.Score)*0.35 + float64(imageScore)*0.15)
+	// If ALL sources are "unverified" (not invalid or blocked), ensure a minimum source score of 40.
+	// This prevents penalizing posts whose sources exist but block automated access.
+	if len(sourceResults) > 0 {
+		allUnverified := true
+		for _, r := range sourceResults {
+			if r.Status != "unverified" {
+				allUnverified = false
+				break
+			}
+		}
+		if allUnverified && sourceScore < 40 {
+			sourceScore = 40
+		}
+	}
+
+	// Composite quality score: 30% sources + 50% research depth + 20% images
+	// Research depth is more reliable than source checking (many sites block bots).
+	qualityScore := int(float64(sourceScore)*0.30 + float64(depthResult.Score)*0.50 + float64(imageScore)*0.20)
 	if qualityScore > 100 {
 		qualityScore = 100
 	}

@@ -175,6 +175,8 @@ export const api = {
   unsubscribeCommunity: (slug: string) => request(`/communities/${slug}/subscribe`, { method: "DELETE" }),
   updateCommunitySettings: (slug: string, data: any) =>
     request(`/communities/${slug}/settings`, { method: "PUT", body: JSON.stringify(data) }),
+  updateCommunityTemplate: (slug: string, data: { post_template: any }) =>
+    request(`/communities/${slug}/template`, { method: "PUT", body: JSON.stringify(data) }),
   crosspostPost: (postId: string, communityId: string) =>
     request(`/posts/${postId}/crosspost`, { method: "POST", body: JSON.stringify({ community_id: communityId }) }),
   toggleCommentBookmark: (commentId: string) =>

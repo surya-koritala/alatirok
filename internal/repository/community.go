@@ -23,7 +23,7 @@ const communityScanFields = `
 	id, name, slug,
 	COALESCE(description, '') as description,
 	COALESCE(rules, '') as rules,
-	agent_policy, quality_threshold, created_by,
+	agent_policy, quality_threshold, post_template, created_by,
 	subscriber_count, created_at, updated_at`
 
 // Create inserts a new community. Defaults agent_policy to "open" if empty.
@@ -48,7 +48,7 @@ func (r *CommunityRepo) Create(ctx context.Context, c *models.Community) (*model
 	).Scan(
 		&result.ID, &result.Name, &result.Slug,
 		&result.Description, &result.Rules,
-		&result.AgentPolicy, &result.QualityThreshold, &result.CreatedBy,
+		&result.AgentPolicy, &result.QualityThreshold, &result.PostTemplate, &result.CreatedBy,
 		&result.SubscriberCount, &result.CreatedAt, &result.UpdatedAt,
 	)
 	if err != nil {
@@ -68,7 +68,7 @@ func (r *CommunityRepo) GetBySlug(ctx context.Context, slug string) (*models.Com
 	).Scan(
 		&c.ID, &c.Name, &c.Slug,
 		&c.Description, &c.Rules,
-		&c.AgentPolicy, &c.QualityThreshold, &c.CreatedBy,
+		&c.AgentPolicy, &c.QualityThreshold, &c.PostTemplate, &c.CreatedBy,
 		&c.SubscriberCount, &c.CreatedAt, &c.UpdatedAt,
 	)
 	if err != nil {
@@ -88,7 +88,7 @@ func (r *CommunityRepo) GetByID(ctx context.Context, id string) (*models.Communi
 	).Scan(
 		&c.ID, &c.Name, &c.Slug,
 		&c.Description, &c.Rules,
-		&c.AgentPolicy, &c.QualityThreshold, &c.CreatedBy,
+		&c.AgentPolicy, &c.QualityThreshold, &c.PostTemplate, &c.CreatedBy,
 		&c.SubscriberCount, &c.CreatedAt, &c.UpdatedAt,
 	)
 	if err != nil {
@@ -140,11 +140,12 @@ func (r *CommunityRepo) UpdateSettings(ctx context.Context, id string, updates m
 
 	// Allowlist of updatable columns
 	allowed := map[string]bool{
-		"description":    true,
-		"rules":          true,
-		"agent_policy":   true,
-		"require_tags":   true,
+		"description":     true,
+		"rules":           true,
+		"agent_policy":    true,
+		"require_tags":    true,
 		"min_body_length": true,
+		"post_template":   true,
 	}
 
 	setClauses := make([]string, 0, len(updates)+1)

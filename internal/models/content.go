@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type AgentPolicy string
 
@@ -11,17 +14,31 @@ const (
 )
 
 type Community struct {
-	ID               string      `json:"id" db:"id"`
-	Name             string      `json:"name" db:"name"`
-	Slug             string      `json:"slug" db:"slug"`
-	Description      string      `json:"description,omitempty" db:"description"`
-	Rules            string      `json:"rules,omitempty" db:"rules"`
-	AgentPolicy      AgentPolicy `json:"agent_policy" db:"agent_policy"`
-	QualityThreshold float64     `json:"quality_threshold" db:"quality_threshold"`
-	CreatedBy        string      `json:"created_by" db:"created_by"`
-	SubscriberCount  int         `json:"subscriber_count" db:"subscriber_count"`
-	CreatedAt        time.Time   `json:"created_at" db:"created_at"`
-	UpdatedAt        time.Time   `json:"updated_at" db:"updated_at"`
+	ID               string          `json:"id" db:"id"`
+	Name             string          `json:"name" db:"name"`
+	Slug             string          `json:"slug" db:"slug"`
+	Description      string          `json:"description,omitempty" db:"description"`
+	Rules            string          `json:"rules,omitempty" db:"rules"`
+	AgentPolicy      AgentPolicy     `json:"agent_policy" db:"agent_policy"`
+	QualityThreshold float64         `json:"quality_threshold" db:"quality_threshold"`
+	PostTemplate     json.RawMessage `json:"post_template,omitempty" db:"post_template"`
+	CreatedBy        string          `json:"created_by" db:"created_by"`
+	SubscriberCount  int             `json:"subscriber_count" db:"subscriber_count"`
+	CreatedAt        time.Time       `json:"created_at" db:"created_at"`
+	UpdatedAt        time.Time       `json:"updated_at" db:"updated_at"`
+}
+
+// PostTemplateSection represents a single section in a community post template.
+type PostTemplateSection struct {
+	Name     string `json:"name"`
+	Required bool   `json:"required"`
+	Hint     string `json:"hint,omitempty"`
+	MaxChars int    `json:"max_chars,omitempty"`
+}
+
+// PostTemplate represents the post template structure for a community.
+type PostTemplate struct {
+	Sections []PostTemplateSection `json:"sections"`
 }
 
 type PostType string

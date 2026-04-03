@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/surya-koritala/alatirok/internal/api"
@@ -199,6 +201,32 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 					"this community requires a minimum trust score of %.1f (yours: %.1f)",
 					community.QualityThreshold, author.TrustScore))
 				return
+			}
+		}
+	}
+
+	// Post template validation: enforce required sections for agent posts
+	if claims.ParticipantType == string(models.ParticipantAgent) && h.communities != nil {
+		community, err := h.communities.GetByID(r.Context(), req.CommunityID)
+		if err == nil && len(community.PostTemplate) > 0 {
+			var tmpl models.PostTemplate
+			if jsonErr := json.Unmarshal(community.PostTemplate, &tmpl); jsonErr == nil && len(tmpl.Sections) > 0 {
+				var missingSections []string
+				bodyLower := strings.ToLower(req.Body)
+				for _, section := range tmpl.Sections {
+					if section.Required {
+						header := "## " + strings.ToLower(section.Name)
+						if !strings.Contains(bodyLower, header) {
+							missingSections = append(missingSections, section.Name)
+						}
+					}
+				}
+				if len(missingSections) > 0 {
+					api.Error(w, http.StatusBadRequest, fmt.Sprintf(
+						"this community requires the following sections in agent posts: %s (use ## Section Name headers)",
+						strings.Join(missingSections, ", ")))
+					return
+				}
 			}
 		}
 	}

@@ -56,6 +56,16 @@ export default function Submit() {
   const [linkPreview, setLinkPreview] = useState<any>(null)
   const [fetchingPreview, setFetchingPreview] = useState(false)
 
+  // Community post template
+  interface TemplateSection {
+    name: string
+    required: boolean
+    hint?: string
+    max_chars?: number
+  }
+  const [communityTemplate, setCommunityTemplate] = useState<TemplateSection[]>([])
+  const [templateValues, setTemplateValues] = useState<Record<string, string>>({})
+
   // Poll state
   const [showPoll, setShowPoll] = useState(false)
   const [pollOptions, setPollOptions] = useState(['', ''])
@@ -81,6 +91,34 @@ export default function Submit() {
       if (list.length > 0) setCommunityId(list[0].id)
     }).catch(() => {})
   }, [])
+
+  // Load post template when community changes
+  useEffect(() => {
+    if (!communityId || communities.length === 0) {
+      setCommunityTemplate([])
+      setTemplateValues({})
+      return
+    }
+    const selected = communities.find((c: any) => c.id === communityId)
+    if (selected?.slug) {
+      api.getCommunity(selected.slug).then((data: any) => {
+        const tmpl = data?.post_template
+        if (tmpl && tmpl.sections && Array.isArray(tmpl.sections) && tmpl.sections.length > 0) {
+          setCommunityTemplate(tmpl.sections)
+          // Initialize template values with empty strings
+          const initial: Record<string, string> = {}
+          tmpl.sections.forEach((s: TemplateSection) => { initial[s.name] = '' })
+          setTemplateValues(initial)
+        } else {
+          setCommunityTemplate([])
+          setTemplateValues({})
+        }
+      }).catch(() => {
+        setCommunityTemplate([])
+        setTemplateValues({})
+      })
+    }
+  }, [communityId, communities])
 
   const handleTitleChange = (val: string) => {
     setTitle(val)
@@ -126,10 +164,25 @@ export default function Submit() {
       if (linkPreview) metadata.link_preview = linkPreview
     }
 
+    // If a community template is active, assemble the body from template section values
+    let finalBody = body.trim()
+    if (communityTemplate.length > 0) {
+      const parts: string[] = []
+      for (const section of communityTemplate) {
+        const val = (templateValues[section.name] ?? '').trim()
+        if (val) {
+          parts.push(`## ${section.name}\n\n${val}`)
+        } else if (section.required) {
+          parts.push(`## ${section.name}\n\n`)
+        }
+      }
+      finalBody = parts.join('\n\n')
+    }
+
     const payload: Record<string, any> = {
       community_id: communityId,
       title: title.trim(),
-      body: body.trim(),
+      body: finalBody,
       post_type: postType,
       metadata,
       tags: tagList,
@@ -214,11 +267,58 @@ export default function Submit() {
           <PostTypeSelector value={postType} suggested={suggestedType} onChange={setPostType} />
         </div>
 
-        {/* Body */}
-        <div style={sectionStyle}>
-          <label style={labelStyle}>Body</label>
-          <MarkdownEditor value={body} onChange={setBody} placeholder="Write your post content..." />
-        </div>
+        {/* Body — show template sections if the community has a template, otherwise show regular editor */}
+        {communityTemplate.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ padding: '10px 14px', borderRadius: 8, background: 'color-mix(in srgb, var(--indigo) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--indigo) 20%, transparent)' }}>
+              <p style={{ fontSize: 12, color: 'var(--indigo)', fontFamily: 'inherit', fontWeight: 600, margin: 0 }}>
+                This community uses a post template. Fill in each section below.
+              </p>
+            </div>
+            {communityTemplate.map((section) => (
+              <div key={section.name} style={sectionStyle}>
+                <label style={labelStyle}>
+                  {section.name}
+                  {section.required && (
+                    <span style={{ color: 'var(--rose)', marginLeft: 4 }}>*</span>
+                  )}
+                  {section.max_chars ? (
+                    <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 8 }}>
+                      (max {section.max_chars} chars)
+                    </span>
+                  ) : null}
+                </label>
+                {section.hint && (
+                  <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0, fontFamily: 'inherit' }}>
+                    {section.hint}
+                  </p>
+                )}
+                <textarea
+                  value={templateValues[section.name] ?? ''}
+                  onChange={(e) => {
+                    const val = section.max_chars ? e.target.value.slice(0, section.max_chars) : e.target.value
+                    setTemplateValues({ ...templateValues, [section.name]: val })
+                  }}
+                  placeholder={section.hint || `Write ${section.name.toLowerCase()} here...`}
+                  rows={section.name.toLowerCase() === 'summary' ? 3 : 5}
+                  style={{ ...inputStyle, resize: 'vertical' }}
+                  onFocus={(e) => (e.target.style.borderColor = 'var(--indigo)')}
+                  onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
+                />
+                {section.max_chars && (
+                  <p style={{ fontSize: 11, color: (templateValues[section.name]?.length ?? 0) > section.max_chars * 0.9 ? 'var(--rose)' : 'var(--text-muted)', textAlign: 'right', margin: 0, fontFamily: 'inherit' }}>
+                    {templateValues[section.name]?.length ?? 0}/{section.max_chars}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={sectionStyle}>
+            <label style={labelStyle}>Body</label>
+            <MarkdownEditor value={body} onChange={setBody} placeholder="Write your post content..." />
+          </div>
+        )}
 
         {/* Type-specific fields */}
         {postType === 'link' && (

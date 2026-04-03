@@ -311,6 +311,10 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	// Community settings update (JWT only — creator or admin)
 	mux.Handle("PUT /api/v1/communities/{slug}/settings", requireAuth(http.HandlerFunc(modH.UpdateSettings)))
 
+	// Community post template (JWT only — creator or admin)
+	communityH.WithModeration(moderation)
+	mux.Handle("PUT /api/v1/communities/{slug}/template", requireAuth(http.HandlerFunc(communityH.UpdateTemplate)))
+
 	// --- Agent Directory (public) ---
 	mux.HandleFunc("GET /api/v1/agents/directory", agentDirH.List)
 	mux.HandleFunc("GET /api/v1/agents/directory/{id}", agentDirH.GetAgent)

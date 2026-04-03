@@ -21,8 +21,14 @@ import (
 // CommunityHandler handles community endpoints.
 type CommunityHandler struct {
 	communities *repository.CommunityRepo
+	moderation  *repository.ModerationRepo
 	cfg         *config.Config
 	cache       *cache.RedisCache
+}
+
+// WithModeration sets the moderation repo for authorization checks.
+func (h *CommunityHandler) WithModeration(moderation *repository.ModerationRepo) {
+	h.moderation = moderation
 }
 
 // NewCommunityHandler creates a new CommunityHandler.
@@ -271,6 +277,102 @@ func (h *CommunityHandler) IsSubscribed(w http.ResponseWriter, r *http.Request) 
 	}
 	subscribed, _ := h.communities.IsSubscribed(r.Context(), community.ID, claims.ParticipantID)
 	api.JSON(w, http.StatusOK, map[string]bool{"subscribed": subscribed})
+}
+
+// UpdateTemplate handles PUT /api/v1/communities/{slug}/template.
+// Allows the community creator or an admin moderator to set/update the post template.
+func (h *CommunityHandler) UpdateTemplate(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	claims := middleware.GetClaims(r.Context())
+	if claims == nil {
+		api.Error(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	community, err := h.communities.GetBySlug(r.Context(), slug)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			api.Error(w, http.StatusNotFound, "community not found")
+			return
+		}
+		api.Error(w, http.StatusInternalServerError, "failed to get community")
+		return
+	}
+
+	// Authorization: only creator or admin moderator
+	isCreator := community.CreatedBy == claims.ParticipantID
+	if !isCreator {
+		isAdmin := false
+		if h.moderation != nil {
+			isMod, _ := h.moderation.IsModerator(r.Context(), community.ID, claims.ParticipantID)
+			if isMod {
+				mods, _ := h.moderation.ListModerators(r.Context(), community.ID)
+				for _, m := range mods {
+					if m["id"] == claims.ParticipantID && m["role"] == "admin" {
+						isAdmin = true
+						break
+					}
+				}
+			}
+		}
+		if !isAdmin {
+			api.Error(w, http.StatusForbidden, "only the community creator or admin can update the post template")
+			return
+		}
+	}
+
+	var req struct {
+		PostTemplate *json.RawMessage `json:"post_template"`
+	}
+	if err := api.Decode(r, &req); err != nil {
+		api.Error(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	// Validate the template structure if provided (non-null)
+	if req.PostTemplate != nil && len(*req.PostTemplate) > 0 && string(*req.PostTemplate) != "null" {
+		var tmpl struct {
+			Sections []struct {
+				Name     string `json:"name"`
+				Required bool   `json:"required"`
+				Hint     string `json:"hint"`
+				MaxChars int    `json:"max_chars"`
+			} `json:"sections"`
+		}
+		if err := json.Unmarshal(*req.PostTemplate, &tmpl); err != nil {
+			api.Error(w, http.StatusBadRequest, "invalid post_template JSON structure")
+			return
+		}
+		if len(tmpl.Sections) == 0 {
+			api.Error(w, http.StatusBadRequest, "post_template must have at least one section")
+			return
+		}
+		for _, s := range tmpl.Sections {
+			if s.Name == "" {
+				api.Error(w, http.StatusBadRequest, "each template section must have a name")
+				return
+			}
+		}
+	}
+
+	updates := map[string]any{}
+	if req.PostTemplate == nil || string(*req.PostTemplate) == "null" {
+		updates["post_template"] = nil
+	} else {
+		updates["post_template"] = *req.PostTemplate
+	}
+
+	if err := h.communities.UpdateSettings(r.Context(), community.ID, updates); err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to update post template")
+		return
+	}
+
+	// Invalidate caches
+	if h.cache != nil {
+		_ = h.cache.DeletePattern(r.Context(), "community:*")
+	}
+
+	api.JSON(w, http.StatusOK, map[string]string{"status": "template updated"})
 }
 
 // parseIntQuery parses an integer query parameter with a default value.

@@ -5,6 +5,9 @@ import (
 	"strings"
 )
 
+// urlPresenceRe detects http/https URLs in body text (for partial credit).
+var urlPresenceRe = regexp.MustCompile(`https?://[^\s<>"'\)\]]+`)
+
 // DepthResult holds the research depth assessment for a post.
 type DepthResult struct {
 	Score             int      // 0-100
@@ -40,16 +43,29 @@ func AssessResearchDepth(body string, sourceCount int, confidenceScore float64, 
 
 	// --- Deductions ---
 
-	// No sources on a post that makes factual claims
+	// No sources on a post that makes factual claims.
+	// If the post contains real URLs (even though sourceCount == 0, meaning they
+	// weren't passed via the API sources field), give partial credit with a
+	// reduced penalty (-20 instead of -50).
+	hasInlineURLs := len(urlPresenceRe.FindAllString(body, -1)) > 0
+
 	if sourceCount == 0 && claimCount > 2 {
-		result.Score -= 50
+		if hasInlineURLs {
+			result.Score -= 20
+		} else {
+			result.Score -= 50
+		}
 		result.HasUnsourcedClaims = true
 		result.Flags = append(result.Flags, Flag{
 			Type:   "no_sources",
 			Detail: "Post makes factual claims but provides no sources",
 		})
 	} else if sourceCount == 0 && claimCount > 0 {
-		result.Score -= 25
+		if hasInlineURLs {
+			result.Score -= 10
+		} else {
+			result.Score -= 25
+		}
 		result.HasUnsourcedClaims = true
 		result.Flags = append(result.Flags, Flag{
 			Type:   "few_sources",
