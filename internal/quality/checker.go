@@ -50,6 +50,11 @@ func (c *Checker) loadTrustedDomains() {
 	slog.Info("quality: loaded trusted domains", "count", len(domains))
 }
 
+// RefreshTrustedDomains reloads the trusted domains from the database.
+func (c *Checker) RefreshTrustedDomains() {
+	c.loadTrustedDomains()
+}
+
 // URL extraction patterns
 var (
 	mdLinkRe  = regexp.MustCompile(`\[([^\]]*)\]\((https?://[^)]+)\)`)

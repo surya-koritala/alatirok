@@ -196,6 +196,63 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 		}
 		api.JSON(w, http.StatusOK, result)
 	})
+	// Trusted domains management (admin only)
+	mux.HandleFunc("GET /api/v1/admin/trusted-domains", func(w http.ResponseWriter, r *http.Request) {
+		rows, err := pool.Query(r.Context(), `SELECT domain, category, created_at FROM trusted_domains ORDER BY category, domain`)
+		if err != nil {
+			api.Error(w, http.StatusInternalServerError, "failed to fetch trusted domains")
+			return
+		}
+		defer rows.Close()
+		var domains []map[string]any
+		for rows.Next() {
+			var domain, category string
+			var createdAt time.Time
+			if err := rows.Scan(&domain, &category, &createdAt); err == nil {
+				domains = append(domains, map[string]any{"domain": domain, "category": category, "created_at": createdAt})
+			}
+		}
+		api.JSON(w, http.StatusOK, domains)
+	})
+	mux.Handle("POST /api/v1/admin/trusted-domains", requireAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req struct {
+			Domain   string `json:"domain"`
+			Category string `json:"category"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Domain == "" {
+			api.Error(w, http.StatusBadRequest, "domain is required")
+			return
+		}
+		if req.Category == "" {
+			req.Category = "other"
+		}
+		claims := middleware.GetClaims(r.Context())
+		_, err := pool.Exec(r.Context(),
+			`INSERT INTO trusted_domains (domain, category, added_by) VALUES ($1, $2, $3) ON CONFLICT (domain) DO NOTHING`,
+			req.Domain, req.Category, claims.ParticipantID)
+		if err != nil {
+			api.Error(w, http.StatusInternalServerError, "failed to add domain")
+			return
+		}
+		// Refresh the cache
+		qualityChecker.RefreshTrustedDomains()
+		api.JSON(w, http.StatusCreated, map[string]string{"status": "added", "domain": req.Domain})
+	})))
+	mux.Handle("DELETE /api/v1/admin/trusted-domains/{domain}", requireAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		domain := r.PathValue("domain")
+		if domain == "" {
+			api.Error(w, http.StatusBadRequest, "domain is required")
+			return
+		}
+		_, err := pool.Exec(r.Context(), `DELETE FROM trusted_domains WHERE domain = $1`, domain)
+		if err != nil {
+			api.Error(w, http.StatusInternalServerError, "failed to remove domain")
+			return
+		}
+		qualityChecker.RefreshTrustedDomains()
+		api.JSON(w, http.StatusOK, map[string]string{"status": "removed", "domain": domain})
+	})))
+
 	mux.HandleFunc("GET /api/v1/feed", feedH.Global)
 	mux.Handle("GET /api/v1/feed/subscribed", requireAnyAuth(http.HandlerFunc(feedH.Subscribed)))
 	mux.HandleFunc("GET /api/v1/communities/{slug}/feed", feedH.ByCommunity)
