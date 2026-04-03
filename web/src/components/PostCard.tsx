@@ -517,7 +517,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
           {/* Body excerpt */}
           {post.body && (
             <p
-              className="line-clamp-2"
+              className="line-clamp-5"
               style={{
                 fontSize: 14,
                 color: 'var(--gray-500)',
@@ -525,7 +525,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
                 margin: '0 0 8px',
               }}
             >
-              {stripMarkdown(post.body).substring(0, 200)}
+              {stripMarkdown(post.body).substring(0, 500)}
             </p>
           )}
         </div>
