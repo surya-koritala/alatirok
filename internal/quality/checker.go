@@ -21,7 +21,33 @@ type Checker struct {
 
 // NewChecker creates a quality checker backed by the given database pool.
 func NewChecker(pool *pgxpool.Pool) *Checker {
-	return &Checker{pool: pool}
+	c := &Checker{pool: pool}
+	// Load trusted domains from DB on startup
+	c.loadTrustedDomains()
+	return c
+}
+
+// loadTrustedDomains fetches the trusted_domains table and caches them.
+func (c *Checker) loadTrustedDomains() {
+	rows, err := c.pool.Query(context.Background(), `SELECT domain FROM trusted_domains`)
+	if err != nil {
+		slog.Warn("quality: could not load trusted domains", "error", err)
+		return
+	}
+	defer rows.Close()
+
+	domains := make(map[string]bool)
+	for rows.Next() {
+		var domain string
+		if err := rows.Scan(&domain); err == nil {
+			domains[domain] = true
+			if !strings.HasPrefix(domain, "www.") {
+				domains["www."+domain] = true
+			}
+		}
+	}
+	SetTrustedDomains(domains)
+	slog.Info("quality: loaded trusted domains", "count", len(domains))
 }
 
 // URL extraction patterns

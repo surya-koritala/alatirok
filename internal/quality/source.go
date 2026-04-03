@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -23,69 +24,25 @@ type SourceResult struct {
 	BlockedReason string
 }
 
-// trustedDomains are well-known sources that we trust even if we can't
-// access them from our servers (many block datacenter IPs).
-var trustedDomains = map[string]bool{
-	// Major news
-	"npr.org": true, "www.npr.org": true,
-	"bbc.com": true, "www.bbc.com": true, "bbc.co.uk": true, "www.bbc.co.uk": true,
-	"reuters.com": true, "www.reuters.com": true,
-	"apnews.com": true, "www.apnews.com": true,
-	"nytimes.com": true, "www.nytimes.com": true,
-	"washingtonpost.com": true, "www.washingtonpost.com": true,
-	"theguardian.com": true, "www.theguardian.com": true,
-	"cnn.com": true, "www.cnn.com": true,
-	"bloomberg.com": true, "www.bloomberg.com": true,
-	"ft.com": true, "www.ft.com": true,
-	"wsj.com": true, "www.wsj.com": true,
-	"economist.com": true, "www.economist.com": true,
-	// Tech news
-	"arstechnica.com": true, "www.arstechnica.com": true,
-	"techcrunch.com": true, "www.techcrunch.com": true,
-	"theverge.com": true, "www.theverge.com": true,
-	"wired.com": true, "www.wired.com": true,
-	"zdnet.com": true, "www.zdnet.com": true,
-	"engadget.com": true, "www.engadget.com": true,
-	"thenextweb.com": true, "www.thenextweb.com": true,
-	"venturebeat.com": true, "www.venturebeat.com": true,
-	"hackernews.com": true, "news.ycombinator.com": true,
-	"slashdot.org": true, "www.slashdot.org": true,
-	// Finance
-	"finextra.com": true, "www.finextra.com": true,
-	"coindesk.com": true, "www.coindesk.com": true,
-	"cnbc.com": true, "www.cnbc.com": true,
-	"marketwatch.com": true, "www.marketwatch.com": true,
-	"investopedia.com": true, "www.investopedia.com": true,
-	// Research / Academic
-	"arxiv.org": true, "www.arxiv.org": true,
-	"nature.com": true, "www.nature.com": true,
-	"science.org": true, "www.science.org": true,
-	"pubmed.ncbi.nlm.nih.gov": true,
-	"scholar.google.com": true,
-	"ieee.org": true, "www.ieee.org": true,
-	"acm.org": true, "dl.acm.org": true,
-	"nist.gov": true, "www.nist.gov": true,
-	"nih.gov": true, "www.nih.gov": true,
-	// Government
-	"gov.uk": true, "www.gov.uk": true,
-	"whitehouse.gov": true, "www.whitehouse.gov": true,
-	"congress.gov": true, "www.congress.gov": true,
-	"sec.gov": true, "www.sec.gov": true,
-	"fda.gov": true, "www.fda.gov": true,
-	// Tech companies / Platforms
-	"github.com": true, "www.github.com": true,
-	"openai.com": true, "www.openai.com": true,
-	"anthropic.com": true, "www.anthropic.com": true,
-	"ai.google": true, "deepmind.google": true,
-	"microsoft.com": true, "www.microsoft.com": true,
-	"meta.com": true, "www.meta.com": true, "ai.meta.com": true,
-	"huggingface.co": true, "www.huggingface.co": true,
-	// Wikipedia
-	"en.wikipedia.org": true, "wikipedia.org": true,
+// trustedDomains is loaded from the database on startup by the Checker.
+// It's a package-level cache that gets refreshed.
+var (
+	trustedDomains   = make(map[string]bool)
+	trustedDomainsMu sync.RWMutex
+)
+
+// SetTrustedDomains replaces the cached trusted domain list.
+func SetTrustedDomains(domains map[string]bool) {
+	trustedDomainsMu.Lock()
+	trustedDomains = domains
+	trustedDomainsMu.Unlock()
 }
 
 // isTrustedDomain checks if a domain (or its parent) is in the trusted list.
 func isTrustedDomain(domain string) bool {
+	trustedDomainsMu.RLock()
+	defer trustedDomainsMu.RUnlock()
+
 	if trustedDomains[domain] {
 		return true
 	}
