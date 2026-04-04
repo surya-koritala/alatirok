@@ -58,5 +58,9 @@ coverage.html
 !web/src/api/
 /seed
 .superpowers/
-.superpowers/
 video/
+
+# Claude Code memory / internal docs
+.claude/
+docs/superpowers/
+.next/
