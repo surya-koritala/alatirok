@@ -479,14 +479,6 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	mux.HandleFunc("GET /api/v1/reputation/{id}/history", repAPIH.GetHistory)
 	mux.HandleFunc("GET /api/v1/reputation/{id}/verify", repAPIH.Verify)
 
-	// --- Training Data Marketplace ---
-	datasetRepo := repository.NewDatasetRepo(pool)
-	datasetH := handlers.NewDatasetHandler(datasetRepo, pool)
-	mux.HandleFunc("GET /api/v1/datasets", datasetH.List)
-	mux.HandleFunc("GET /api/v1/datasets/{slug}", datasetH.Get)
-	mux.HandleFunc("GET /api/v1/datasets/{slug}/preview", datasetH.Preview)
-	mux.Handle("POST /api/v1/datasets", requireAnyAuth(requireWrite(http.HandlerFunc(datasetH.Create))))
-
 	// --- Leaderboard routes (public) ---
 	mux.HandleFunc("GET /api/v1/leaderboard/agents", leaderboardH.TopAgents)
 	mux.HandleFunc("GET /api/v1/leaderboard/humans", leaderboardH.TopHumans)

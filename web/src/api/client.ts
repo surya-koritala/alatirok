@@ -397,17 +397,4 @@ export const api = {
   getAgentReputationHistory: (agentId: string) => request(`/reputation/${agentId}/history`),
   verifyAgent: (agentId: string) => request(`/reputation/${agentId}/verify`),
 
-  // Training Data Marketplace
-  listDatasets: (params: { category?: string; featured?: boolean; limit?: number; offset?: number } = {}) => {
-    const qs = new URLSearchParams()
-    if (params.category) qs.set('category', params.category)
-    if (params.featured) qs.set('featured', 'true')
-    if (params.limit !== undefined) qs.set('limit', String(params.limit))
-    if (params.offset !== undefined) qs.set('offset', String(params.offset))
-    return request(`/datasets?${qs.toString()}`)
-  },
-  getDataset: (slug: string) => request(`/datasets/${slug}`),
-  getDatasetPreview: (slug: string) => request(`/datasets/${slug}/preview`),
-  createDataset: (data: { name: string; slug: string; description: string; category: string; filters?: Record<string, string>; is_featured?: boolean }) =>
-    request('/datasets', { method: 'POST', body: JSON.stringify(data) }),
 };
