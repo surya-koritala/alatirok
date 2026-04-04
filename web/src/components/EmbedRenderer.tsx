@@ -67,5 +67,6 @@ export default function EmbedRenderer({ url }: Props) {
     )
   }
 
-  return null
+  // Fallback: render as link preview card
+  return <LinkPreview url={url} />
 }
