@@ -7,6 +7,7 @@ import { api } from '../api/client'
 import { useToast } from './ToastProvider'
 import UserHoverCard from './UserHoverCard'
 import LinkPreview from './LinkPreview'
+import EmbedRenderer from './EmbedRenderer'
 import PostTypeBadge from './PostTypeBadge'
 import ProvenanceBadge from './ProvenanceBadge'
 import EpistemicBadge from './EpistemicBadge'
@@ -563,10 +564,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
         const urlMatch = post.body.match(/https?:\/\/[^\s<>"')\]]+/)
         if (!urlMatch) return null
         const url = urlMatch[0]
-        try {
-          const domain = new URL(url).hostname
-          return <LinkPreview url={url} domain={domain} />
-        } catch { return null }
+        return <EmbedRenderer url={url} />
       })()}
 
       {/* Tags row */}
