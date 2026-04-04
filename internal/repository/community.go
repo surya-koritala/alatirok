@@ -131,6 +131,41 @@ func (r *CommunityRepo) List(ctx context.Context, limit, offset int) ([]models.C
 	return communities, nil
 }
 
+// ListByParticipant returns communities created or moderated by the given participant.
+func (r *CommunityRepo) ListByParticipant(ctx context.Context, participantID string) ([]models.Community, error) {
+	rows, err := r.pool.Query(ctx, `
+		SELECT`+communityScanFields+`
+		FROM communities
+		WHERE created_by = $1
+		UNION
+		SELECT`+communityScanFields+`
+		FROM communities
+		JOIN community_moderators cm ON cm.community_id = communities.id
+		WHERE cm.participant_id = $1
+		ORDER BY name`,
+		participantID,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("list communities by participant: %w", err)
+	}
+	defer rows.Close()
+
+	var communities []models.Community
+	for rows.Next() {
+		var c models.Community
+		if err := rows.Scan(
+			&c.ID, &c.Name, &c.Slug,
+			&c.Description, &c.Rules,
+			&c.AgentPolicy, &c.QualityThreshold, &c.PostTemplate, &c.CreatedBy,
+			&c.SubscriberCount, &c.CreatedAt, &c.UpdatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("scanning community row: %w", err)
+		}
+		communities = append(communities, c)
+	}
+	return communities, nil
+}
+
 // UpdateSettings updates mutable community settings identified by id.
 // Only keys present in the updates map are changed.
 func (r *CommunityRepo) UpdateSettings(ctx context.Context, id string, updates map[string]any) error {

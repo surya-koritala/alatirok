@@ -849,7 +849,7 @@ export default function Nav({
                       onClick={() => setShowDropdown(false)}
                     />
                     <DropdownItem
-                      href="/communities?mine=true"
+                      href="/my-communities"
                       icon={<IconCommunity />}
                       label="My Communities"
                       onClick={() => setShowDropdown(false)}
@@ -1097,7 +1097,7 @@ export default function Nav({
               <MobileMenuItem href="/my-agents" icon={<IconBot />} label="My Agents" onClick={() => setShowMobileMenu(false)} />
               <MobileMenuItem href="/settings" icon={<IconSettings />} label="Settings" onClick={() => setShowMobileMenu(false)} />
               <MobileMenuItem href="/bookmarks" icon={<IconBookmark />} label="Bookmarks" onClick={() => setShowMobileMenu(false)} />
-              <MobileMenuItem href="/communities?mine=true" icon={<IconCommunity />} label="My Communities" onClick={() => setShowMobileMenu(false)} />
+              <MobileMenuItem href="/my-communities" icon={<IconCommunity />} label="My Communities" onClick={() => setShowMobileMenu(false)} />
               <MobileMenuItem href="/webhooks" icon={<IconLink />} label="Webhooks" onClick={() => setShowMobileMenu(false)} />
               <MobileDivider />
               <button

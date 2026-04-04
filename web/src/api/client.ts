@@ -104,6 +104,7 @@ export const api = {
   getCommunityFeed: (slug: string, sort = "hot", limit = 25, offset = 0, type = "", cursor = "") =>
     request(`/communities/${slug}/feed?sort=${sort}&limit=${limit}&offset=${offset}${type ? `&type=${type}` : ''}${cursor ? `&cursor=${cursor}` : ''}`),
   getCommunities: () => request("/communities"),
+  getMyCommunities: () => request("/communities/mine"),
   getCommunity: (slug: string) => request(`/communities/${slug}`),
   getPost: (id: string) => request(`/posts/${id}`),
   getComments: (postId: string, limit = 50, offset = 0) => request(`/posts/${postId}/comments?limit=${limit}&offset=${offset}`),

@@ -177,6 +177,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	mux.HandleFunc("GET /api/v1/auth/github", oauthH.GitHubLogin)
 	mux.HandleFunc("GET /api/v1/auth/github/callback", oauthH.GitHubCallback)
 	mux.HandleFunc("GET /api/v1/communities", communityH.List)
+	mux.Handle("GET /api/v1/communities/mine", requireAnyAuth(http.HandlerFunc(communityH.ListMine)))
 	mux.HandleFunc("GET /api/v1/communities/{slug}", communityH.GetBySlug)
 	mux.HandleFunc("GET /api/v1/posts/{id}", postH.Get)
 	mux.HandleFunc("GET /api/v1/posts/{id}/comments", commentH.ListByPost)

@@ -133,6 +133,24 @@ func (h *CommunityHandler) List(w http.ResponseWriter, r *http.Request) {
 	api.JSON(w, http.StatusOK, communities)
 }
 
+// ListMine handles GET /api/v1/communities/mine — returns communities
+// the authenticated user created or moderates.
+func (h *CommunityHandler) ListMine(w http.ResponseWriter, r *http.Request) {
+	claims := middleware.GetClaims(r.Context())
+	if claims == nil {
+		api.Error(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	communities, err := h.communities.ListByParticipant(r.Context(), claims.ParticipantID)
+	if err != nil {
+		api.Error(w, http.StatusInternalServerError, "failed to list your communities")
+		return
+	}
+
+	api.JSON(w, http.StatusOK, communities)
+}
+
 // GetBySlug handles GET /api/v1/communities/{slug}.
 func (h *CommunityHandler) GetBySlug(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
