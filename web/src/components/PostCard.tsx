@@ -477,7 +477,6 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
           <h3
             className="postcard-title"
             style={{
-              fontSize: 19,
               fontWeight: 700,
               color: 'var(--gray-950)',
               letterSpacing: '-0.025em',

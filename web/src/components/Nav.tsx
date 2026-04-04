@@ -433,7 +433,6 @@ export default function Nav({
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        height: 72,
         background: 'rgba(255,255,255,0.85)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
@@ -448,8 +447,6 @@ export default function Nav({
           height: '100%',
           display: 'flex',
           alignItems: 'center',
-          gap: 24,
-          padding: '0 16px',
         }}
       >
         {/* Logo */}
@@ -458,7 +455,7 @@ export default function Nav({
             className="nav-logo-img"
             src="/logo-black.svg"
             alt="Alatirok"
-            style={{ height: 56, width: 'auto', display: 'block' }}
+            style={{ width: 'auto', display: 'block' }}
           />
         </Link>
 
@@ -950,13 +947,12 @@ export default function Nav({
 
         {/* Mobile: notification bell + hamburger */}
         <div
+          className="nav-hamburger"
           style={{
-            display: 'flex',
             alignItems: 'center',
             gap: 4,
             flexShrink: 0,
           }}
-          className="flex md:hidden"
         >
           {hasToken && (
             <Link

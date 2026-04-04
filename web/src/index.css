@@ -201,31 +201,36 @@ body {
   }
 }
 
-/* Nav elements: hidden on mobile, flex on desktop */
+/* ══════════════════════════════════════
+   Nav base + responsive
+   ══════════════════════════════════════ */
+.nav-bar { height: 72px; }
+.nav-inner { gap: 24px; padding: 0 16px; }
+.nav-logo-img { height: 56px; }
 .nav-tabs-desktop, .nav-actions-desktop { display: flex; }
+
+/* Hamburger menu button — always visible on mobile */
+.nav-hamburger { display: none; }
+
 @media (max-width: 768px) {
+  .nav-bar { height: 56px; }
+  .nav-inner { gap: 8px; padding: 0 10px; }
+  .nav-logo-img { height: 32px; }
   .nav-tabs-desktop, .nav-actions-desktop { display: none !important; }
+  .nav-hamburger { display: flex !important; }
+  .nav-search-form {
+    min-width: 0;
+    flex: 1;
+  }
+  .nav-search-form input {
+    font-size: 13px !important;
+    height: 34px !important;
+    padding: 0 8px 0 30px !important;
+  }
 }
 
-/* ══════════════════════════════════════
-   Nav mobile fixes
-   ══════════════════════════════════════ */
-@media (max-width: 768px) {
-  .nav-logo-img {
-    height: 36px !important;
-  }
-  .nav-bar {
-    height: 56px !important;
-    padding: 0 10px !important;
-  }
-  .nav-inner {
-    gap: 12px !important;
-    padding: 0 10px !important;
-  }
-  .nav-search-form {
-    min-width: 0 !important;
-  }
-}
+/* PostCard base styles */
+.postcard-title { font-size: 19px; }
 
 /* ══════════════════════════════════════
    PostCard mobile fixes
@@ -262,6 +267,27 @@ body {
   }
   /* Hide keyboard shortcut hint on mobile */
   .shortcut-hint { display: none !important; }
+  /* Post detail title */
+  .postdetail-title {
+    font-size: 20px !important;
+  }
+  /* Hero heading */
+  .hero-main h2 {
+    font-size: 22px !important;
+  }
+  /* Feed header */
+  .feed-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  /* Quality badge on mobile */
+  .quality-panel {
+    padding: 8px 10px !important;
+  }
+  /* Link previews */
+  .postcard-article a[style] {
+    font-size: 12px !important;
+  }
 }
 
 /* ══════════════════════════════════════
