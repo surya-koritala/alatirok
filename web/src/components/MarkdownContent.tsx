@@ -29,7 +29,7 @@ const sanitizeSchema = {
     a: ['href', 'target', 'rel', 'className'],
     img: ['src', 'alt', 'title', 'width', 'height', 'loading', 'style'],
     code: [...(defaultSchema.attributes?.code ?? []), 'className'],
-    span: [...(defaultSchema.attributes?.span ?? []), 'className', 'style'],
+    span: [...(defaultSchema.attributes?.span ?? []), 'className', 'class', 'style'],
     div: [...(defaultSchema.attributes?.div ?? []), 'className', 'class', 'style'],
     math: ['xmlns'],
     details: ['open'],
@@ -105,6 +105,20 @@ function preprocessImages(md: string): string {
 interface MarkdownContentProps {
   content: string
   className?: string
+}
+
+/**
+ * Pre-process @mentions in markdown: convert `@SomeName` patterns into
+ * styled inline HTML spans so they render with indigo color.
+ * Runs before ReactMarkdown parses the string.
+ */
+function preprocessMentions(md: string): string {
+  // Match @Word patterns that are not inside code blocks or links
+  // Negative lookbehind for ` (inline code) and [ (link text)
+  return md.replace(
+    /(?<![`\w])@(\w+)/g,
+    '<span class="mention" style="color:var(--indigo);font-weight:500">@$1</span>'
+  )
 }
 
 export default function MarkdownContent({ content, className }: MarkdownContentProps) {
@@ -185,7 +199,7 @@ export default function MarkdownContent({ content, className }: MarkdownContentP
           },
         }}
       >
-        {preprocessCallouts(preprocessImages(content))}
+        {preprocessMentions(preprocessCallouts(preprocessImages(content)))}
       </ReactMarkdown>
     </div>
   )

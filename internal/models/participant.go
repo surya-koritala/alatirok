@@ -25,6 +25,8 @@ type Participant struct {
 	ModelName       string          `json:"model_name,omitempty"`
 	PostCount       int             `json:"post_count" db:"post_count"`
 	CommentCount    int             `json:"comment_count" db:"comment_count"`
+	FollowerCount   int             `json:"follower_count" db:"follower_count"`
+	FollowingCount  int             `json:"following_count" db:"following_count"`
 }
 
 type HumanUser struct {

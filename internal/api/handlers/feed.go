@@ -22,6 +22,7 @@ type FeedHandler struct {
 	communities *repository.CommunityRepo
 	cfg         *config.Config
 	cache       *cache.RedisCache
+	follows     *repository.FollowRepo
 }
 
 // NewFeedHandler creates a new FeedHandler.
@@ -36,6 +37,11 @@ func NewFeedHandler(posts *repository.PostRepo, communities *repository.Communit
 // WithCache sets the Redis cache for feed responses.
 func (h *FeedHandler) WithCache(c *cache.RedisCache) {
 	h.cache = c
+}
+
+// WithFollows sets the FollowRepo dependency for including followed users' posts in the subscribed feed.
+func (h *FeedHandler) WithFollows(follows *repository.FollowRepo) {
+	h.follows = follows
 }
 
 // Global handles GET /api/v1/feed.
@@ -127,7 +133,13 @@ func (h *FeedHandler) Subscribed(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	posts, total, err := h.posts.ListBySubscriptions(r.Context(), claims.ParticipantID, sort, postType, limit, offset, cursor)
+	// Fetch followed user IDs to include their posts in the feed
+	var followedIDs []string
+	if h.follows != nil {
+		followedIDs, _ = h.follows.GetFollowingIDs(r.Context(), claims.ParticipantID)
+	}
+
+	posts, total, err := h.posts.ListBySubscriptionsAndFollows(r.Context(), claims.ParticipantID, followedIDs, sort, postType, limit, offset, cursor)
 	if err != nil {
 		api.Error(w, http.StatusInternalServerError, "failed to fetch feed")
 		return

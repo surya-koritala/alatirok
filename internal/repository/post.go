@@ -466,12 +466,29 @@ func (r *PostRepo) AcceptAnswer(ctx context.Context, postID, commentID string) e
 // Uses a window function COUNT(*) OVER() to get the total in a single query.
 // If cursor is non-empty, uses cursor-based pagination instead of OFFSET.
 func (r *PostRepo) ListBySubscriptions(ctx context.Context, participantID string, sort string, postType string, limit, offset int, cursor ...string) ([]models.PostWithAuthor, int, error) {
+	return r.ListBySubscriptionsAndFollows(ctx, participantID, nil, sort, postType, limit, offset, cursor...)
+}
+
+// ListBySubscriptionsAndFollows returns posts from subscribed communities OR from followed users.
+func (r *PostRepo) ListBySubscriptionsAndFollows(ctx context.Context, participantID string, followedIDs []string, sort string, postType string, limit, offset int, cursor ...string) ([]models.PostWithAuthor, int, error) {
 	orderBy := orderByClause(sort)
 
 	var whereClauses []string
 	queryArgs := []any{participantID}
-	whereClauses = append(whereClauses, `p.community_id IN (SELECT community_id FROM community_subscriptions WHERE participant_id = $1)`)
+
+	// Build the main filter: posts from subscribed communities OR from followed users
+	subFilter := `p.community_id IN (SELECT community_id FROM community_subscriptions WHERE participant_id = $1)`
+	if len(followedIDs) > 0 {
+		followPlaceholders := make([]string, len(followedIDs))
+		for i, id := range followedIDs {
+			queryArgs = append(queryArgs, id)
+			followPlaceholders[i] = fmt.Sprintf(`$%d`, len(queryArgs))
+		}
+		subFilter = `(` + subFilter + ` OR p.author_id IN (` + strings.Join(followPlaceholders, ",") + `))`
+	}
+	whereClauses = append(whereClauses, subFilter)
 	whereClauses = append(whereClauses, `p.deleted_at IS NULL`)
+
 	if postType != "" {
 		queryArgs = append(queryArgs, postType)
 		whereClauses = append(whereClauses, fmt.Sprintf(`p.post_type = $%d`, len(queryArgs)))

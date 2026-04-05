@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createPortal } from 'react-dom'
 import { api } from '../api/client'
@@ -316,6 +316,78 @@ export default function PostDetail() {
   const [crossposting, setCrossposting] = useState(false)
   const [sourcesExpanded, setSourcesExpanded] = useState(false)
   const shareMenuRef = useRef<HTMLDivElement>(null)
+
+  // Mention autocomplete state
+  interface MentionResult {
+    id: string
+    displayName: string
+    type: 'human' | 'agent'
+    avatarUrl?: string
+  }
+  const [mentionResults, setMentionResults] = useState<MentionResult[]>([])
+  const [mentionTarget, setMentionTarget] = useState<'comment' | 'reply' | null>(null)
+  const [showMentions, setShowMentions] = useState(false)
+  const [mentionSelectedIdx, setMentionSelectedIdx] = useState(0)
+  const mentionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const commentTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const replyTextareaRef = useRef<HTMLTextAreaElement>(null)
+
+  const extractMentionQuery = useCallback((text: string, cursorPos: number): string | null => {
+    const before = text.slice(0, cursorPos)
+    const match = before.match(/@(\w*)$/)
+    return match ? match[1] : null
+  }, [])
+
+  const handleMentionSearch = useCallback((query: string | null, target: 'comment' | 'reply') => {
+    if (mentionTimerRef.current) clearTimeout(mentionTimerRef.current)
+    if (query === null || query.length === 0) {
+      setShowMentions(false)
+      setMentionResults([])
+      return
+    }
+    setMentionTarget(target)
+    mentionTimerRef.current = setTimeout(() => {
+      api
+        .searchMentions(query)
+        .then((data: any) => {
+          const results = Array.isArray(data) ? data : data?.results ?? data?.users ?? []
+          setMentionResults(results.slice(0, 8))
+          setShowMentions(results.length > 0)
+          setMentionSelectedIdx(0)
+        })
+        .catch(() => {
+          setShowMentions(false)
+          setMentionResults([])
+        })
+    }, 200)
+  }, [])
+
+  const insertMention = useCallback((displayName: string) => {
+    const isComment = mentionTarget === 'comment'
+    const body = isComment ? commentBody : replyBody
+    const textareaEl = isComment ? commentTextareaRef.current : replyTextareaRef.current
+    const cursorPos = textareaEl?.selectionStart ?? body.length
+    const before = body.slice(0, cursorPos)
+    const after = body.slice(cursorPos)
+    const atIdx = before.lastIndexOf('@')
+    if (atIdx === -1) return
+    const newText = before.slice(0, atIdx) + `@${displayName} ` + after
+    if (isComment) {
+      setCommentBody(newText)
+    } else {
+      setReplyBody(newText)
+    }
+    setShowMentions(false)
+    setMentionResults([])
+    // Re-focus textarea after insert
+    setTimeout(() => {
+      if (textareaEl) {
+        const newCursor = atIdx + displayName.length + 2 // @ + name + space
+        textareaEl.focus()
+        textareaEl.setSelectionRange(newCursor, newCursor)
+      }
+    }, 0)
+  }, [mentionTarget, commentBody, replyBody])
 
   // Map raw API response to our Post interface
   function mapApiPost(raw: any): Post {
@@ -852,13 +924,18 @@ export default function PostDetail() {
 
             {/* Reply form */}
             {replyTo === comment.id && (
-              <div style={{ marginBottom: 12 }}>
+              <div style={{ marginBottom: 12, position: 'relative' }}>
                 <div style={{ border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
                   <textarea
+                    ref={replyTextareaRef}
                     autoFocus
                     value={replyBody}
-                    onChange={(e) => setReplyBody(e.target.value)}
-                    placeholder={`Reply to ${comment.author.displayName}...`}
+                    onChange={(e) => {
+                      setReplyBody(e.target.value)
+                      const query = extractMentionQuery(e.target.value, e.target.selectionStart)
+                      handleMentionSearch(query, 'reply')
+                    }}
+                    placeholder={`Reply to ${comment.author.displayName}... Use @ to mention`}
                     rows={3}
                     style={{
                       width: '100%', resize: 'vertical', padding: '10px 12px', fontSize: 13,
@@ -866,12 +943,77 @@ export default function PostDetail() {
                       color: 'var(--text-primary)', lineHeight: 1.6,
                     }}
                     onKeyDown={(e) => {
+                      if (showMentions && mentionTarget === 'reply' && mentionResults.length > 0) {
+                        if (e.key === 'ArrowDown') {
+                          e.preventDefault()
+                          setMentionSelectedIdx((prev) => Math.min(prev + 1, mentionResults.length - 1))
+                          return
+                        } else if (e.key === 'ArrowUp') {
+                          e.preventDefault()
+                          setMentionSelectedIdx((prev) => Math.max(prev - 1, 0))
+                          return
+                        } else if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+                          e.preventDefault()
+                          insertMention(mentionResults[mentionSelectedIdx].displayName)
+                          return
+                        } else if (e.key === 'Escape') {
+                          setShowMentions(false)
+                          return
+                        }
+                      }
                       if (e.key === 'Escape') { setReplyTo(null); setReplyBody('') }
                       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && replyBody.trim()) {
                         handleSubmitReply(comment.id)
                       }
                     }}
                   />
+                  {/* Mention autocomplete dropdown for reply */}
+                  {showMentions && mentionTarget === 'reply' && mentionResults.length > 0 && (
+                    <div style={{
+                      position: 'absolute', left: 0, right: 0, top: '100%',
+                      zIndex: 50, border: '1px solid var(--border)', borderRadius: 8,
+                      background: 'var(--bg-card)', boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                      maxHeight: 200, overflowY: 'auto',
+                    }}>
+                      {mentionResults.map((user, idx) => (
+                        <button
+                          key={user.id}
+                          type="button"
+                          onMouseDown={(e) => { e.preventDefault(); insertMention(user.displayName) }}
+                          onMouseEnter={() => setMentionSelectedIdx(idx)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 10,
+                            width: '100%', padding: '8px 14px', border: 'none', cursor: 'pointer',
+                            background: idx === mentionSelectedIdx ? 'var(--gray-100)' : 'transparent',
+                            textAlign: 'left', fontSize: 13, color: 'var(--text-primary)',
+                          }}
+                        >
+                          {user.avatarUrl ? (
+                            <img src={user.avatarUrl} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{
+                              width: 24, height: 24, borderRadius: '50%',
+                              background: user.type === 'agent' ? 'var(--emerald)' : 'var(--indigo)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: 11, fontWeight: 700, color: '#fff',
+                            }}>
+                              {user.displayName[0]?.toUpperCase() ?? '?'}
+                            </div>
+                          )}
+                          <span style={{ fontWeight: 500 }}>{user.displayName}</span>
+                          <span style={{
+                            marginLeft: 'auto', fontSize: 10, fontWeight: 600,
+                            textTransform: 'uppercase', letterSpacing: '0.05em',
+                            color: user.type === 'agent' ? 'var(--emerald)' : 'var(--indigo)',
+                            background: user.type === 'agent' ? 'color-mix(in srgb, var(--emerald) 10%, transparent)' : 'color-mix(in srgb, var(--indigo) 10%, transparent)',
+                            padding: '2px 6px', borderRadius: 4,
+                          }}>
+                            {user.type}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <div style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '6px 12px', background: 'var(--gray-50)', borderTop: '1px solid var(--border)',
@@ -1574,25 +1716,94 @@ export default function PostDetail() {
             </h2>
             {typeof window !== 'undefined' && localStorage.getItem('token') ? (
               <form onSubmit={handleSubmitComment}>
-                <div style={{ border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+                <div style={{ border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden', position: 'relative' }}>
                   <textarea
+                    ref={commentTextareaRef}
                     value={commentBody}
-                    onChange={(e) => setCommentBody(e.target.value)}
-                    placeholder="Share your thoughts..."
+                    onChange={(e) => {
+                      setCommentBody(e.target.value)
+                      const query = extractMentionQuery(e.target.value, e.target.selectionStart)
+                      handleMentionSearch(query, 'comment')
+                    }}
+                    placeholder="Share your thoughts... Use @ to mention users"
                     rows={4}
                     style={{
                       width: '100%', resize: 'vertical', padding: '12px 14px', fontSize: 14,
                       border: 'none', outline: 'none', background: 'var(--bg-card)',
                       color: 'var(--text-primary)', lineHeight: 1.6,
                     }}
+                    onKeyDown={(e) => {
+                      if (showMentions && mentionTarget === 'comment' && mentionResults.length > 0) {
+                        if (e.key === 'ArrowDown') {
+                          e.preventDefault()
+                          setMentionSelectedIdx((prev) => Math.min(prev + 1, mentionResults.length - 1))
+                        } else if (e.key === 'ArrowUp') {
+                          e.preventDefault()
+                          setMentionSelectedIdx((prev) => Math.max(prev - 1, 0))
+                        } else if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+                          e.preventDefault()
+                          insertMention(mentionResults[mentionSelectedIdx].displayName)
+                        } else if (e.key === 'Escape') {
+                          setShowMentions(false)
+                        }
+                      }
+                    }}
                   />
+                  {/* Mention autocomplete dropdown */}
+                  {showMentions && mentionTarget === 'comment' && mentionResults.length > 0 && (
+                    <div style={{
+                      position: 'absolute', left: 0, right: 0, bottom: 0,
+                      transform: 'translateY(100%)',
+                      zIndex: 50, border: '1px solid var(--border)', borderRadius: 8,
+                      background: 'var(--bg-card)', boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                      maxHeight: 220, overflowY: 'auto',
+                    }}>
+                      {mentionResults.map((user, idx) => (
+                        <button
+                          key={user.id}
+                          type="button"
+                          onMouseDown={(e) => { e.preventDefault(); insertMention(user.displayName) }}
+                          onMouseEnter={() => setMentionSelectedIdx(idx)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 10,
+                            width: '100%', padding: '8px 14px', border: 'none', cursor: 'pointer',
+                            background: idx === mentionSelectedIdx ? 'var(--gray-100)' : 'transparent',
+                            textAlign: 'left', fontSize: 13, color: 'var(--text-primary)',
+                          }}
+                        >
+                          {user.avatarUrl ? (
+                            <img src={user.avatarUrl} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{
+                              width: 24, height: 24, borderRadius: '50%',
+                              background: user.type === 'agent' ? 'var(--emerald)' : 'var(--indigo)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: 11, fontWeight: 700, color: '#fff',
+                            }}>
+                              {user.displayName[0]?.toUpperCase() ?? '?'}
+                            </div>
+                          )}
+                          <span style={{ fontWeight: 500 }}>{user.displayName}</span>
+                          <span style={{
+                            marginLeft: 'auto', fontSize: 10, fontWeight: 600,
+                            textTransform: 'uppercase', letterSpacing: '0.05em',
+                            color: user.type === 'agent' ? 'var(--emerald)' : 'var(--indigo)',
+                            background: user.type === 'agent' ? 'color-mix(in srgb, var(--emerald) 10%, transparent)' : 'color-mix(in srgb, var(--indigo) 10%, transparent)',
+                            padding: '2px 6px', borderRadius: 4,
+                          }}>
+                            {user.type}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <div style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '8px 14px', background: 'var(--gray-50)',
                     borderTop: '1px solid var(--border)',
                   }}>
                     <span style={{ fontSize: 11, color: 'var(--gray-400)' }}>
-                      Markdown supported
+                      Markdown supported -- @ to mention
                     </span>
                     <button
                       type="submit"

@@ -397,4 +397,17 @@ export const api = {
   getAgentReputationHistory: (agentId: string) => request(`/reputation/${agentId}/history`),
   verifyAgent: (agentId: string) => request(`/reputation/${agentId}/verify`),
 
+  // Mentions
+  searchMentions: (q: string) => request(`/mentions/autocomplete?q=${encodeURIComponent(q)}`),
+
+  // Follows
+  followUser: (id: string) => request(`/follow/${id}`, { method: "POST" }),
+  unfollowUser: (id: string) => request(`/follow/${id}`, { method: "DELETE" }),
+  isFollowing: (id: string) => request(`/follow/${id}`),
+  getFollowing: (limit = 25, offset = 0) => request(`/following?limit=${limit}&offset=${offset}`),
+  getFollowers: (id: string, limit = 25, offset = 0) => request(`/followers/${id}?limit=${limit}&offset=${offset}`),
+
+  // Settings
+  updateNotificationPrefs: (data: Record<string, boolean>) => request("/settings/notifications", { method: "PUT", body: JSON.stringify(data) }),
+
 };

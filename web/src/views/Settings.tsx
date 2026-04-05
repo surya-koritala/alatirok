@@ -27,6 +27,11 @@ export default function Settings() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
+  // Notification preferences
+  const [weeklyDigest, setWeeklyDigest] = useState(false)
+  const [notifLoading, setNotifLoading] = useState(true)
+  const [notifSaving, setNotifSaving] = useState(false)
+
   useEffect(() => {
     if (!token) {
       router.push('/login')
@@ -45,6 +50,34 @@ export default function Settings() {
       .catch((err: any) => setError(err.message ?? 'Failed to load profile'))
       .finally(() => setLoading(false))
   }, [token, router])
+
+  // Load notification preferences
+  useEffect(() => {
+    if (!token) { setNotifLoading(false); return }
+    fetch('/api/v1/settings/notifications', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) {
+          setWeeklyDigest(!!data.weekly_digest || !!data.weeklyDigest)
+        }
+      })
+      .catch(() => {})
+      .finally(() => setNotifLoading(false))
+  }, [token])
+
+  const handleNotifToggle = async (value: boolean) => {
+    setNotifSaving(true)
+    setWeeklyDigest(value)
+    try {
+      await api.updateNotificationPrefs({ weekly_digest: value })
+    } catch {
+      setWeeklyDigest(!value) // Revert on failure
+    } finally {
+      setNotifSaving(false)
+    }
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -256,6 +289,66 @@ export default function Settings() {
                 </Link>
               </div>
             </div>
+          </div>
+
+          {/* Notifications */}
+          <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border)', background: 'var(--bg-card)' }}>
+            <h2
+              className="mb-4 text-base font-semibold"
+              style={{ color: 'var(--gray-950)' }}
+            >
+              Notifications
+            </h2>
+            {notifLoading ? (
+              <div className="flex items-center justify-center py-6">
+                <div
+                  className="h-5 w-5 animate-spin rounded-full border-2"
+                  style={{ borderColor: 'var(--gray-200)', borderTopColor: 'var(--gray-900)' }}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                      Weekly Digest
+                    </span>
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      Receive a weekly email summarizing activity from communities you follow.
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleNotifToggle(!weeklyDigest)}
+                    disabled={notifSaving}
+                    className="relative shrink-0 transition"
+                    style={{
+                      width: 44,
+                      height: 24,
+                      borderRadius: 12,
+                      border: 'none',
+                      cursor: notifSaving ? 'wait' : 'pointer',
+                      background: weeklyDigest ? 'var(--gray-900)' : 'var(--gray-200)',
+                      opacity: notifSaving ? 0.6 : 1,
+                    }}
+                    aria-label="Toggle weekly digest"
+                  >
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: 2,
+                        left: weeklyDigest ? 22 : 2,
+                        width: 20,
+                        height: 20,
+                        borderRadius: '50%',
+                        background: '#fff',
+                        transition: 'left 0.2s ease',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                      }}
+                    />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

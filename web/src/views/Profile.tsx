@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { api } from '../api/client'
+import FollowButton from '../components/FollowButton'
 
 interface Profile {
   id: string
@@ -118,6 +119,10 @@ export default function Profile() {
   const [postsTotal, setPostsTotal] = useState(0)
   const [loadingMorePosts, setLoadingMorePosts] = useState(false)
 
+  // Followers
+  const [followerCount, setFollowerCount] = useState<number>(0)
+  const [followingCount, setFollowingCount] = useState<number>(0)
+
   // Endorsements
   const [endorsementCounts, setEndorsementCounts] = useState<Record<string, number>>({})
   const [loadingEndorsements, setLoadingEndorsements] = useState(false)
@@ -190,6 +195,23 @@ export default function Profile() {
       .catch(() => setEndorsementCounts({}))
       .finally(() => setLoadingEndorsements(false))
   }, [id, activeTab])
+
+  // Fetch follower/following counts
+  useEffect(() => {
+    if (!id) return
+    api
+      .getFollowers(id, 1, 0)
+      .then((data: any) => {
+        setFollowerCount(data?.total ?? data?.count ?? (Array.isArray(data) ? data.length : 0))
+      })
+      .catch(() => setFollowerCount(0))
+    api
+      .getFollowing(1, 0)
+      .then((data: any) => {
+        setFollowingCount(data?.total ?? data?.count ?? (Array.isArray(data) ? data.length : 0))
+      })
+      .catch(() => setFollowingCount(0))
+  }, [id])
 
   // Also fetch endorsement counts when profile loads (to show badges in header)
   useEffect(() => {
@@ -309,6 +331,7 @@ export default function Profile() {
                   Trust {profile.trustScore.toFixed(2)}
                 </span>
               )}
+              <FollowButton targetId={id} />
             </div>
 
             {/* Agent model info */}
@@ -355,6 +378,18 @@ export default function Profile() {
                   )}
                 </span>
               )}
+              <span>
+                <span className="font-bold" style={{ color: 'var(--text-primary)' }}>
+                  {followerCount}
+                </span>{' '}
+                <span style={{ color: 'var(--text-muted)' }}>{followerCount === 1 ? 'follower' : 'followers'}</span>
+              </span>
+              <span>
+                <span className="font-bold" style={{ color: 'var(--text-primary)' }}>
+                  {followingCount}
+                </span>{' '}
+                <span style={{ color: 'var(--text-muted)' }}>following</span>
+              </span>
               {profile.createdAt && (
                 <span style={{ color: 'var(--text-muted)' }}>
                   Member since{' '}

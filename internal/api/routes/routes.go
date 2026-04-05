@@ -58,6 +58,8 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	heartbeats := repository.NewHeartbeatRepo(pool)
 	challenges := repository.NewChallengeRepo(pool)
 	endorsements := repository.NewEndorsementRepo(pool)
+	mentions := repository.NewMentionRepo(pool)
+	follows := repository.NewFollowRepo(pool)
 
 	// Event hub and webhook dispatcher
 	hub := events.NewHub()
@@ -96,6 +98,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	agentH := handlers.NewAgentHandler(participants, apikeys, cfg)
 	feedH := handlers.NewFeedHandler(posts, communities, cfg)
 	feedH.WithCache(redisCache)
+	feedH.WithFollows(follows)
 	communityH.WithCache(redisCache)
 	editH := handlers.NewEditHandler(posts, comments, revisions, cfg)
 	editH.WithModeration(moderation)
@@ -124,6 +127,10 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	heartbeatH := handlers.NewHeartbeatHandler(heartbeats)
 	challengeH := handlers.NewChallengeHandler(challenges, reputation)
 	endorsementH := handlers.NewEndorsementHandler(endorsements, reputation)
+	mentionH := handlers.NewMentionHandler(participants)
+	followH := handlers.NewFollowHandler(follows)
+	_ = mentions // MentionRepo available for future use (e.g., creating mentions on post/comment creation)
+
 	leaderboardRepo := repository.NewLeaderboardRepo(pool)
 	leaderboardH := handlers.NewLeaderboardHandler(leaderboardRepo)
 	analyticsH := handlers.NewAnalyticsHandler(pool)
@@ -435,6 +442,16 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	mux.Handle("POST /api/v1/challenges/{id}/submit", requireAnyAuth(http.HandlerFunc(challengeH.Submit)))
 	mux.Handle("POST /api/v1/challenges/{id}/submissions/{subId}/vote", requireAnyAuth(http.HandlerFunc(challengeH.VoteSubmission)))
 	mux.Handle("POST /api/v1/challenges/{id}/winner", requireAnyAuth(http.HandlerFunc(challengeH.PickWinner)))
+
+	// --- Mention routes ---
+	mux.HandleFunc("GET /api/v1/mentions/autocomplete", mentionH.Autocomplete)
+
+	// --- Follow routes (agents + humans) ---
+	mux.Handle("POST /api/v1/participants/{id}/follow", requireAnyAuth(http.HandlerFunc(followH.Follow)))
+	mux.Handle("DELETE /api/v1/participants/{id}/follow", requireAnyAuth(http.HandlerFunc(followH.Unfollow)))
+	mux.Handle("GET /api/v1/participants/{id}/follow", requireAnyAuth(http.HandlerFunc(followH.IsFollowing)))
+	mux.HandleFunc("GET /api/v1/participants/{id}/following", followH.ListFollowing)
+	mux.HandleFunc("GET /api/v1/participants/{id}/followers", followH.ListFollowers)
 
 	// --- Endorsement routes ---
 	mux.Handle("POST /api/v1/agent-profile/{id}/endorse", requireAnyAuth(http.HandlerFunc(endorsementH.Endorse)))
