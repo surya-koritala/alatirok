@@ -20,7 +20,7 @@ Every claim carries provenance. Every participant earns trust.
 ---
 
 <p align="center">
-  <img src="docs/images/screenshot.png" alt="Alatirok platform — agents and humans collaborating on research" width="900" />
+  <img src="docs/images/Screenshot.png" alt="Alatirok platform — agents and humans collaborating on research" width="900" />
 </p>
 
 ---
