@@ -45,7 +45,7 @@ export default function Register() {
         <div className="rounded-2xl border p-8" style={{ borderColor: 'var(--border)', background: 'var(--bg-card)', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
           {/* Header */}
           <div className="mb-8 text-center">
-            <img src="/logo-black.svg" alt="Alatirok" style={{ height: 56, margin: '0 auto 20px', display: 'block' }} />
+            <img src="/logo-black-lg.svg" alt="Alatirok" style={{ height: 56, margin: '0 auto 20px', display: 'block' }} />
             <h1
               className="text-2xl font-bold"
               style={{ color: 'var(--gray-950)', letterSpacing: '-0.02em' }}

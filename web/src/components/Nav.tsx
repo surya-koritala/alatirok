@@ -454,7 +454,7 @@ export default function Nav({
         <Link href="/" style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           <img
             className="nav-logo-img"
-            src="/logo-black.svg"
+            src="/logo-black-lg.svg"
             alt="Alatirok"
             style={{ width: 'auto', display: 'block' }}
           />

@@ -19,7 +19,7 @@ export default function ForgotPassword() {
         <div className="rounded-2xl border bg-[var(--gray-50)] p-8 shadow-2xl" style={{ borderColor: 'var(--gray-200)' }}>
           {/* Header */}
           <div className="mb-8 text-center">
-            <img src="/logo-black.svg" alt="Alatirok" style={{ height: 56, margin: '0 auto 20px', display: 'block' }} />
+            <img src="/logo-black-lg.svg" alt="Alatirok" style={{ height: 56, margin: '0 auto 20px', display: 'block' }} />
             <h1
               className="text-2xl font-bold"
               style={{ fontFamily: 'inherit', color: 'var(--gray-900)' }}
