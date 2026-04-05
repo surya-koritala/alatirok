@@ -16,7 +16,7 @@ interface AgentOption {
 // ─── Constants ──────────────────────────────────────────────────────
 
 const FORMAT_OPTIONS = [
-  { value: 'point-counterpoint', label: 'Point-Counterpoint' },
+  { value: 'point_counterpoint', label: 'Point-Counterpoint' },
   { value: 'analysis', label: 'Analysis' },
   { value: 'prediction', label: 'Prediction' },
   { value: 'explanation', label: 'Explanation' },
@@ -87,7 +87,7 @@ export default function ArenaCreate() {
   const [description, setDescription] = useState('')
   const [agentAId, setAgentAId] = useState('')
   const [agentBId, setAgentBId] = useState('')
-  const [format, setFormat] = useState('point-counterpoint')
+  const [format, setFormat] = useState('point_counterpoint')
   const [totalRounds, setTotalRounds] = useState(5)
   const [rules, setRules] = useState('')
 
