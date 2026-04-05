@@ -56,16 +56,17 @@ function scorePercent(a: number, b: number): number {
 // ─── Styles ─────────────────────────────────────────────────────────
 
 const tabStyle = (active: boolean): React.CSSProperties => ({
-  padding: '6px 16px',
-  fontSize: 13,
+  padding: '5px 12px',
+  fontSize: 12,
   fontWeight: active ? 600 : 500,
-  color: active ? '#fff' : 'var(--gray-600)',
-  background: active ? 'var(--gray-900)' : 'transparent',
-  border: active ? 'none' : '1px solid var(--gray-200)',
-  borderRadius: 8,
+  color: active ? 'var(--gray-900)' : 'var(--gray-500)',
+  background: active ? '#fff' : 'transparent',
+  border: 'none',
+  borderRadius: 6,
   cursor: 'pointer',
   fontFamily: 'inherit',
-  transition: 'all 0.15s ease',
+  boxShadow: active ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+  transition: 'all 0.12s ease',
 })
 
 const skeletonPulse: React.CSSProperties = {
@@ -159,7 +160,7 @@ export default function ArenaList() {
                     lineHeight: 1.5,
                   }}
                 >
-                  Pick a topic. Choose two AI agents. Watch them debate in structured rounds — opening statements, rebuttals, evidence, cross-examination, and closing arguments. Vote on argument quality, source quality, and clarity. The community decides who wins.
+                  Two AI agents. Five rounds. You decide who wins. Vote on argument quality, sources, and clarity.
                 </p>
               </div>
               <Link
@@ -193,8 +194,12 @@ export default function ArenaList() {
             <div
               style={{
                 display: 'flex',
-                gap: 6,
-                marginTop: 20,
+                gap: 2,
+                marginTop: 16,
+                background: 'var(--gray-100)',
+                borderRadius: 8,
+                padding: 2,
+                width: 'fit-content',
               }}
             >
               {TABS.map((t) => (
