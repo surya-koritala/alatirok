@@ -86,6 +86,10 @@ export default function ArenaCreate() {
 
   const [agents, setAgents] = useState<AgentOption[]>([])
   const [loadingAgents, setLoadingAgents] = useState(true)
+  const [searchA, setSearchA] = useState('')
+  const [searchB, setSearchB] = useState('')
+  const [showDropdownA, setShowDropdownA] = useState(false)
+  const [showDropdownB, setShowDropdownB] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -277,34 +281,36 @@ export default function ArenaCreate() {
                 Agent A <span style={{ color: 'var(--rose)' }}>*</span>
               </label>
               <div style={{ position: 'relative' }}>
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: 10,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    width: 8,
-                    height: 8,
-                    borderRadius: 2,
-                    background: 'var(--indigo)',
-                  }}
-                />
-                <select
-                  value={agentAId}
-                  onChange={(e) => setAgentAId(e.target.value)}
+                <input
+                  type="text"
+                  placeholder={loadingAgents ? 'Loading agents...' : 'Search agents...'}
+                  value={searchA}
+                  onChange={(e) => { setSearchA(e.target.value); setShowDropdownA(true) }}
+                  onFocus={() => setShowDropdownA(true)}
+                  onBlur={() => setTimeout(() => setShowDropdownA(false), 200)}
                   style={{ ...selectStyle, paddingLeft: 28 }}
                   disabled={loadingAgents}
-                >
-                  <option value="">
-                    {loadingAgents ? 'Loading agents...' : 'Select Agent A'}
-                  </option>
-                  {agentAOptions.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.displayName}
-                      {a.trustScore ? ` (Trust: ${Math.round(a.trustScore)})` : ''}
-                    </option>
-                  ))}
-                </select>
+                />
+                <div style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 8, height: 8, borderRadius: 2, background: 'var(--indigo)' }} />
+                {agentAId && <div style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: 'var(--emerald)', fontWeight: 600 }}>Selected</div>}
+                {showDropdownA && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#fff', border: '1px solid var(--gray-200)', borderRadius: 8, maxHeight: 240, overflowY: 'auto', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', marginTop: 4 }}>
+                    {agentAOptions
+                      .filter(a => !searchA || a.displayName.toLowerCase().includes(searchA.toLowerCase()))
+                      .slice(0, 20)
+                      .map(a => (
+                        <button key={a.id} type="button" onMouseDown={() => { setAgentAId(a.id); setSearchA(a.displayName); setShowDropdownA(false) }}
+                          style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', border: 'none', background: agentAId === a.id ? 'var(--gray-50)' : 'transparent', cursor: 'pointer', textAlign: 'left', fontSize: 13, fontFamily: 'inherit' }}>
+                          <span style={{ width: 24, height: 24, borderRadius: 5, background: 'var(--gray-900)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.displayName[0]?.toUpperCase()}</span>
+                          <span style={{ fontWeight: 500, color: 'var(--gray-900)' }}>{a.displayName}</span>
+                          <span style={{ fontSize: 11, color: 'var(--gray-400)', marginLeft: 'auto' }}>Trust {Math.round(a.trustScore)}</span>
+                        </button>
+                      ))}
+                    {agentAOptions.filter(a => !searchA || a.displayName.toLowerCase().includes(searchA.toLowerCase())).length === 0 && (
+                      <div style={{ padding: '12px', color: 'var(--gray-400)', fontSize: 13, textAlign: 'center' }}>No agents found</div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -314,34 +320,36 @@ export default function ArenaCreate() {
                 Agent B <span style={{ color: 'var(--rose)' }}>*</span>
               </label>
               <div style={{ position: 'relative' }}>
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: 10,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    width: 8,
-                    height: 8,
-                    borderRadius: 2,
-                    background: 'var(--emerald)',
-                  }}
-                />
-                <select
-                  value={agentBId}
-                  onChange={(e) => setAgentBId(e.target.value)}
+                <input
+                  type="text"
+                  placeholder={loadingAgents ? 'Loading agents...' : 'Search agents...'}
+                  value={searchB}
+                  onChange={(e) => { setSearchB(e.target.value); setShowDropdownB(true) }}
+                  onFocus={() => setShowDropdownB(true)}
+                  onBlur={() => setTimeout(() => setShowDropdownB(false), 200)}
                   style={{ ...selectStyle, paddingLeft: 28 }}
                   disabled={loadingAgents}
-                >
-                  <option value="">
-                    {loadingAgents ? 'Loading agents...' : 'Select Agent B'}
-                  </option>
-                  {agentBOptions.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.displayName}
-                      {a.trustScore ? ` (Trust: ${Math.round(a.trustScore)})` : ''}
-                    </option>
-                  ))}
-                </select>
+                />
+                <div style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 8, height: 8, borderRadius: 2, background: 'var(--emerald)' }} />
+                {agentBId && <div style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: 'var(--emerald)', fontWeight: 600 }}>Selected</div>}
+                {showDropdownB && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#fff', border: '1px solid var(--gray-200)', borderRadius: 8, maxHeight: 240, overflowY: 'auto', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', marginTop: 4 }}>
+                    {agentBOptions
+                      .filter(a => !searchB || a.displayName.toLowerCase().includes(searchB.toLowerCase()))
+                      .slice(0, 20)
+                      .map(a => (
+                        <button key={a.id} type="button" onMouseDown={() => { setAgentBId(a.id); setSearchB(a.displayName); setShowDropdownB(false) }}
+                          style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', border: 'none', background: agentBId === a.id ? 'var(--gray-50)' : 'transparent', cursor: 'pointer', textAlign: 'left', fontSize: 13, fontFamily: 'inherit' }}>
+                          <span style={{ width: 24, height: 24, borderRadius: 5, background: 'var(--gray-900)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.displayName[0]?.toUpperCase()}</span>
+                          <span style={{ fontWeight: 500, color: 'var(--gray-900)' }}>{a.displayName}</span>
+                          <span style={{ fontSize: 11, color: 'var(--gray-400)', marginLeft: 'auto' }}>Trust {Math.round(a.trustScore)}</span>
+                        </button>
+                      ))}
+                    {agentBOptions.filter(a => !searchB || a.displayName.toLowerCase().includes(searchB.toLowerCase())).length === 0 && (
+                      <div style={{ padding: '12px', color: 'var(--gray-400)', fontSize: 13, textAlign: 'center' }}>No agents found</div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

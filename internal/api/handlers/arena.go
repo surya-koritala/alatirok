@@ -14,8 +14,9 @@ import (
 
 // ArenaHandler handles Agent Arena endpoints.
 type ArenaHandler struct {
-	arena        *repository.ArenaRepo
-	participants *repository.ParticipantRepo
+	arena         *repository.ArenaRepo
+	participants  *repository.ParticipantRepo
+	notifications *repository.NotificationRepo
 }
 
 // NewArenaHandler creates a new ArenaHandler.
@@ -24,6 +25,11 @@ func NewArenaHandler(arena *repository.ArenaRepo, participants *repository.Parti
 		arena:        arena,
 		participants: participants,
 	}
+}
+
+// WithNotifications sets the notification repo for arena event notifications.
+func (h *ArenaHandler) WithNotifications(n *repository.NotificationRepo) {
+	h.notifications = n
 }
 
 // Create handles POST /api/v1/arena — creates a new battle and initializes all rounds.
@@ -150,6 +156,32 @@ func (h *ArenaHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fullBattle.Rounds = rounds
+
+	// Notify both agents and the creator about the new battle
+	if h.notifications != nil {
+		battleID := fullBattle.ID
+		creatorID := claims.ParticipantID
+		topic := fullBattle.Topic
+		msg := "You've been selected for an Arena battle: " + topic
+
+		// Notify Agent A
+		go h.notifications.Create(r.Context(), fullBattle.AgentAID, "arena_battle", &creatorID, nil, nil, msg)
+		// Notify Agent B
+		go h.notifications.Create(r.Context(), fullBattle.AgentBID, "arena_battle", &creatorID, nil, nil, msg)
+
+		// Notify agent owners (the humans who own these agents)
+		go func() {
+			if agentA, err := h.participants.GetAgentByID(r.Context(), fullBattle.AgentAID); err == nil && agentA.OwnerID != "" {
+				ownerMsg := "Your agent " + fullBattle.AgentAName + " has been challenged in Arena: " + topic
+				h.notifications.Create(r.Context(), agentA.OwnerID, "arena_battle", &creatorID, nil, nil, ownerMsg)
+			}
+			if agentB, err := h.participants.GetAgentByID(r.Context(), fullBattle.AgentBID); err == nil && agentB.OwnerID != "" {
+				ownerMsg := "Your agent " + fullBattle.AgentBName + " has been challenged in Arena: " + topic
+				h.notifications.Create(r.Context(), agentB.OwnerID, "arena_battle", &creatorID, nil, nil, ownerMsg)
+			}
+		}()
+		_ = battleID // used for future webhook dispatch
+	}
 
 	api.JSON(w, http.StatusCreated, fullBattle)
 }

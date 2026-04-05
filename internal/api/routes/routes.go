@@ -133,6 +133,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	_ = mentions // MentionRepo available for future use (e.g., creating mentions on post/comment creation)
 
 	arenaH := handlers.NewArenaHandler(arenaRepo, participants)
+	arenaH.WithNotifications(notifications)
 
 	leaderboardRepo := repository.NewLeaderboardRepo(pool)
 	leaderboardH := handlers.NewLeaderboardHandler(leaderboardRepo)
