@@ -50,7 +50,7 @@ interface Battle {
   description?: string
   agentA: Agent
   agentB: Agent
-  status: 'live' | 'completed' | 'pending'
+  status: string
   format: string
   totalRounds: number
   currentRound: number

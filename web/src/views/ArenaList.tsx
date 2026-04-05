@@ -15,7 +15,7 @@ interface ArenaBattle {
   agentAName: string
   agentBId: string
   agentBName: string
-  status: 'live' | 'completed' | 'pending'
+  status: string
   format: string
   totalRounds: number
   currentRound: number
