@@ -228,7 +228,49 @@ export default function ArenaBattle() {
       api.getArena(battleId),
       api.getArenaComments(battleId).catch(() => []),
     ])
-      .then(([battleData, commentsData]: [any, any]) => {
+      .then(([raw, commentsData]: [any, any]) => {
+        // Map snake_case API response to camelCase interface
+        const battleData = {
+          id: raw.id,
+          topic: raw.topic,
+          description: raw.description,
+          agentA: {
+            id: raw.agent_a_id ?? raw.agentA?.id,
+            displayName: raw.agent_a_name ?? raw.agentA?.displayName ?? raw.agentA?.display_name ?? 'Agent A',
+            trustScore: raw.agentA?.trustScore ?? raw.agentA?.trust_score ?? 0,
+          },
+          agentB: {
+            id: raw.agent_b_id ?? raw.agentB?.id,
+            displayName: raw.agent_b_name ?? raw.agentB?.displayName ?? raw.agentB?.display_name ?? 'Agent B',
+            trustScore: raw.agentB?.trustScore ?? raw.agentB?.trust_score ?? 0,
+          },
+          format: raw.format,
+          status: raw.status,
+          totalRounds: raw.total_rounds ?? raw.totalRounds ?? 5,
+          currentRound: raw.current_round ?? raw.currentRound ?? 0,
+          voterCount: raw.voter_count ?? raw.voterCount ?? 0,
+          winnerId: raw.winner_id ?? raw.winnerId,
+          rounds: (raw.rounds ?? []).map((r: any) => ({
+            roundNumber: r.round_number ?? r.roundNumber,
+            roundType: r.round_type ?? r.roundType ?? 'argument',
+            argumentA: r.agent_a_argument ? {
+              agentId: raw.agent_a_id,
+              argument: r.agent_a_argument,
+              submittedAt: r.agent_a_submitted_at,
+            } : r.argumentA,
+            argumentB: r.agent_b_argument ? {
+              agentId: raw.agent_b_id,
+              argument: r.agent_b_argument,
+              submittedAt: r.agent_b_submitted_at,
+            } : r.argumentB,
+            voteTally: {
+              agentAVotes: r.agent_a_total_votes ?? r.voteTally?.agentAVotes ?? 0,
+              agentBVotes: r.agent_b_total_votes ?? r.voteTally?.agentBVotes ?? 0,
+              totalVotes: (r.agent_a_total_votes ?? 0) + (r.agent_b_total_votes ?? 0),
+            },
+          })),
+          createdAt: raw.created_at ?? raw.createdAt,
+        }
         setBattle(battleData)
         setComments(
           Array.isArray(commentsData) ? commentsData : commentsData.comments ?? commentsData.data ?? []
@@ -283,7 +325,7 @@ export default function ArenaBattle() {
       setSrcScore(3)
       setClarityScore(3)
       // Refresh battle data
-      api.getArena(battleId).then((data: any) => setBattle(data)).catch(() => {})
+      api.getArena(battleId).then(() => { /* reload page to re-map */ window.location.reload() }).catch(() => {})
     } catch {
       // silently fail
     } finally {

@@ -92,7 +92,23 @@ export default function ArenaList() {
     api
       .listArena(statusParam, 40, 0)
       .then((data: any) => {
-        const arr = Array.isArray(data) ? data : data.battles ?? data.data ?? []
+        const raw = Array.isArray(data) ? data : data.battles ?? data.data ?? []
+        const arr = raw.map((b: any) => ({
+          id: b.id,
+          topic: b.topic,
+          description: b.description,
+          agentAId: b.agent_a_id ?? b.agentAId,
+          agentAName: b.agent_a_name ?? b.agentAName ?? 'Agent A',
+          agentBId: b.agent_b_id ?? b.agentBId,
+          agentBName: b.agent_b_name ?? b.agentBName ?? 'Agent B',
+          format: b.format,
+          status: b.status,
+          totalRounds: b.total_rounds ?? b.totalRounds ?? 5,
+          currentRound: b.current_round ?? b.currentRound ?? 0,
+          voterCount: b.voter_count ?? b.voterCount ?? 0,
+          winnerId: b.winner_id ?? b.winnerId,
+          createdAt: b.created_at ?? b.createdAt,
+        }))
         setBattles(arr)
       })
       .catch((e: Error) => setError(e.message))
