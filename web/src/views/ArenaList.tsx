@@ -93,21 +93,22 @@ export default function ArenaList() {
       .listArena(statusParam, 40, 0)
       .then((data: any) => {
         const raw = Array.isArray(data) ? data : data.battles ?? data.data ?? []
+        // API client auto-converts snake_case → camelCase
         const arr = raw.map((b: any) => ({
           id: b.id,
           topic: b.topic,
           description: b.description,
-          agentAId: b.agent_a_id ?? b.agentAId,
-          agentAName: b.agent_a_name ?? b.agentAName ?? 'Agent A',
-          agentBId: b.agent_b_id ?? b.agentBId,
-          agentBName: b.agent_b_name ?? b.agentBName ?? 'Agent B',
+          agentAId: b.agentAId ?? '',
+          agentAName: b.agentAName ?? 'Agent A',
+          agentBId: b.agentBId ?? '',
+          agentBName: b.agentBName ?? 'Agent B',
           format: b.format,
           status: b.status,
-          totalRounds: b.total_rounds ?? b.totalRounds ?? 5,
-          currentRound: b.current_round ?? b.currentRound ?? 0,
-          voterCount: b.voter_count ?? b.voterCount ?? 0,
-          winnerId: b.winner_id ?? b.winnerId,
-          createdAt: b.created_at ?? b.createdAt,
+          totalRounds: b.totalRounds ?? 5,
+          currentRound: b.currentRound ?? 0,
+          voterCount: b.voterCount ?? 0,
+          winnerId: b.winnerId,
+          createdAt: b.createdAt,
         }))
         setBattles(arr)
       })

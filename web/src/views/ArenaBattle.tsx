@@ -229,51 +229,52 @@ export default function ArenaBattle() {
       api.getArenaComments(battleId).catch(() => []),
     ])
       .then(([raw, commentsData]: [any, any]) => {
-        // Map snake_case API response to camelCase interface
-        const battleData = {
+        // API client auto-converts snake_case to camelCase via transformKeys()
+        // So agent_a_name → agentAName, agent_a_argument → agentAArgument, etc.
+        const battleData: Battle = {
           id: raw.id,
           topic: raw.topic,
           description: raw.description,
           agentA: {
-            id: raw.agent_a_id ?? raw.agentA?.id,
-            displayName: raw.agent_a_name ?? raw.agentA?.displayName ?? raw.agentA?.display_name ?? 'Agent A',
-            trustScore: raw.agentA?.trustScore ?? raw.agentA?.trust_score ?? 0,
+            id: raw.agentAId ?? '',
+            displayName: raw.agentAName ?? 'Agent A',
+            trustScore: raw.agentA?.trustScore ?? 0,
           },
           agentB: {
-            id: raw.agent_b_id ?? raw.agentB?.id,
-            displayName: raw.agent_b_name ?? raw.agentB?.displayName ?? raw.agentB?.display_name ?? 'Agent B',
-            trustScore: raw.agentB?.trustScore ?? raw.agentB?.trust_score ?? 0,
+            id: raw.agentBId ?? '',
+            displayName: raw.agentBName ?? 'Agent B',
+            trustScore: raw.agentB?.trustScore ?? 0,
           },
           format: raw.format,
           status: raw.status,
-          totalRounds: raw.total_rounds ?? raw.totalRounds ?? 5,
-          currentRound: raw.current_round ?? raw.currentRound ?? 0,
-          voterCount: raw.voter_count ?? raw.voterCount ?? 0,
-          winnerId: raw.winner_id ?? raw.winnerId,
+          totalRounds: raw.totalRounds ?? 5,
+          currentRound: raw.currentRound ?? 0,
+          voterCount: raw.voterCount ?? 0,
+          winnerId: raw.winnerId,
+          scoreA: raw.scoreA ?? 0,
+          scoreB: raw.scoreB ?? 0,
           rounds: (raw.rounds ?? []).map((r: any) => ({
-            roundNumber: r.round_number ?? r.roundNumber,
-            roundType: r.round_type ?? r.roundType ?? 'argument',
-            argumentA: (r.agent_a_argument || r.argumentA?.argument) ? {
-              agentId: raw.agent_a_id ?? raw.agentA?.id,
-              argument: r.agent_a_argument ?? r.argumentA?.argument ?? '',
-              submittedAt: r.agent_a_submitted_at ?? r.argumentA?.submittedAt ?? '',
+            roundNumber: r.roundNumber,
+            roundType: r.roundType ?? 'argument',
+            argumentA: r.agentAArgument ? {
+              agentId: raw.agentAId,
+              argument: r.agentAArgument,
+              submittedAt: r.agentASubmittedAt ?? '',
             } : undefined,
-            argumentB: (r.agent_b_argument || r.argumentB?.argument) ? {
-              agentId: raw.agent_b_id ?? raw.agentB?.id,
-              argument: r.agent_b_argument ?? r.argumentB?.argument ?? '',
-              submittedAt: r.agent_b_submitted_at ?? r.argumentB?.submittedAt ?? '',
+            argumentB: r.agentBArgument ? {
+              agentId: raw.agentBId,
+              argument: r.agentBArgument,
+              submittedAt: r.agentBSubmittedAt ?? '',
             } : undefined,
             voteTally: {
-              agentAVotes: r.agent_a_total_votes ?? r.voteTally?.agentAVotes ?? 0,
-              agentBVotes: r.agent_b_total_votes ?? r.voteTally?.agentBVotes ?? 0,
-              totalVotes: (r.agent_a_total_votes ?? 0) + (r.agent_b_total_votes ?? 0),
+              agentAVotes: r.agentATotalVotes ?? 0,
+              agentBVotes: r.agentBTotalVotes ?? 0,
+              totalVotes: (r.agentATotalVotes ?? 0) + (r.agentBTotalVotes ?? 0),
             },
           })),
-          scoreA: raw.score_a ?? raw.scoreA ?? 0,
-          scoreB: raw.score_b ?? raw.scoreB ?? 0,
-          createdAt: raw.created_at ?? raw.createdAt,
+          createdAt: raw.createdAt,
         }
-        setBattle(battleData as Battle)
+        setBattle(battleData)
         setComments(
           Array.isArray(commentsData) ? commentsData : commentsData.comments ?? commentsData.data ?? []
         )
