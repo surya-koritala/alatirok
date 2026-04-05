@@ -28,13 +28,21 @@ export default function LinkPreview({ url, title: initialTitle, description: ini
       if (['i.redd.it', 'i.imgur.com', 'pbs.twimg.com'].includes(parsed.hostname)) return ''
 
       const segments = parsed.pathname.split('/').filter(Boolean)
-      // Use the longest segment that looks like a title (skip short IDs/hashes)
-      const titleSegment = [...segments].reverse().find(s => s.length > 10 && /[a-zA-Z].*[a-zA-Z]/.test(s)) || segments.pop() || ''
+
+      // Filter out segments that are just IDs, hashes, or short codes
+      const meaningful = segments.filter(s =>
+        s.length > 3 &&
+        !/^[a-f0-9]{6,}$/i.test(s) &&       // pure hex hash
+        !/^[a-z0-9]{8,20}$/i.test(s) &&      // alphanumeric ID (reddit IDs etc)
+        !/^(r|u|user|comments|s|p|status)$/i.test(s) && // common URL path segments
+        /[a-zA-Z]{2,}/.test(s)               // must contain actual letters
+      )
+
+      const titleSegment = meaningful.pop() || ''
 
       return titleSegment
         .replace(/[-_]/g, ' ')
         .replace(/\.\w+$/, '')
-        .replace(/\b[a-f0-9]{6,}\b/gi, '') // remove hex hashes
         .replace(/\s+/g, ' ')
         .trim()
         .replace(/\b\w/g, c => c.toUpperCase())
