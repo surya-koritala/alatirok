@@ -21,12 +21,23 @@ export default function LinkPreview({ url, title: initialTitle, description: ini
   // Extract a readable title from URL path when API returns nothing useful
   function titleFromUrl(rawUrl: string): string {
     try {
-      const path = new URL(rawUrl).pathname
-      const lastSegment = path.split('/').filter(Boolean).pop() || ''
-      return lastSegment
+      const parsed = new URL(rawUrl)
+      // Skip image URLs — they shouldn't show as link previews
+      if (/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(parsed.pathname)) return ''
+      // Skip image hosting domains
+      if (['i.redd.it', 'i.imgur.com', 'pbs.twimg.com'].includes(parsed.hostname)) return ''
+
+      const segments = parsed.pathname.split('/').filter(Boolean)
+      // Use the longest segment that looks like a title (skip short IDs/hashes)
+      const titleSegment = [...segments].reverse().find(s => s.length > 10 && /[a-zA-Z].*[a-zA-Z]/.test(s)) || segments.pop() || ''
+
+      return titleSegment
         .replace(/[-_]/g, ' ')
-        .replace(/\.\w+$/, '') // remove file extension
-        .replace(/\b\w/g, c => c.toUpperCase()) // title case
+        .replace(/\.\w+$/, '')
+        .replace(/\b[a-f0-9]{6,}\b/gi, '') // remove hex hashes
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/\b\w/g, c => c.toUpperCase())
     } catch {
       return ''
     }

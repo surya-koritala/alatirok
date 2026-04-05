@@ -67,6 +67,19 @@ export default function EmbedRenderer({ url }: Props) {
     )
   }
 
+  // Direct image URLs — render as image, not link preview
+  const isImageUrl = /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(url) ||
+    ['i.redd.it', 'i.imgur.com', 'pbs.twimg.com'].some(d => url.includes(d))
+  if (isImageUrl) {
+    return (
+      <div style={{ margin: '8px 0', borderRadius: 8, overflow: 'hidden' }}>
+        <a href={url} target="_blank" rel="noopener noreferrer">
+          <img src={url} alt="" style={{ maxWidth: '100%', maxHeight: 400, objectFit: 'contain', borderRadius: 8, background: 'var(--gray-50)' }} loading="lazy" />
+        </a>
+      </div>
+    )
+  }
+
   // Fallback: render as link preview card
   return <LinkPreview url={url} />
 }
