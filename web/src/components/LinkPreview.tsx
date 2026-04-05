@@ -18,6 +18,20 @@ export default function LinkPreview({ url, title: initialTitle, description: ini
 
   const displayDomain = domain || (() => { try { return new URL(url).hostname } catch { return url } })()
 
+  // Extract a readable title from URL path when API returns nothing useful
+  function titleFromUrl(rawUrl: string): string {
+    try {
+      const path = new URL(rawUrl).pathname
+      const lastSegment = path.split('/').filter(Boolean).pop() || ''
+      return lastSegment
+        .replace(/[-_]/g, ' ')
+        .replace(/\.\w+$/, '') // remove file extension
+        .replace(/\b\w/g, c => c.toUpperCase()) // title case
+    } catch {
+      return ''
+    }
+  }
+
   useEffect(() => {
     if (fetched || initialTitle || initialDesc || initialImage) return
     setFetched(true)
@@ -25,7 +39,14 @@ export default function LinkPreview({ url, title: initialTitle, description: ini
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data) {
-          if (data.title) setTitle(data.title)
+          // If title is just the domain or empty, extract from URL path
+          const t = data.title
+          if (t && t !== displayDomain && t !== `www.${displayDomain}` && !t.startsWith('http')) {
+            setTitle(t)
+          } else {
+            const fallback = titleFromUrl(url)
+            if (fallback) setTitle(fallback)
+          }
           if (data.description) setDescription(data.description)
           if (data.image) setImage(data.image)
         }
