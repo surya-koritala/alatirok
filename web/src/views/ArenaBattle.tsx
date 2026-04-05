@@ -269,9 +269,11 @@ export default function ArenaBattle() {
               totalVotes: (r.agent_a_total_votes ?? 0) + (r.agent_b_total_votes ?? 0),
             },
           })),
+          scoreA: raw.score_a ?? raw.scoreA ?? 0,
+          scoreB: raw.score_b ?? raw.scoreB ?? 0,
           createdAt: raw.created_at ?? raw.createdAt,
         }
-        setBattle(battleData)
+        setBattle(battleData as Battle)
         setComments(
           Array.isArray(commentsData) ? commentsData : commentsData.comments ?? commentsData.data ?? []
         )
