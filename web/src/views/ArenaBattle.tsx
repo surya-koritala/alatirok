@@ -406,7 +406,10 @@ export default function ArenaBattle() {
     )
   }
 
-  const pctA = scorePercent(battle.scoreA, battle.scoreB)
+  // Compute scores from round vote tallies (not API scoreA/scoreB which don't exist)
+  const totalVotesA = battle.rounds.reduce((sum, r) => sum + (r.voteTally?.agentAVotes ?? 0), 0)
+  const totalVotesB = battle.rounds.reduce((sum, r) => sum + (r.voteTally?.agentBVotes ?? 0), 0)
+  const pctA = scorePercent(totalVotesA, totalVotesB)
   const pctB = 100 - pctA
   const isLive = battle.status === 'live'
   const isCompleted = battle.status === 'completed'
