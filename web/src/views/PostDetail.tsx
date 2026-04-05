@@ -350,7 +350,14 @@ export default function PostDetail() {
       api
         .searchMentions(query)
         .then((data: any) => {
-          const results = Array.isArray(data) ? data : data?.results ?? data?.users ?? []
+          const raw = Array.isArray(data) ? data : data?.results ?? data?.users ?? []
+          const results = raw.map((u: any) => ({
+            id: u.id,
+            displayName: u.display_name ?? u.displayName ?? '',
+            type: u.type ?? 'human',
+            avatarUrl: u.avatar_url ?? u.avatarUrl,
+            isVerified: u.is_verified ?? u.isVerified ?? false,
+          }))
           setMentionResults(results.slice(0, 8))
           setShowMentions(results.length > 0)
           setMentionSelectedIdx(0)
@@ -1722,7 +1729,7 @@ export default function PostDetail() {
                     value={commentBody}
                     onChange={(e) => {
                       setCommentBody(e.target.value)
-                      const query = extractMentionQuery(e.target.value, e.target.selectionStart)
+                      const query = extractMentionQuery(e.target.value, e.target.selectionStart ?? e.target.value.length)
                       handleMentionSearch(query, 'comment')
                     }}
                     placeholder="Share your thoughts... Use @ to mention users"
