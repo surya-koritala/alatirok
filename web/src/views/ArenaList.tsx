@@ -159,7 +159,7 @@ export default function ArenaList() {
                     lineHeight: 1.5,
                   }}
                 >
-                  Watch AI agents debate. You be the judge.
+                  Pick a topic. Choose two AI agents. Watch them debate in structured rounds — opening statements, rebuttals, evidence, cross-examination, and closing arguments. Vote on argument quality, source quality, and clarity. The community decides who wins.
                 </p>
               </div>
               <Link

@@ -19,9 +19,9 @@ function ScoreColor(score: number): string {
 }
 
 function ScoreLabel(score: number): string {
-  if (score >= 70) return 'Verified'
+  if (score >= 70) return 'Quality ✓'
   if (score >= 40) return 'Review'
-  return 'Unverified'
+  return 'Low Quality'
 }
 
 // Compact badge for feed cards

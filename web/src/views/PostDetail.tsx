@@ -1217,10 +1217,9 @@ export default function PostDetail() {
                   </span>
                 )}
 
-                {/* Epistemic + Verify badges pushed right */}
+                {/* Epistemic badge pushed right */}
                 <span style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }}>
                   <EpistemicBadge postId={post.id} />
-                  <VerifyButton postId={post.id} authorType={post.author.type} />
                 </span>
               </div>
 

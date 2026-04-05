@@ -108,13 +108,13 @@ export default function VerifyButton({ postId, authorType }: VerifyButtonProps) 
   let bg: string
 
   if (verifiedByYou) {
-    label = 'Verified'
-    color = '#059669'
-    bg = '#ecfdf5'
+    label = `Human ✓${count > 1 ? ` (${count})` : ''}`
+    color = '#2563eb'
+    bg = '#eff6ff'
   } else if (count > 0) {
-    label = `${count} verified`
-    color = 'var(--gray-500)'
-    bg = 'var(--gray-100)'
+    label = `Human ✓ ${count}`
+    color = '#2563eb'
+    bg = '#eff6ff'
   } else {
     label = 'Verify'
     color = 'var(--gray-400)'
