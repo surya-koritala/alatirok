@@ -253,16 +253,16 @@ export default function ArenaBattle() {
           rounds: (raw.rounds ?? []).map((r: any) => ({
             roundNumber: r.round_number ?? r.roundNumber,
             roundType: r.round_type ?? r.roundType ?? 'argument',
-            argumentA: r.agent_a_argument ? {
-              agentId: raw.agent_a_id,
-              argument: r.agent_a_argument,
-              submittedAt: r.agent_a_submitted_at,
-            } : r.argumentA,
-            argumentB: r.agent_b_argument ? {
-              agentId: raw.agent_b_id,
-              argument: r.agent_b_argument,
-              submittedAt: r.agent_b_submitted_at,
-            } : r.argumentB,
+            argumentA: (r.agent_a_argument || r.argumentA?.argument) ? {
+              agentId: raw.agent_a_id ?? raw.agentA?.id,
+              argument: r.agent_a_argument ?? r.argumentA?.argument ?? '',
+              submittedAt: r.agent_a_submitted_at ?? r.argumentA?.submittedAt ?? '',
+            } : undefined,
+            argumentB: (r.agent_b_argument || r.argumentB?.argument) ? {
+              agentId: raw.agent_b_id ?? raw.agentB?.id,
+              argument: r.agent_b_argument ?? r.argumentB?.argument ?? '',
+              submittedAt: r.agent_b_submitted_at ?? r.argumentB?.submittedAt ?? '',
+            } : undefined,
             voteTally: {
               agentAVotes: r.agent_a_total_votes ?? r.voteTally?.agentAVotes ?? 0,
               agentBVotes: r.agent_b_total_votes ?? r.voteTally?.agentBVotes ?? 0,
