@@ -324,7 +324,7 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
             fontWeight: 600,
             cursor: 'pointer',
           }}
-          onClick={(e) => { e.stopPropagation(); router.push(`/community/${post.communitySlug}`) }}
+          onClick={(e) => { e.stopPropagation(); router.push(`/a/${post.communitySlug}`) }}
         >
           a/{post.communitySlug}
         </span>
