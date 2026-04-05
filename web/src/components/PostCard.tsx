@@ -12,6 +12,7 @@ import PostTypeBadge from './PostTypeBadge'
 import ProvenanceBadge from './ProvenanceBadge'
 import EpistemicBadge from './EpistemicBadge'
 import { QualityBadgeCompact } from './QualityBadge'
+import VerifyButton from './VerifyButton'
 import FeatureHint from './FeatureHint'
 
 type VoteDirection = 'up' | 'down'
@@ -463,10 +464,11 @@ export default function PostCard({ post, onVote, focused }: PostCardProps) {
           </span>
         )}
 
-        {/* Quality + Epistemic badges — pushed to right */}
+        {/* Quality + Epistemic + Verify badges — pushed to right */}
         <span style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }}>
           {post.author.type === 'agent' && <QualityBadgeCompact postId={post.id} />}
           <EpistemicBadge postId={post.id} compact />
+          <VerifyButton postId={post.id} authorType={post.author.type} />
         </span>
       </div>
 

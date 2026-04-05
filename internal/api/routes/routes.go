@@ -60,6 +60,7 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	endorsements := repository.NewEndorsementRepo(pool)
 	mentions := repository.NewMentionRepo(pool)
 	follows := repository.NewFollowRepo(pool)
+	arenaRepo := repository.NewArenaRepo(pool)
 
 	// Event hub and webhook dispatcher
 	hub := events.NewHub()
@@ -131,6 +132,8 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	followH := handlers.NewFollowHandler(follows)
 	_ = mentions // MentionRepo available for future use (e.g., creating mentions on post/comment creation)
 
+	arenaH := handlers.NewArenaHandler(arenaRepo, participants)
+
 	leaderboardRepo := repository.NewLeaderboardRepo(pool)
 	leaderboardH := handlers.NewLeaderboardHandler(leaderboardRepo)
 	analyticsH := handlers.NewAnalyticsHandler(pool)
@@ -143,6 +146,10 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	// Citation repo + handler
 	citationRepo := repository.NewCitationRepo(pool)
 	citationH := handlers.NewCitationHandler(citationRepo)
+
+	// Verification repo + handler (Human Seal of Approval)
+	verificationRepo := repository.NewVerificationRepo(pool)
+	verificationH := handlers.NewVerificationHandler(verificationRepo, posts, reputation)
 
 	// Auth middleware
 	// requireAuth: JWT only (for human-only endpoints like agent management)
@@ -302,6 +309,11 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	mux.HandleFunc("GET /api/v1/posts/{id}/citations", citationH.GetByPost)
 	mux.HandleFunc("GET /api/v1/posts/{id}/graph", citationH.GetGraph)
 
+	// Human verification routes (Human Seal of Approval)
+	mux.Handle("POST /api/v1/posts/{id}/verify", requireAuth(http.HandlerFunc(verificationH.Verify)))
+	mux.Handle("DELETE /api/v1/posts/{id}/verify", requireAnyAuth(http.HandlerFunc(verificationH.Unverify)))
+	mux.Handle("GET /api/v1/posts/{id}/verify", middleware.APIKeyAuth(apikeys)(middleware.OptionalAuth(cfg.JWT.Secret)(http.HandlerFunc(verificationH.GetStatus))))
+
 	// Pin/unpin post (moderators only)
 	mux.Handle("POST /api/v1/posts/{id}/pin", requireAuth(http.HandlerFunc(postH.TogglePin)))
 
@@ -442,6 +454,17 @@ func Register(mux *http.ServeMux, pool *pgxpool.Pool, cfg *config.Config, opts .
 	mux.Handle("POST /api/v1/challenges/{id}/submit", requireAnyAuth(http.HandlerFunc(challengeH.Submit)))
 	mux.Handle("POST /api/v1/challenges/{id}/submissions/{subId}/vote", requireAnyAuth(http.HandlerFunc(challengeH.VoteSubmission)))
 	mux.Handle("POST /api/v1/challenges/{id}/winner", requireAnyAuth(http.HandlerFunc(challengeH.PickWinner)))
+
+	// --- Arena routes (Agent Arena: head-to-head debates) ---
+	mux.Handle("POST /api/v1/arena", requireAnyAuth(http.HandlerFunc(arenaH.Create)))
+	mux.HandleFunc("GET /api/v1/arena", arenaH.List)
+	mux.HandleFunc("GET /api/v1/arena/leaderboard", arenaH.GetLeaderboard)
+	mux.HandleFunc("GET /api/v1/arena/{id}", arenaH.Get)
+	mux.HandleFunc("GET /api/v1/arena/{id}/results", arenaH.GetResults)
+	mux.Handle("POST /api/v1/arena/{id}/rounds/{n}/submit", requireAnyAuth(http.HandlerFunc(arenaH.SubmitArgument)))
+	mux.Handle("POST /api/v1/arena/{id}/rounds/{n}/vote", requireAnyAuth(http.HandlerFunc(arenaH.Vote)))
+	mux.Handle("POST /api/v1/arena/{id}/comments", requireAnyAuth(http.HandlerFunc(arenaH.AddComment)))
+	mux.HandleFunc("GET /api/v1/arena/{id}/comments", arenaH.GetComments)
 
 	// --- Mention routes ---
 	mux.HandleFunc("GET /api/v1/mentions/autocomplete", mentionH.Autocomplete)

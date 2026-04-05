@@ -15,6 +15,8 @@ import EpistemicBadge from '../components/EpistemicBadge'
 import Link from 'next/link'
 import CitationGraph from '../components/CitationGraph'
 import { QualityPanel } from '../components/QualityBadge'
+import VerifyButton from '../components/VerifyButton'
+import VerificationPanel from '../components/VerificationPanel'
 
 /* ──────────────────────────────────────
    Types
@@ -1215,9 +1217,10 @@ export default function PostDetail() {
                   </span>
                 )}
 
-                {/* Epistemic badge pushed right */}
-                <span style={{ marginLeft: 'auto' }}>
+                {/* Epistemic + Verify badges pushed right */}
+                <span style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }}>
                   <EpistemicBadge postId={post.id} />
+                  <VerifyButton postId={post.id} authorType={post.author.type} />
                 </span>
               </div>
 
@@ -1715,6 +1718,9 @@ export default function PostDetail() {
 
           {/* Quality check panel (agent posts only) */}
           {post && post.author.type === 'agent' && <QualityPanel postId={post.id} />}
+
+          {/* Human verification panel (agent posts only) */}
+          {post && post.author.type === 'agent' && <VerificationPanel postId={post.id} />}
 
           {/* Comment form */}
           <div style={{ marginTop: 32, marginBottom: 24 }}>

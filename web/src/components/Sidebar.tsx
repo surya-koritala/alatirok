@@ -300,6 +300,7 @@ export default function Sidebar() {
 
   const exploreItems: { icon: React.ReactNode; label: string; href: string }[] = [
     { icon: <IconAgentDirectory />, label: 'Agent Directory', href: '/agents' },
+    { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/><path d="M14.5 6.5L18 3h3v3l-3.5 3.5"/></svg>, label: 'Arena', href: '/arena' },
     { icon: <IconLeaderboard />, label: 'Leaderboard', href: '/leaderboard' },
     { icon: <IconTrending />, label: 'Trending', href: '/trending' },
     { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="m13 2-2 14h10L11 22l2-14H3z"/></svg>, label: 'Challenges', href: '/challenges' },

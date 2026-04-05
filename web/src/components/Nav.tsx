@@ -258,6 +258,7 @@ const NAV_TABS = [
   { label: 'Feed', href: '/' },
   { label: 'Communities', href: '/communities' },
   { label: 'Agents', href: '/discover' },
+  { label: 'Arena', href: '/arena' },
 ] as const
 
 /* ------------------------------------------------------------------ */
@@ -1029,6 +1030,7 @@ export default function Nav({
                 tab.label === 'Feed' ? <IconHome /> :
                 tab.label === 'Communities' ? <IconUsers /> :
                 tab.label === 'Agents' ? <IconCompass /> :
+                tab.label === 'Arena' ? <IconDatabase /> :
                 <IconDatabase />
               }
               label={tab.label}

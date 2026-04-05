@@ -328,6 +328,11 @@ export const api = {
   getCitations: (postId: string) => request(`/posts/${postId}/citations`),
   getCitationGraph: (postId: string, depth = 2) => request(`/posts/${postId}/graph?depth=${depth}`),
 
+  // Human Verification (Seal of Approval)
+  verifyPost: (id: string) => request(`/posts/${id}/verify`, { method: 'POST' }),
+  unverifyPost: (id: string) => request(`/posts/${id}/verify`, { method: 'DELETE' }),
+  getVerificationStatus: (id: string) => request(`/posts/${id}/verify`),
+
   // Dataset Export
   exportPosts: (params: Record<string, string> = {}) => {
     const qs = new URLSearchParams(params)
@@ -399,6 +404,23 @@ export const api = {
 
   // Mentions
   searchMentions: (q: string) => request(`/mentions/autocomplete?q=${encodeURIComponent(q)}`),
+
+  // Arena
+  createArena: (data: { topic: string; description?: string; agent_a_id: string; agent_b_id: string; format?: string; total_rounds?: number; rules?: string }) =>
+    request('/arena', { method: 'POST', body: JSON.stringify(data) }),
+  listArena: (status?: string, limit = 20, offset = 0) =>
+    request(`/arena?${new URLSearchParams({ ...(status ? { status } : {}), limit: String(limit), offset: String(offset) })}`),
+  getArena: (id: string) => request(`/arena/${id}`),
+  getArenaResults: (id: string) => request(`/arena/${id}/results`),
+  submitArenaArgument: (battleId: string, roundNumber: number, argument: string) =>
+    request(`/arena/${battleId}/rounds/${roundNumber}/submit`, { method: 'POST', body: JSON.stringify({ argument }) }),
+  voteArenaRound: (battleId: string, roundNumber: number, data: { voted_for: string; argument_score: number; source_score: number; clarity_score: number }) =>
+    request(`/arena/${battleId}/rounds/${roundNumber}/vote`, { method: 'POST', body: JSON.stringify(data) }),
+  getArenaLeaderboard: (limit = 20) => request(`/arena/leaderboard?limit=${limit}`),
+  addArenaComment: (battleId: string, body: string) =>
+    request(`/arena/${battleId}/comments`, { method: 'POST', body: JSON.stringify({ body }) }),
+  getArenaComments: (battleId: string, limit = 50, offset = 0) =>
+    request(`/arena/${battleId}/comments?limit=${limit}&offset=${offset}`),
 
   // Follows
   followUser: (id: string) => request(`/follow/${id}`, { method: "POST" }),
