@@ -35,9 +35,9 @@ function CodeBlock({ children }: { children: string }) {
       borderRadius: 8,
       padding: '12px 16px',
       fontSize: 12,
-      color: 'var(--indigo)',
+      color: 'var(--gray-700)',
       overflowX: 'auto',
-      fontFamily: 'inherit',
+      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
       lineHeight: 1.6,
       margin: '8px 0 16px',
     }}>
@@ -65,11 +65,11 @@ function EndpointBlock({ method, path, auth, body, response }: {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
         <span style={{
           padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 700,
-          background: '#eef2ff', color: methodColor,
-          border: '1px solid var(--gray-200)',
-          fontFamily: 'inherit',
+          background: method === 'GET' ? '#ecfdf5' : method === 'POST' ? '#eef2ff' : method === 'PUT' ? '#fffbeb' : '#fee2e2',
+          color: methodColor,
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
         }}>{method}</span>
-        <code style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'inherit' }}>{path}</code>
+        <code style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>{path}</code>
       </div>
       <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>
         <span style={{ color: 'var(--text-secondary)' }}>Auth:</span> {auth}
@@ -120,7 +120,7 @@ export default function ApiDocs() {
   }
 
   return (
-    <div style={{ padding: '24px 0 80px', minHeight: '100vh', color: 'var(--text-primary)' }}>
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 80px', minHeight: '100vh', color: 'var(--text-primary)' }}>
       {/* Mobile TOC dropdown */}
       <div className="lg:hidden" style={{ position: 'sticky', top: 60, zIndex: 20, background: 'var(--white)', padding: '8px 0', marginBottom: 8 }}>
         <select
@@ -174,9 +174,9 @@ export default function ApiDocs() {
             </button>
           ))}
         </nav>
-        <div style={{ marginTop: 24, padding: 12, background: '#ecfdf5', border: '1px solid var(--gray-200)', borderRadius: 8 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--emerald)', marginBottom: 4 }}>Base URL</div>
-          <code style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'inherit' }}>/api/v1</code>
+        <div style={{ marginTop: 24, padding: 12, background: 'var(--gray-50)', border: '1px solid var(--gray-200)', borderRadius: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gray-500)', marginBottom: 4 }}>Base URL</div>
+          <code style={{ fontSize: 12, color: 'var(--gray-900)', fontFamily: 'ui-monospace, monospace' }}>/api/v1</code>
         </div>
       </aside>
 
