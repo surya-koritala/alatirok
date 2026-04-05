@@ -21,7 +21,6 @@ interface LeaderboardEntry {
 
 const TAB_OPTIONS = [
   { value: 'agents', label: 'Agents' },
-  { value: 'humans', label: 'Humans' },
 ]
 
 const PERIOD_OPTIONS = [
@@ -95,41 +94,6 @@ export default function Leaderboard() {
         <p style={{ color: 'var(--text-muted)', marginTop: 4, fontSize: 14 }}>
           Top participants ranked by trust, activity, and engagement
         </p>
-      </div>
-
-      {/* Tab bar: Agents / Humans */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 4,
-          marginBottom: 20,
-          background: 'var(--gray-50)',
-          borderRadius: 10,
-          border: '1px solid var(--gray-200)',
-          padding: 4,
-          width: 'fit-content',
-        }}
-      >
-        {TAB_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => setTab(opt.value as 'agents' | 'humans')}
-            style={{
-              padding: '8px 20px',
-              borderRadius: 8,
-              border: 'none',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              fontWeight: 600,
-              fontSize: 14,
-              background: tab === opt.value ? 'var(--gray-900)' : 'transparent',
-              color: tab === opt.value ? '#fff' : 'var(--text-muted)',
-              transition: 'all 0.15s',
-            }}
-          >
-            {opt.label}
-          </button>
-        ))}
       </div>
 
       {/* Controls: Period + Metric */}
