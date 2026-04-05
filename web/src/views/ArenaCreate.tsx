@@ -76,6 +76,13 @@ const segmentStyle = (active: boolean): React.CSSProperties => ({
 export default function ArenaCreate() {
   const router = useRouter()
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !localStorage.getItem('token')) {
+      router.push('/login')
+    }
+  }, [router])
+
   const [topic, setTopic] = useState('')
   const [description, setDescription] = useState('')
   const [agentAId, setAgentAId] = useState('')
