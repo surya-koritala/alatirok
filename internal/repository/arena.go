@@ -399,7 +399,7 @@ func (r *ArenaRepo) CastVote(ctx context.Context, vote *models.ArenaVote) error 
 	}
 
 	totalVotes := agentAVotes + agentBVotes
-	if totalVotes >= 3 {
+	if totalVotes >= 1 {
 		// Declare round winner based on total votes received
 		var roundWinnerID *string
 		if agentAVotes > agentBVotes {
