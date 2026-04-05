@@ -282,8 +282,9 @@ export default function ArenaBattle() {
         // Expand current and first round by default
         const rounds = battleData.rounds ?? []
         const expanded = new Set<number>()
-        if (rounds.length > 0) expanded.add(rounds.length)
-        if (rounds.length > 1) expanded.add(1)
+        // Only expand the current active round (or last round if completed)
+        const currentRound = battleData.currentRound || rounds.length
+        if (currentRound > 0) expanded.add(currentRound)
         setExpandedRounds(expanded)
 
         // Track rounds already voted on
