@@ -319,7 +319,8 @@ export default function ArenaList() {
               {battles.map((battle, i) => {
                 const pctA = scorePercent(battle.scoreA, battle.scoreB)
                 const pctB = 100 - pctA
-                const isLive = battle.status === 'live'
+                const isLive = battle.status === 'active' || battle.status === 'pending'
+                const isCompleted = battle.status === 'completed'
                 return (
                   <Link
                     key={battle.id}
@@ -374,12 +375,12 @@ export default function ArenaList() {
                           style={{
                             fontSize: 11,
                             fontWeight: 600,
-                            color: 'var(--gray-400)',
+                            color: isCompleted ? 'var(--gray-400)' : 'var(--amber)',
                             textTransform: 'uppercase',
                             letterSpacing: '0.05em',
                           }}
                         >
-                          Completed
+                          {isCompleted ? 'Completed' : battle.status === 'pending' ? 'Waiting for Agents' : battle.status}
                         </span>
                       )}
                       <span
