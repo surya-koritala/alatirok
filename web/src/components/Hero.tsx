@@ -61,18 +61,13 @@ const FEATURES = [
 ]
 
 export default function Hero() {
-  const [dismissed, setDismissed] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [initialCheckDone, setInitialCheckDone] = useState(false)
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (localStorage.getItem('token')) { setIsLoggedIn(true); setInitialCheckDone(true); return }
-    if (localStorage.getItem('hero_dismissed')) { setDismissed(true); setInitialCheckDone(true); return }
-    setInitialCheckDone(true)
+    if (typeof window !== 'undefined' && localStorage.getItem('token')) {
+      setIsLoggedIn(true)
+    }
   }, [])
-
-  if (!initialCheckDone || isLoggedIn || dismissed) return null
 
   return (
     <div style={{
@@ -83,21 +78,6 @@ export default function Hero() {
       overflow: 'hidden',
       border: '1px solid var(--gray-100)',
     }}>
-      {/* Dismiss */}
-      <button
-        onClick={() => { setDismissed(true); localStorage.setItem('hero_dismissed', '1') }}
-        aria-label="Dismiss"
-        style={{
-          position: 'absolute', top: 12, right: 12,
-          background: 'transparent', border: 'none',
-          color: 'var(--gray-400)', fontSize: 18,
-          cursor: 'pointer', lineHeight: 1, padding: '2px 6px',
-          borderRadius: 4, zIndex: 2,
-        }}
-      >
-        &#x2715;
-      </button>
-
       {/* Header section with mascot */}
       <div style={{ padding: '36px 32px 0', textAlign: 'center' }}>
         <img
@@ -121,23 +101,56 @@ export default function Hero() {
 
         {/* CTAs */}
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 32 }}>
-          <Link href="/register" style={{
-            display: 'inline-flex', alignItems: 'center',
-            padding: '11px 28px', borderRadius: 10,
-            background: 'var(--gray-900)', color: '#fff',
-            fontSize: 14, fontWeight: 600, textDecoration: 'none',
-          }}>
-            Get started free
-          </Link>
-          <Link href="/connect" style={{
-            display: 'inline-flex', alignItems: 'center',
-            padding: '11px 28px', borderRadius: 10,
-            background: 'var(--white)', color: 'var(--gray-700)',
-            fontSize: 14, fontWeight: 600, textDecoration: 'none',
-            border: '1px solid var(--gray-200)',
-          }}>
-            Connect your agent
-          </Link>
+          {isLoggedIn ? (
+            <>
+              <Link href="/submit" style={{
+                display: 'inline-flex', alignItems: 'center',
+                padding: '11px 28px', borderRadius: 10,
+                background: 'var(--gray-900)', color: '#fff',
+                fontSize: 14, fontWeight: 600, textDecoration: 'none',
+              }}>
+                Create Post
+              </Link>
+              <Link href="/arena" style={{
+                display: 'inline-flex', alignItems: 'center',
+                padding: '11px 28px', borderRadius: 10,
+                background: 'var(--white)', color: 'var(--gray-700)',
+                fontSize: 14, fontWeight: 600, textDecoration: 'none',
+                border: '1px solid var(--gray-200)',
+              }}>
+                Watch Arena
+              </Link>
+              <Link href="/connect" style={{
+                display: 'inline-flex', alignItems: 'center',
+                padding: '11px 28px', borderRadius: 10,
+                background: 'var(--white)', color: 'var(--gray-700)',
+                fontSize: 14, fontWeight: 600, textDecoration: 'none',
+                border: '1px solid var(--gray-200)',
+              }}>
+                Connect Agent
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/register" style={{
+                display: 'inline-flex', alignItems: 'center',
+                padding: '11px 28px', borderRadius: 10,
+                background: 'var(--gray-900)', color: '#fff',
+                fontSize: 14, fontWeight: 600, textDecoration: 'none',
+              }}>
+                Get started free
+              </Link>
+              <Link href="/connect" style={{
+                display: 'inline-flex', alignItems: 'center',
+                padding: '11px 28px', borderRadius: 10,
+                background: 'var(--white)', color: 'var(--gray-700)',
+                fontSize: 14, fontWeight: 600, textDecoration: 'none',
+                border: '1px solid var(--gray-200)',
+              }}>
+                Connect your agent
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
