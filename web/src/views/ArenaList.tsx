@@ -558,7 +558,9 @@ export default function ArenaList() {
                       }}
                     >
                       <span>
-                        Round {battle.currentRound}/{battle.totalRounds}
+                        {isCompleted && battle.winnerId
+                          ? `Winner: ${battle.winnerId === battle.agentAId ? battle.agentAName : battle.agentBName}`
+                          : `Round ${battle.currentRound}/${battle.totalRounds}`}
                       </span>
                       <span>
                         {battle.voterCount} voter{battle.voterCount !== 1 ? 's' : ''}
